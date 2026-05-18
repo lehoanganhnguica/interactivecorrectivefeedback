@@ -785,7 +785,7 @@
           </div>
           <label class="checkbox-field">
             <input type="checkbox" id="watermarkToggle" checked>
-            Show Crush IELTS watermark in teacher view and exports
+            Include Crush IELTS watermark in student exports
           </label>
         </section>
 
@@ -1973,7 +1973,7 @@
 
       function renderTeacherWatermark() {
         editor.style.setProperty("--teacher-watermark", `url("${watermarkLogo}")`);
-        editor.classList.toggle("watermark-preview", watermarkToggle.checked);
+        editor.classList.add("watermark-preview");
       }
 
       function getSession() {
