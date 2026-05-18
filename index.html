@@ -284,6 +284,8 @@
     .score-panel {
       display: grid;
       gap: 12px;
+      border-color: #fca5a5;
+      background: linear-gradient(180deg, #ffffff 0%, #fff7f7 100%);
     }
 
     .score-head {
@@ -298,14 +300,15 @@
 
     .band-total {
       margin-left: auto;
-      border-radius: 999px;
-      background: #ecfdf5;
-      color: #166534;
-      border: 1px solid #bbf7d0;
-      padding: 6px 10px;
-      font-size: 13px;
+      border-radius: 14px;
+      background: #b91c1c;
+      color: #fff;
+      border: 1px solid #991b1b;
+      padding: 8px 12px;
+      font-size: 15px;
       font-weight: 800;
       white-space: nowrap;
+      box-shadow: 0 8px 18px rgba(185, 28, 28, .18);
     }
 
     .score-note {
@@ -807,7 +810,7 @@
             <h2>3. IELTS band score</h2>
             <div id="overallBand" class="band-total">Overall: -</div>
           </div>
-          <p class="score-note">Enter the four IELTS Writing criteria. The total is the average rounded to the nearest half band.</p>
+          <p class="score-note">Enter whole-band scores for the four IELTS Writing criteria. The total is the average rounded to the nearest half band.</p>
           <div id="scoreGrid" class="score-grid"></div>
         </section>
 
@@ -861,9 +864,8 @@
                 <span class="feedback-node fb-vocabulary">Vocabulary</span>
                 <span class="feedback-node fb-spelling">Spelling</span>
                 <span class="feedback-node fb-coherence">Coherence</span>
-                <span class="feedback-node fb-task">Task</span>
+                <span class="feedback-node fb-task">Task response/achievement</span>
                 <span class="feedback-node fb-style">Style</span>
-                <span class="feedback-node fb-punctuation">Punctuation</span>
                 <span class="feedback-node fb-idea">Idea</span>
               </div>
             </aside>
@@ -919,17 +921,18 @@
       const overallBand = document.getElementById("overallBand");
 
       const feedbackTypes = [
-        ["grammar", "Grammar", ["Subject-verb agreement", "Verb tense", "Sentence structure"]],
+        ["grammar", "Grammar", ["Subject-verb agreement", "Verb tense", "Sentence structure", "Comma or punctuation issue"]],
         ["vocabulary", "Vocabulary", ["More precise word needed", "Awkward collocation", "Repeated word"]],
         ["spelling", "Spelling", ["Check spelling", "Capitalization", "Word form"]],
         ["coherence", "Coherence", ["Link ideas more clearly", "Paragraph focus", "Transition needed"]],
-        ["task", "Task response", ["Answer the prompt directly", "Add specific support", "Develop this point"]],
+        ["task", "Task response/achievement", ["Answer the prompt directly", "Add specific support", "Develop this point"]],
         ["style", "Style", ["Too informal", "Make this more concise", "Academic tone"]],
-        ["punctuation", "Punctuation", ["Comma needed", "Run-on sentence", "Sentence boundary"]],
         ["idea", "Idea development", ["Explain why", "Add example", "Clarify this idea"]]
       ];
+      const feedbackTypeAliases = { punctuation: "grammar" };
+      const feedbackClassIds = [...feedbackTypes.map(([id]) => id), ...Object.keys(feedbackTypeAliases)];
       const scoreCriteria = [
-        ["task", "Task response / achievement"],
+        ["task", "Task response/achievement"],
         ["coherence", "Coherence and cohesion"],
         ["lexical", "Lexical resource"],
         ["grammar", "Grammatical range and accuracy"]
@@ -1032,11 +1035,16 @@
         quickNotes.innerHTML = current[2].map(note => `<button type="button" data-note="${escapeAttr(note)}">${escapeHtml(note)}</button>`).join("");
       }
 
+      function canonicalFeedbackType(type) {
+        const value = String(type || "grammar");
+        if (feedbackTypes.some(([id]) => id === value)) return value;
+        return feedbackTypeAliases[value] || "grammar";
+      }
+
       function bandOptionsHtml() {
         const values = ['<option value="">-</option>'];
-        for (let score = 0; score <= 18; score += 1) {
-          const value = score / 2;
-          values.push(`<option value="${value}">${formatBand(value)}</option>`);
+        for (let score = 0; score <= 9; score += 1) {
+          values.push(`<option value="${score}">${score}</option>`);
         }
         return values.join("");
       }
@@ -1061,13 +1069,20 @@
       function getBandScores() {
         return Object.fromEntries(scoreCriteria.map(([id]) => {
           const value = document.getElementById(`score-${id}`)?.value || "";
-          return [id, value];
+          return [id, normalizeCriterionBand(value)];
         }));
       }
 
+      function normalizeCriterionBand(value) {
+        if (value === "" || value == null || Number.isNaN(Number(value))) return "";
+        const rounded = Math.round(Number(value));
+        return String(Math.min(9, Math.max(0, rounded)));
+      }
+
       function roundedIeltsBand(scores) {
-        const numeric = scoreCriteria.map(([id]) => Number(scores[id])).filter(score => Number.isFinite(score));
-        if (numeric.length !== scoreCriteria.length) return null;
+        const values = scoreCriteria.map(([id]) => normalizeCriterionBand(scores[id]));
+        if (values.some(value => value === "")) return null;
+        const numeric = values.map(Number);
         const average = numeric.reduce((sum, score) => sum + score, 0) / numeric.length;
         return Math.round(average * 2) / 2;
       }
@@ -1080,17 +1095,31 @@
       function applyBandScores(scores = {}) {
         scoreCriteria.forEach(([id]) => {
           const input = document.getElementById(`score-${id}`);
-          if (input) input.value = scores[id] ?? "";
+          if (input) input.value = normalizeCriterionBand(scores[id]);
         });
         updateBandScore();
       }
 
       function buildScoreSummaryHtml(scores = {}) {
         const rounded = roundedIeltsBand(scores);
-        const hasAnyScore = scoreCriteria.some(([id]) => scores[id] !== "" && scores[id] != null);
+        const normalizedScores = Object.fromEntries(scoreCriteria.map(([id]) => [id, normalizeCriterionBand(scores[id])]));
+        const hasAnyScore = scoreCriteria.some(([id]) => normalizedScores[id] !== "");
         if (!hasAnyScore) return "";
-        const rows = scoreCriteria.map(([id, label]) => `<span><strong>${escapeHtml(label)}:</strong> ${formatBand(scores[id])}</span>`).join("");
-        return `<section class="score-summary"><div><strong>IELTS Writing band:</strong> ${rounded == null ? "Incomplete" : formatBand(rounded)}</div><div>${rows}</div></section>`;
+        const overall = rounded == null ? "Incomplete" : formatBand(rounded);
+        const rows = scoreCriteria.map(([id, label]) => `
+          <div class="score-chip">
+            <span>${escapeHtml(label)}</span>
+            <strong>${formatBand(normalizedScores[id])}</strong>
+          </div>
+        `).join("");
+        return `<section class="score-summary">
+          <div class="score-overall">
+            <span>IELTS Writing</span>
+            <strong>${escapeHtml(overall)}</strong>
+            <em>Overall band</em>
+          </div>
+          <div class="score-breakdown">${rows}</div>
+        </section>`;
       }
 
       function showMessage(text) {
@@ -1106,14 +1135,16 @@
       }
 
       function setFeedbackNodeType(node, type) {
-        feedbackTypes.forEach(([id]) => node.classList.remove(`fb-${id}`));
-        node.classList.add(`fb-${type}`);
-        node.dataset.feedbackType = type;
+        const nextType = canonicalFeedbackType(type);
+        feedbackClassIds.forEach(id => node.classList.remove(`fb-${id}`));
+        node.classList.add(`fb-${nextType}`);
+        node.dataset.feedbackType = nextType;
       }
 
       function ensureFeedbackIds() {
         editor.querySelectorAll(".feedback-node[data-feedback-type]").forEach(node => {
           if (!node.dataset.feedbackId) node.dataset.feedbackId = nextFeedbackId();
+          setFeedbackNodeType(node, node.dataset.feedbackType);
         });
       }
 
@@ -1135,7 +1166,7 @@
           if (!groups.has(id)) {
             groups.set(id, {
               id,
-              type: node.dataset.feedbackType || "grammar",
+              type: canonicalFeedbackType(node.dataset.feedbackType),
               note: node.dataset.feedbackNote || "",
               nodes: []
             });
@@ -1189,7 +1220,7 @@
         const group = findFeedbackGroup(id);
         if (!group) return;
         pushUndoSnapshot();
-        group.nodes.forEach(node => setFeedbackNodeType(node, type));
+        group.nodes.forEach(node => setFeedbackNodeType(node, canonicalFeedbackType(type)));
         renderTeacherComments(id);
         focusFeedbackGroup(id);
       }
@@ -1982,6 +2013,10 @@
 
       function downloadFile(filename, type, content) {
         const blob = new Blob([content], { type });
+        downloadBlob(filename, blob);
+      }
+
+      function downloadBlob(filename, blob) {
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
@@ -2003,7 +2038,7 @@
       }
 
       function feedbackLabel(type) {
-        const found = feedbackTypes.find(([id]) => id === type);
+        const found = feedbackTypes.find(([id]) => id === canonicalFeedbackType(type));
         return found ? found[1] : "Feedback";
       }
 
@@ -2016,14 +2051,15 @@
         return node.parentElement;
       }
 
-      function buildStaticFeedbackHtml(sourceHtml, options = {}) {
+      function buildStaticFeedback(sourceHtml) {
         const template = document.createElement("template");
         template.innerHTML = sanitizeEditorHtml(sourceHtml);
-        const forceSide = options.forceSide;
         const seenComments = new Map();
+        const comments = [];
         let commentNumber = 0;
         Array.from(template.content.querySelectorAll(".feedback-node[data-feedback-type]")).forEach((node, index) => {
-          const type = node.dataset.feedbackType || "grammar";
+          const type = canonicalFeedbackType(node.dataset.feedbackType);
+          setFeedbackNodeType(node, type);
           const note = node.dataset.feedbackNote || "No explanation was added.";
           const label = feedbackLabel(type);
           const id = node.dataset.feedbackId || `static-${index}`;
@@ -2032,34 +2068,44 @@
             seenComments.set(id, {
               number: commentNumber,
               domId: `static-comment-${commentNumber}`,
-              side: forceSide || (commentNumber % 2 === 1 ? "right" : "left"),
+              type,
+              label,
+              note,
               rendered: false
             });
           }
           const comment = seenComments.get(id);
           node.dataset.commentAnchor = comment.domId;
           const marker = document.createElement("sup");
-          marker.className = `comment-marker marker-${comment.side}`;
+          marker.className = "comment-marker";
           marker.dataset.commentId = comment.domId;
           marker.textContent = comment.number;
           node.appendChild(marker);
           if (comment.rendered) return;
           comment.rendered = true;
-          const block = nearestStaticCommentBlock(node);
-          const bubble = document.createElement("span");
-          bubble.className = `comment-bubble comment-${comment.side} fb-${type}`;
-          bubble.dataset.commentId = comment.domId;
-          bubble.dataset.commentSide = comment.side;
-          bubble.dataset.commentType = type;
-          bubble.innerHTML = `<strong>${comment.number}. ${escapeHtml(label)}</strong><span>${escapeHtml(note)}</span>`;
-          if (block) {
-            block.classList.add("comment-row");
-            block.appendChild(bubble);
-          } else {
-            node.after(bubble);
-          }
+          comments.push(comment);
         });
-        return template.innerHTML;
+        return {
+          writingHtml: template.innerHTML,
+          commentsHtml: buildStaticCommentSummary(comments)
+        };
+      }
+
+      function buildStaticCommentSummary(comments) {
+        if (!comments.length) return "";
+        const cards = comments.map(comment => `
+          <li class="comment-card fb-${comment.type}">
+            <strong><span>${comment.number}</span>${escapeHtml(comment.label)}</strong>
+            <p>${escapeHtml(comment.note)}</p>
+          </li>
+        `).join("");
+        return `<section class="comment-summary">
+          <div class="comment-summary-head">
+            <h2>Teacher feedback</h2>
+            <span>${comments.length} ${comments.length === 1 ? "comment" : "comments"}</span>
+          </div>
+          <ol class="comment-summary-list">${cards}</ol>
+        </section>`;
       }
 
       function staticConnectorScript() {
@@ -2071,6 +2117,9 @@
         if (!writing) return;
         writing.style.minHeight = "";
         var writingRect = writing.getBoundingClientRect();
+        var writingDocTop = writingRect.top + (window.scrollY || 0);
+        var pageWidth = document.documentElement.getBoundingClientRect().width || document.body.getBoundingClientRect().width || 768;
+        var pageHeight = pageWidth * 1.414;
         var rows = Array.prototype.map.call(document.querySelectorAll(".comment-bubble[data-comment-id]"), function(bubble){
           if (bubble.parentElement !== writing) writing.appendChild(bubble);
           var id = bubble.getAttribute("data-comment-id");
@@ -2090,20 +2139,131 @@
           };
         }).filter(Boolean).sort(function(a, b){ return a.markerTop - b.markerTop; });
         var gutterInset = parseFloat(getComputedStyle(writing).getPropertyValue("--comment-gutter-inset")) || 36;
-        var sideBottom = { left: 8, right: 8 };
+        var maxBottom = 0;
+        var minGap = 6;
         rows.forEach(function(row){
           var bubble = row.bubble;
-          var side = row.side;
-          bubble.style.left = side === "left" ? gutterInset + "px" : "auto";
-          bubble.style.right = side === "right" ? gutterInset + "px" : "auto";
           bubble.style.top = "0px";
           var bubbleHeight = bubble.offsetHeight || 80;
-          var top = Math.max(8, row.markerTop - Math.min(24, bubbleHeight / 2));
-          top = Math.max(top, sideBottom[side] || 8);
-          bubble.style.top = top + "px";
-          sideBottom[side] = top + bubbleHeight + 10;
-          writing.style.minHeight = Math.max(writing.offsetHeight, sideBottom[side] + 24) + "px";
+          var anchorDocTop = writingDocTop + row.markerTop;
+          var pageIndex = Math.max(0, Math.floor(anchorDocTop / pageHeight));
+          row.pageIndex = pageIndex;
+          row.height = bubbleHeight;
+          row.desiredTop = Math.max(8, row.markerTop - Math.min(18, bubbleHeight * 0.28));
+          row.pageStart = Math.max(8, (pageIndex * pageHeight) - writingDocTop + 8);
+          row.pageEnd = ((pageIndex + 1) * pageHeight) - writingDocTop - 12;
         });
+        function clamp(value, min, max){
+          if (max < min) return min;
+          return Math.min(Math.max(value, min), max);
+        }
+        function overlaps(top, height, intervals){
+          var bottom = top + height;
+          return intervals.some(function(item){
+            return bottom + minGap > item.top && top < item.bottom + minGap;
+          });
+        }
+        function bestSlot(row, side, intervals){
+          var minTop = row.pageStart;
+          var maxTop = row.pageEnd - row.height;
+          var target = clamp(row.desiredTop, minTop, maxTop);
+          var candidates = [target, minTop, maxTop];
+          intervals.forEach(function(item){
+            candidates.push(item.bottom + minGap);
+            candidates.push(item.top - row.height - minGap);
+          });
+          var best = null;
+          candidates.forEach(function(candidate){
+            var top = clamp(candidate, minTop, maxTop);
+            if (overlaps(top, row.height, intervals)) return;
+            var distance = Math.abs(top - row.desiredTop);
+            if (side !== row.side) distance += 4;
+            if (!best || distance < best.distance) {
+              best = { side: side, top: top, distance: distance };
+            }
+          });
+          if (best) return best;
+          var fallback = target;
+          var leastOverlap = Infinity;
+          candidates.forEach(function(candidate){
+            var top = clamp(candidate, minTop, maxTop);
+            var collision = intervals.reduce(function(total, item){
+              var overlap = Math.max(0, Math.min(top + row.height, item.bottom + minGap) - Math.max(top, item.top - minGap));
+              return total + overlap;
+            }, 0);
+            var score = collision * 1000 + Math.abs(top - row.desiredTop);
+            if (score < leastOverlap) {
+              leastOverlap = score;
+              fallback = top;
+            }
+          });
+          return { side: side, top: fallback, distance: leastOverlap };
+        }
+        function repackIntervals(intervals){
+          intervals.sort(function(a, b){ return a.row.desiredTop - b.row.desiredTop; });
+          intervals.forEach(function(interval){
+            var minTop = interval.row.pageStart;
+            var maxTop = interval.row.pageEnd - interval.height;
+            interval.top = clamp(interval.row.desiredTop, minTop, maxTop);
+            interval.bottom = interval.top + interval.height;
+          });
+          for (var i = 1; i < intervals.length; i += 1) {
+            if (intervals[i - 1].bottom + minGap > intervals[i].top) {
+              intervals[i].top = intervals[i - 1].bottom + minGap;
+              intervals[i].bottom = intervals[i].top + intervals[i].height;
+            }
+          }
+          for (var j = intervals.length - 1; j >= 0; j -= 1) {
+            var current = intervals[j];
+            var maxTop = current.row.pageEnd - current.height;
+            if (j < intervals.length - 1) {
+              maxTop = Math.min(maxTop, intervals[j + 1].top - minGap - current.height);
+            }
+            if (current.top > maxTop) {
+              current.top = Math.max(current.row.pageStart, maxTop);
+              current.bottom = current.top + current.height;
+            }
+          }
+          for (var k = 1; k < intervals.length; k += 1) {
+            if (intervals[k - 1].bottom + minGap > intervals[k].top) {
+              intervals[k].top = intervals[k - 1].bottom + minGap;
+              intervals[k].bottom = intervals[k].top + intervals[k].height;
+            }
+          }
+        }
+        var placed = { left: {}, right: {} };
+        rows.forEach(function(row){
+          var pageKey = String(row.pageIndex);
+          var leftIntervals = placed.left[pageKey] || [];
+          var rightIntervals = placed.right[pageKey] || [];
+          var left = bestSlot(row, "left", leftIntervals);
+          var right = bestSlot(row, "right", rightIntervals);
+          var plan = left.distance <= right.distance ? left : right;
+          var side = plan.side;
+          var intervals = side === "left" ? leftIntervals : rightIntervals;
+          row.bubble.classList.toggle("comment-left", side === "left");
+          row.bubble.classList.toggle("comment-right", side === "right");
+          row.bubble.setAttribute("data-comment-side", side);
+          row.bubble.style.left = side === "left" ? gutterInset + "px" : "auto";
+          row.bubble.style.right = side === "right" ? gutterInset + "px" : "auto";
+          row.bubble.style.top = plan.top + "px";
+          intervals.push({ top: plan.top, bottom: plan.top + row.height, height: row.height, row: row });
+          intervals.sort(function(a, b){ return a.top - b.top; });
+          if (side === "left") placed.left[pageKey] = intervals;
+          else placed.right[pageKey] = intervals;
+          maxBottom = Math.max(maxBottom, plan.top + row.height);
+        });
+        ["left", "right"].forEach(function(side){
+          Object.keys(placed[side]).forEach(function(pageKey){
+            var intervals = placed[side][pageKey];
+            repackIntervals(intervals);
+            intervals.forEach(function(interval){
+              interval.row.bubble.style.top = interval.top + "px";
+              maxBottom = Math.max(maxBottom, interval.bottom);
+            });
+          });
+        });
+        writing.style.minHeight = Math.max(writing.offsetHeight, maxBottom + 24) + "px";
       }
       window.__layoutStaticCommentConnectors = layoutStaticCommentConnectors;
       if (document.readyState === "loading") {
@@ -2121,7 +2281,8 @@
       function exportCss({ staticComments = false } = {}) {
         return `<style>
     :root{--line:#d9dee7;--ink:#1f2937;--muted:#667085;--grammar-bg:#dbeafe;--grammar-border:#60a5fa;--vocabulary-bg:#fef3c7;--vocabulary-border:#f59e0b;--spelling-bg:#ffedd5;--spelling-border:#fb923c;--coherence-bg:#ede9fe;--coherence-border:#a78bfa;--task-bg:#dcfce7;--task-border:#22c55e;--style-bg:#fce7f3;--style-border:#f472b6;--punctuation-bg:#cffafe;--punctuation-border:#06b6d4;--idea-bg:#ecfccb;--idea-border:#84cc16}
-    *{box-sizing:border-box}body{margin:0;background:#f6f7f9;color:var(--ink);font-family:Arial,Helvetica,sans-serif;line-height:1.65}.page{max-width:1180px;margin:0 auto;padding:28px 18px}.header{margin-bottom:18px}.header h1{margin:0 0 8px;font-size:30px;line-height:1.2}.meta{color:var(--muted);font-size:15px}.prompt{white-space:pre-wrap;background:#fff;border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin:16px 0;font-weight:700;font-size:16px;line-height:1.6}.score-summary{display:grid;gap:6px;background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:0 0 16px;font-size:14px;line-height:1.45}.score-summary div:last-child{display:flex;flex-wrap:wrap;gap:6px 12px}.score-summary span{white-space:nowrap}.content{display:grid;grid-template-columns:minmax(0,1fr);gap:26px;align-items:start}.content.with-image.image-left{grid-template-columns:minmax(260px,40%) minmax(0,1fr)}.task-image img{width:100%;display:block;border:1px solid var(--line);border-radius:10px}.writing{position:relative;isolation:isolate;background:#fff;border:1px solid var(--line);border-radius:10px;padding:36px 34px;font-size:18px;line-height:1.72;overflow-wrap:anywhere;min-height:380px;overflow:hidden}.writing.static-comments{--comment-gutter-inset:10px;padding-left:154px;padding-right:154px;overflow:visible}.writing p{margin:0 0 16px}.writing p:last-child{margin-bottom:0}.watermark-layer{position:absolute;inset:0;z-index:0;display:flex;align-items:center;justify-content:center;pointer-events:none}.watermark-layer img{display:block;width:240px;height:240px;object-fit:contain;opacity:.1}.writing-content{position:relative;z-index:1}.suggest-add{color:#16a34a}.suggest-delete{color:#dc2626;text-decoration:line-through;text-decoration-thickness:2px;background:#fef2f2}.feedback-node{border:1px solid currentColor;border-bottom-width:2px;border-radius:5px;padding:1px 3px;cursor:pointer;-webkit-box-decoration-break:clone;box-decoration-break:clone}.comment-marker{display:inline-block;margin-left:2px;color:currentColor;font-size:.64em;font-weight:800;line-height:1;vertical-align:super}.comment-row{position:relative}.comment-bubble{display:inline-block;max-width:250px;margin:0 8px 6px;padding:7px 9px;border:1px solid currentColor;border-radius:8px;font-size:12.5px;line-height:1.35;vertical-align:middle;box-shadow:0 4px 12px rgba(15,23,42,.08)}.writing.static-comments .comment-bubble{position:absolute;display:block;width:126px;max-width:126px;margin:0;z-index:3}.writing.static-comments .comment-bubble::before,.writing.static-comments .comment-bubble::after{display:none}.comment-connector-layer,.comment-connector{display:none!important}.writing.static-comments .comment-left{left:10px}.writing.static-comments .comment-right{right:10px}.writing.static-comments .feedback-node{position:relative}.comment-bubble strong{display:block;margin-bottom:3px}.comment-bubble span{display:block}.fb-grammar{background:var(--grammar-bg);color:#1d4ed8;border-color:var(--grammar-border)}.fb-vocabulary{background:var(--vocabulary-bg);color:#92400e;border-color:var(--vocabulary-border)}.fb-spelling{background:var(--spelling-bg);color:#9a3412;border-color:var(--spelling-border)}.fb-coherence{background:var(--coherence-bg);color:#6d28d9;border-color:var(--coherence-border)}.fb-task{background:var(--task-bg);color:#166534;border-color:var(--task-border)}.fb-style{background:var(--style-bg);color:#be185d;border-color:var(--style-border)}.fb-punctuation{background:var(--punctuation-bg);color:#0e7490;border-color:var(--punctuation-border)}.fb-idea{background:var(--idea-bg);color:#3f6212;border-color:var(--idea-border)}.legend{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0 18px}.legend span{border:1px solid currentColor;border-radius:7px;padding:5px 9px;font-size:13px;font-weight:700}.side-note{position:fixed;z-index:10;width:min(360px,calc(100vw - 24px));max-height:min(420px,calc(100vh - 24px));overflow:auto;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 16px 40px rgba(17,24,39,.18);padding:14px;display:none}.side-note.open{display:block}.side-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}.side-head strong{margin-right:auto}.side-note button{border:1px solid var(--line);background:#fff;border-radius:6px;width:32px;height:32px;cursor:pointer}@media(max-width:900px){.content.with-image.image-left{grid-template-columns:1fr}.watermark-layer img{width:200px;height:200px}.writing{font-size:17px;padding:28px 22px}.comment-bubble{max-width:220px}.writing.static-comments{padding-left:28px;padding-right:22px}.writing.static-comments .comment-bubble{position:static;width:auto;max-width:100%;margin:8px 0 10px}.comment-connector-layer,.comment-connector,.writing.static-comments .comment-bubble::before,.writing.static-comments .comment-bubble::after{display:none!important}}@media print{@page{size:portrait;margin:0}html,body{width:768px;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}.page{width:760px;max-width:760px;margin:0 auto;padding:12px 4px}.header{margin-bottom:6px}.header h1{font-size:28px}.meta{font-size:12px}.prompt{font-size:12px;line-height:1.34;padding:7px 9px;margin:6px 0}.score-summary{font-size:10.5px;line-height:1.25;padding:5px 7px;margin:0 0 6px;gap:3px}.score-summary div:last-child{gap:3px 7px}.legend{gap:4px;margin:7px 0 8px}.legend span{font-size:10px;padding:3px 5px}.writing{box-shadow:none}.writing.static-comments{--comment-gutter-inset:10px;padding:24px 136px 28px;font-size:18.75px;line-height:1.52;min-height:760px}.writing.static-comments .comment-bubble{position:absolute;display:block;width:118px;max-width:118px;margin:0;font-size:10.2px;line-height:1.23;padding:5px 6px}.comment-connector-layer,.comment-connector{display:none!important}.side-note{display:none!important}.comment-bubble{box-shadow:none;break-inside:avoid}}
+    *{box-sizing:border-box}body{margin:0;background:#f6f7f9;color:var(--ink);font-family:Arial,Helvetica,sans-serif;line-height:1.65}.page{max-width:1180px;margin:0 auto;padding:28px 18px}.header{margin-bottom:18px}.header h1{margin:0 0 8px;font-size:30px;line-height:1.2}.meta{color:var(--muted);font-size:15px}.prompt{white-space:pre-wrap;background:#fff;border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin:16px 0;font-weight:700;font-size:16px;line-height:1.6}.score-summary{display:grid;grid-template-columns:170px minmax(0,1fr);gap:12px;align-items:stretch;background:#fff;border:1px solid #fecaca;border-left:6px solid #b91c1c;border-radius:14px;padding:12px 14px;margin:0 0 16px;box-shadow:0 8px 24px rgba(15,23,42,.06)}.score-overall{display:grid;align-content:center;justify-items:start;gap:2px;background:#111827;color:#fff;border-radius:12px;padding:12px}.score-overall span{text-transform:uppercase;letter-spacing:.06em;font-size:11px;font-weight:800;color:#fecaca}.score-overall strong{font-size:34px;line-height:1;font-weight:900}.score-overall em{font-style:normal;font-size:12px;color:#e5e7eb}.score-breakdown{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.score-chip{display:flex;align-items:center;justify-content:space-between;gap:8px;background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:13px;font-weight:700;line-height:1.25}.score-chip span{color:#475569}.score-chip strong{display:grid;place-items:center;min-width:34px;height:30px;border-radius:999px;background:#b91c1c;color:#fff;font-size:16px}.content{display:grid;grid-template-columns:minmax(0,1fr);gap:26px;align-items:start}.content.with-image.image-left{grid-template-columns:minmax(260px,40%) minmax(0,1fr)}.writing-stack{display:grid;gap:18px;min-width:0}.writing-stack .legend{margin:0}.task-image{display:flex;justify-content:center;align-items:flex-start}.task-image img{width:auto;max-width:min(100%,780px);max-height:430px;display:block;object-fit:contain;border:1px solid var(--line);border-radius:10px}.content.with-image.image-left .task-image img{max-width:100%;max-height:560px}.content.with-image.image-top .task-image img{max-width:min(100%,780px);max-height:430px}.writing{position:relative;isolation:isolate;background:#fff;border:1px solid var(--line);border-radius:10px;padding:36px 34px;font-size:18px;line-height:1.72;overflow-wrap:anywhere;min-height:380px;overflow:hidden}.writing.static-comments{--comment-gutter-inset:10px;padding-left:154px;padding-right:154px;overflow:visible}.writing p{margin:0 0 16px}.writing p:last-child{margin-bottom:0}.watermark-layer{position:absolute;inset:0;z-index:0;display:flex;align-items:center;justify-content:center;pointer-events:none}.watermark-layer img{display:block;width:240px;height:240px;object-fit:contain;opacity:.1}.writing-content{position:relative;z-index:1}.suggest-add{color:#16a34a}.suggest-delete{color:#dc2626;text-decoration:line-through;text-decoration-thickness:2px;background:#fef2f2}.feedback-node{border:1px solid currentColor;border-bottom-width:2px;border-radius:5px;padding:1px 3px;cursor:pointer;-webkit-box-decoration-break:clone;box-decoration-break:clone}.comment-marker{display:inline-block;margin-left:2px;color:currentColor;font-size:.64em;font-weight:800;line-height:1;vertical-align:super}.comment-row{position:relative}.comment-bubble{display:inline-block;max-width:250px;margin:0 8px 6px;padding:7px 9px;border:1px solid currentColor;border-radius:8px;font-size:12.5px;line-height:1.35;vertical-align:middle;box-shadow:0 4px 12px rgba(15,23,42,.08)}.writing.static-comments .comment-bubble{position:absolute;display:block;width:126px;max-width:126px;margin:0;z-index:3}.writing.static-comments .comment-bubble::before,.writing.static-comments .comment-bubble::after{display:none}.comment-connector-layer,.comment-connector{display:none!important}.writing.static-comments .comment-left{left:10px}.writing.static-comments .comment-right{right:10px}.writing.static-comments .feedback-node{position:relative}.comment-bubble strong{display:block;margin-bottom:3px}.comment-bubble span{display:block}.fb-grammar{background:var(--grammar-bg);color:#1d4ed8;border-color:var(--grammar-border)}.fb-vocabulary{background:var(--vocabulary-bg);color:#92400e;border-color:var(--vocabulary-border)}.fb-spelling{background:var(--spelling-bg);color:#9a3412;border-color:var(--spelling-border)}.fb-coherence{background:var(--coherence-bg);color:#6d28d9;border-color:var(--coherence-border)}.fb-task{background:var(--task-bg);color:#166534;border-color:var(--task-border)}.fb-style{background:var(--style-bg);color:#be185d;border-color:var(--style-border)}.fb-punctuation{background:var(--grammar-bg);color:#1d4ed8;border-color:var(--grammar-border)}.fb-idea{background:var(--idea-bg);color:#3f6212;border-color:var(--idea-border)}.legend{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0 18px}.legend span{border:1px solid currentColor;border-radius:7px;padding:5px 9px;font-size:13px;font-weight:700}.side-note{position:fixed;z-index:10;width:min(360px,calc(100vw - 24px));max-height:min(420px,calc(100vh - 24px));overflow:auto;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 16px 40px rgba(17,24,39,.18);padding:14px;display:none}.side-note.open{display:block}.side-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}.side-head strong{margin-right:auto}.side-note button{border:1px solid var(--line);background:#fff;border-radius:6px;width:32px;height:32px;cursor:pointer}@media(max-width:900px){.content.with-image.image-left{grid-template-columns:1fr}.score-summary{grid-template-columns:1fr}.watermark-layer img{width:200px;height:200px}.writing{font-size:17px;padding:28px 22px}.comment-bubble{max-width:220px}.writing.static-comments{padding-left:28px;padding-right:22px}.writing.static-comments .comment-bubble{position:static;width:auto;max-width:100%;margin:8px 0 10px}.comment-connector-layer,.comment-connector,.writing.static-comments .comment-bubble::before,.writing.static-comments .comment-bubble::after{display:none!important}}@media print{@page{size:portrait;margin:0}html,body{width:768px;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}.page{width:760px;max-width:760px;margin:0 auto;padding:12px 4px}.header{margin-bottom:6px}.header h1{font-size:28px}.meta{font-size:12px}.prompt{font-size:12px;line-height:1.34;padding:7px 9px;margin:6px 0}.score-summary{grid-template-columns:104px minmax(0,1fr);gap:6px;padding:6px 7px;margin:0 0 6px;border-left-width:4px;border-radius:9px;box-shadow:none}.score-overall{border-radius:8px;padding:6px}.score-overall span{font-size:7.5px}.score-overall strong{font-size:22px}.score-overall em{font-size:8px}.score-breakdown{gap:4px}.score-chip{font-size:8.4px;gap:4px;padding:4px 5px;border-radius:7px}.score-chip strong{min-width:22px;height:20px;font-size:11px}.legend{gap:4px;margin:0}.legend span{font-size:10px;padding:3px 5px}.writing-stack{gap:8px}.content.with-image.image-top .task-image img{max-width:72%;max-height:220px}.content.with-image.image-left .task-image img{max-width:100%;max-height:300px}.writing{box-shadow:none}.writing.static-comments{--comment-gutter-inset:8px;padding:24px 146px 28px;font-size:18.45px;line-height:1.52;min-height:760px}.writing.static-comments .comment-bubble{position:absolute;display:block;width:132px;max-width:132px;margin:0;font-size:9.15px;line-height:1.13;padding:4px 5px;overflow-wrap:anywhere}.writing.static-comments .comment-bubble strong{margin-bottom:2px}.comment-connector-layer,.comment-connector{display:none!important}.side-note{display:none!important}.comment-bubble{box-shadow:none;break-inside:avoid}}
+    .writing.static-comments{padding:36px 34px;overflow:hidden;min-height:380px}.writing.static-comments .comment-bubble{display:none!important}.writing.static-comments .comment-marker{display:inline-grid;place-items:center;min-width:1.55em;height:1.55em;margin-left:4px;border-radius:999px;background:#111827;color:#fff!important;font-size:.68em;font-weight:900;line-height:1;vertical-align:super;box-shadow:0 0 0 2px #fff,0 1px 4px rgba(15,23,42,.25)}.comment-summary{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px;box-shadow:0 8px 24px rgba(15,23,42,.06);break-inside:auto}.comment-summary-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.comment-summary-head h2{margin:0;font-size:20px;line-height:1.2}.comment-summary-head span{color:var(--muted);font-size:13px;font-weight:800}.comment-summary-list{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.comment-card{border:1px solid currentColor;border-left-width:5px;border-radius:10px;padding:10px 12px;break-inside:avoid;page-break-inside:avoid}.comment-card strong{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:13px;line-height:1.25}.comment-card strong span{display:grid;place-items:center;min-width:26px;height:26px;border-radius:999px;background:#111827;color:#fff!important;border:2px solid #fff;box-shadow:0 1px 4px rgba(15,23,42,.22);font-size:12px;font-weight:900}.comment-card p{margin:0;color:#1f2937;font-size:13px;line-height:1.45}@media(max-width:900px){.comment-summary-list{grid-template-columns:1fr}}@media print{.writing.static-comments{padding:24px 34px 28px;font-size:18.45px;line-height:1.52;min-height:0}.writing.static-comments .comment-marker{min-width:1.6em;height:1.6em;margin-left:3px;font-size:.7em;box-shadow:0 0 0 1px #fff}.comment-summary{padding:10px 12px;border-radius:9px;box-shadow:none}.comment-summary-head{margin-bottom:8px}.comment-summary-head h2{font-size:15px}.comment-summary-head span{font-size:10px}.comment-summary-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.comment-card{border-left-width:4px;border-radius:7px;padding:6px 7px}.comment-card strong{font-size:10px;gap:5px;margin-bottom:3px}.comment-card strong span{min-width:20px;height:20px;font-size:10px;border-width:1px}.comment-card p{font-size:9.5px;line-height:1.25}}
   </style>`;
       }
 
@@ -2133,8 +2294,10 @@
         const staticComments = format !== "html";
         const writingClass = ["writing", session.includeWatermark ? "watermarked" : "", staticComments ? "static-comments" : ""].filter(Boolean).join(" ");
         const watermarkHtml = session.includeWatermark ? `<div class="watermark-layer" aria-hidden="true"><img src="${watermarkLogo}" alt=""></div>` : "";
-        const writingHtml = staticComments ? buildStaticFeedbackHtml(session.editorHtml) : session.editorHtml;
-        const connectorScript = staticComments ? staticConnectorScript() : "";
+        const staticFeedback = staticComments ? buildStaticFeedback(session.editorHtml) : null;
+        const writingHtml = staticFeedback ? staticFeedback.writingHtml : session.editorHtml;
+        const commentSummaryHtml = staticFeedback ? staticFeedback.commentsHtml : "";
+        const connectorScript = "";
         const interactiveNote = format === "html" ? `<aside id="sideNote" class="side-note" role="dialog" aria-label="Feedback note">
     <div class="side-head"><strong id="sideTitle"></strong><button type="button" id="closeNote" aria-label="Close">x</button></div>
     <div id="sideText"></div>
@@ -2158,10 +2321,13 @@
     </section>
     ${session.taskPrompt ? `<section class="prompt">${escapeHtml(session.taskPrompt)}</section>` : ""}
     ${buildScoreSummaryHtml(session.scores || {})}
-    <div class="legend">${feedbackTypes.map(([id, label]) => `<span class="fb-${id}">${escapeHtml(label)}</span>`).join("")}</div>
     <section class="${layoutClass}">
       ${hasImage ? `<div class="task-image"><img src="${escapeAttr(session.taskImage)}" alt="Writing task visual prompt"></div>` : ""}
-      <article class="${writingClass}">${watermarkHtml}<div class="writing-content">${writingHtml}</div></article>
+      <div class="writing-stack">
+        <div class="legend">${feedbackTypes.map(([id, label]) => `<span class="fb-${id}">${escapeHtml(label)}</span>`).join("")}</div>
+        <article class="${writingClass}">${watermarkHtml}<div class="writing-content">${writingHtml}</div></article>
+        ${commentSummaryHtml}
+      </div>
     </section>
   </main>
   ${connectorScript}
