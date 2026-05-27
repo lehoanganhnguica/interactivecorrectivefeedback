@@ -1394,10 +1394,12 @@
       let compositionText = "";
       let compositionHistory = [];
       let compositionFallbackTimer = 0;
+      let compositionStartedAt = 0;
       let commentEditUndoIds = new Set();
       let editingFeedbackId = "";
       let typingUndoOpen = false;
       let typingUndoTimer = 0;
+      let teacherCommentRenderTimer = 0;
       let feedbackClickTimer = 0;
       let suppressSelectionPopover = false;
       let pendingFeedbackHighlightRange = null;
@@ -1410,6 +1412,7 @@
 
       function setMode(nextMode) {
         closeTypingUndoGroup();
+        resetCompositionState({ removeMarker: true });
         mode = nextMode;
         editingMode.classList.toggle("active", mode === "editing");
         suggestingMode.classList.toggle("active", mode === "suggesting");
@@ -1429,7 +1432,17 @@
       }
 
       function capHistoryStack(stack) {
-        if (stack.length > 500) stack.shift();
+        const maxItems = 180;
+        const maxChars = 24 * 1024 * 1024;
+        while (stack.length > maxItems) stack.shift();
+        let totalChars = 0;
+        for (let index = stack.length - 1; index >= 0; index -= 1) {
+          totalChars += stack[index].length;
+          if (totalChars > maxChars && index > 0) {
+            stack.splice(0, index);
+            break;
+          }
+        }
       }
 
       function storeUndoSnapshot({ clearRedo = true } = {}) {
@@ -1728,6 +1741,7 @@
       }
 
       function renderTeacherComments(activeId = "") {
+        window.clearTimeout(teacherCommentRenderTimer);
         const groups = getFeedbackGroups();
         commentCount.textContent = `${groups.length} ${groups.length === 1 ? "comment" : "comments"}`;
         if (!groups.length) {
@@ -1748,6 +1762,13 @@
             ${renderCommentImages(group.images, { controls: true })}
           </section>`;
         }).join("");
+      }
+
+      function scheduleTeacherCommentsRender(activeId = "") {
+        window.clearTimeout(teacherCommentRenderTimer);
+        teacherCommentRenderTimer = window.setTimeout(() => {
+          renderTeacherComments(activeId);
+        }, 90);
       }
 
       function findFeedbackGroup(id) {
@@ -1913,6 +1934,23 @@
         sel.addRange(range);
       }
 
+      function placeCaretInsideEnd(node) {
+        const text = node.firstChild?.nodeType === Node.TEXT_NODE
+          ? node.firstChild
+          : node.appendChild(document.createTextNode(""));
+        const range = document.createRange();
+        range.setStart(text, text.nodeValue.length);
+        range.collapse(true);
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
+
+      function selectionInsideNode(node) {
+        const sel = window.getSelection();
+        return Boolean(sel?.rangeCount && node?.contains(sel.anchorNode));
+      }
+
       function closestChange(node, type) {
         if (!node) return null;
         const element = node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement;
@@ -2018,6 +2056,27 @@
         span.contentEditable = type === "addition" ? "true" : "false";
         span.textContent = text;
         return span;
+      }
+
+      function createTypingAnchor() {
+        const anchor = createChangeSpan("addition", "");
+        anchor.dataset.typingAnchor = "true";
+        anchor.appendChild(document.createTextNode(""));
+        return anchor;
+      }
+
+      function isBlockLikeNode(node) {
+        return node?.nodeType === Node.ELEMENT_NODE && node.matches?.("p, div, li, section, article, blockquote, h1, h2, h3, h4, h5, h6");
+      }
+
+      function placeTypingAnchorAfter(node) {
+        if (!node?.parentNode) return null;
+        const anchor = createTypingAnchor();
+        if (isBlockLikeNode(node)) node.appendChild(anchor);
+        else node.after(anchor);
+        editor.focus();
+        placeCaretInsideEnd(anchor);
+        return anchor;
       }
 
       function syncChangeEditableState(element) {
@@ -2165,6 +2224,9 @@
         if (compositionMarker && !editor.contains(compositionMarker)) {
           resetCompositionState();
         }
+        if (compositionMarker && compositionStartedAt && Date.now() - compositionStartedAt > 6000) {
+          wrapCompositionText(compositionMarker.textContent || compositionText || "");
+        }
       }
 
       function resetCompositionState(options = {}) {
@@ -2173,13 +2235,14 @@
         compositionMarker = null;
         compositionText = "";
         compositionHistory = [];
+        compositionStartedAt = 0;
       }
 
       function scheduleCompositionFallback() {
         window.clearTimeout(compositionFallbackTimer);
         compositionFallbackTimer = window.setTimeout(() => {
           if (!compositionMarker) return;
-          const finalText = compositionText || compositionHistory[compositionHistory.length - 1] || "";
+          const finalText = compositionMarker.textContent || compositionText || compositionHistory[compositionHistory.length - 1] || "";
           wrapCompositionText(finalText);
         }, 2200);
       }
@@ -2208,8 +2271,8 @@
         if (!feedbackContext) {
           const preserved = deleteRangePreservingFeedback(range);
           if (preserved) {
-            if (preserved.lastInserted) placeCaretAfter(preserved.lastInserted);
             normalizeSuggestions();
+            if (preserved.lastInserted) placeTypingAnchorAfter(preserved.lastInserted);
             renderTeacherComments(preserved.activeId);
             updateWordCount();
             return true;
@@ -2219,8 +2282,8 @@
         range.deleteContents();
         range.insertNode(deletion);
         const inserted = keepFeedbackOnInsertedChange(deletion, feedbackContext);
-        placeCaretAfter(inserted);
         normalizeSuggestions();
+        placeTypingAnchorAfter(inserted);
         renderTeacherComments(feedbackContext?.id || "");
         updateWordCount();
         return true;
@@ -2319,14 +2382,10 @@
       }
 
       function createCompositionMarker() {
-        const marker = document.createElement("span");
+        const marker = createChangeSpan("addition", "");
+        marker.classList.add("composition-add");
         marker.dataset.compositionMarker = "true";
-        marker.contentEditable = "false";
-        marker.setAttribute("aria-hidden", "true");
-        marker.style.display = "inline-block";
-        marker.style.width = "0";
-        marker.style.overflow = "hidden";
-        marker.style.lineHeight = "0";
+        marker.appendChild(document.createTextNode(""));
         return marker;
       }
 
@@ -2346,9 +2405,10 @@
         const marker = createCompositionMarker();
         activeRange.insertNode(marker);
         compositionMarker = marker;
+        compositionStartedAt = Date.now();
         compositionText = "";
         compositionHistory = [];
-        placeCaretAfter(marker);
+        placeCaretInsideEnd(marker);
         hideFeedbackPopover();
         scheduleCompositionFallback();
       }
@@ -2387,39 +2447,28 @@
       }
 
       function wrapCompositionText(text) {
-        ensureCompositionState();
         window.clearTimeout(compositionFallbackTimer);
         const marker = compositionMarker;
         compositionMarker = null;
         compositionText = "";
         compositionHistory = [];
+        compositionStartedAt = 0;
         if (!marker?.parentNode) return;
-        const finalText = text || "";
+        let finalText = (marker.textContent || "").replace(/\u200b/g, "") || text || "";
         if (!finalText) {
           marker.remove();
           return;
         }
-        const addition = createChangeSpan("addition", finalText);
         const next = marker.nextSibling;
-        if (consumeCompositionTextAfter(next, finalText)) {
-          marker.replaceWith(addition);
-          normalizeSuggestions();
-          placeCaretAfter(addition);
-          updateWordCount();
-          return;
-        }
+        if (!marker.textContent) consumeCompositionTextAfter(next, finalText);
         const prev = marker.previousSibling;
-        if (consumeCompositionTextBefore(prev, finalText)) {
-          marker.before(addition);
-          marker.remove();
-          normalizeSuggestions();
-          placeCaretAfter(addition);
-          updateWordCount();
-          return;
-        }
-        marker.replaceWith(addition);
+        if (!marker.textContent) consumeCompositionTextBefore(prev, finalText);
+        marker.textContent = finalText;
+        marker.classList.remove("composition-add");
+        delete marker.dataset.compositionMarker;
+        syncChangeEditableState(marker);
+        placeCaretAfter(marker);
         normalizeSuggestions();
-        placeCaretAfter(addition);
         updateWordCount();
       }
 
@@ -2430,7 +2479,7 @@
           compositionText = event.data;
           compositionHistory.push(event.data);
         }
-        const finalText = compositionText || compositionHistory[compositionHistory.length - 1] || "";
+        const finalText = compositionMarker.textContent || compositionText || compositionHistory[compositionHistory.length - 1] || "";
         window.clearTimeout(compositionFallbackTimer);
         window.setTimeout(() => {
           wrapCompositionText(finalText);
@@ -2451,8 +2500,8 @@
       }
 
       function handleSuggestionBeforeInput(event) {
+        const inputType = event.inputType || "";
         if (mode !== "suggesting") {
-          const inputType = event.inputType || "";
           if (
             inputType.startsWith("insert") ||
             inputType.startsWith("delete") ||
@@ -2464,16 +2513,14 @@
           }
           return;
         }
+
         ensureCompositionState();
+        if (compositionMarker && !event.isComposing && inputType !== "insertCompositionText") {
+          const finalText = compositionMarker.textContent || compositionText || compositionHistory[compositionHistory.length - 1] || "";
+          wrapCompositionText(finalText);
+        }
         const range = getSelectionRange();
         if (!range) return;
-        const inputType = event.inputType || "";
-        if (compositionMarker && !event.isComposing && inputType !== "insertCompositionText") {
-          const finalText = compositionText || compositionHistory[compositionHistory.length - 1] || event.data || "";
-          event.preventDefault();
-          wrapCompositionText(finalText);
-          return;
-        }
         if (rangeTouchesAdditionOnly(range)) {
           if (
             inputType.startsWith("delete") ||
@@ -2519,7 +2566,7 @@
 
       function handleSuggestionKeydown(event) {
         ensureCompositionState();
-        const range = getSelectionRange();
+        let range = getSelectionRange();
         const isUndo = (event.metaKey || event.ctrlKey) && !event.shiftKey && event.key.toLowerCase() === "z";
         const isRedo = (event.metaKey || event.ctrlKey) && (
           (event.shiftKey && event.key.toLowerCase() === "z") ||
@@ -2536,7 +2583,12 @@
           return;
         }
         if (mode !== "suggesting") return;
-        if (compositionMarker) return;
+        if (compositionMarker) {
+          if (isImeKey(event)) return;
+          const finalText = compositionMarker.textContent || compositionText || compositionHistory[compositionHistory.length - 1] || "";
+          wrapCompositionText(finalText);
+          range = getSelectionRange();
+        }
         if (isImeKey(event)) return;
         if (!range || event.metaKey || event.ctrlKey || event.altKey) return;
         if (rangeTouchesAdditionOnly(range)) {
@@ -2565,7 +2617,9 @@
       }
 
       function removeEmptyChange(element) {
-        if (element && element.textContent.length === 0) element.remove();
+        if (!element || element.textContent.length !== 0) return;
+        if (element.dataset.typingAnchor && selectionInsideNode(element)) return;
+        element.remove();
       }
 
       function removeEmptyFeedbackNode(element) {
@@ -2573,6 +2627,9 @@
       }
 
       function normalizeSuggestions() {
+        editor.querySelectorAll("[data-typing-anchor]").forEach(anchor => {
+          if (anchor.textContent.length > 0) delete anchor.dataset.typingAnchor;
+        });
         mergeAdjacent("[data-change='addition']");
         mergeAdjacent("[data-change='deletion']");
         editor.querySelectorAll("[data-change]").forEach(syncChangeEditableState);
@@ -3265,6 +3322,10 @@
         const template = document.createElement("template");
         template.innerHTML = String(html);
         template.content.querySelectorAll("script, style, iframe, object, embed, link, meta").forEach(node => node.remove());
+        template.content.querySelectorAll("[data-typing-anchor]").forEach(anchor => {
+          anchor.removeAttribute("data-typing-anchor");
+          if (!anchor.textContent) anchor.remove();
+        });
         template.content.querySelectorAll("*").forEach(node => {
           for (const attr of Array.from(node.attributes)) {
             const name = attr.name.toLowerCase();
@@ -3419,8 +3480,11 @@
       editor.addEventListener("compositionupdate", updateCompositionSuggestion);
       editor.addEventListener("compositionend", finishCompositionSuggestion);
       editor.addEventListener("input", () => {
+        editor.querySelectorAll("[data-typing-anchor]").forEach(anchor => {
+          if (anchor.textContent.length > 0) delete anchor.dataset.typingAnchor;
+        });
         updateWordCount();
-        if (!compositionMarker) renderTeacherComments();
+        if (!compositionMarker) scheduleTeacherCommentsRender();
       });
       document.addEventListener("selectionchange", () => {
         if (document.activeElement === editor) maybeShowFeedbackPopover();
@@ -3440,7 +3504,13 @@
           return;
         }
         if (mode === "suggesting") {
+          ensureCompositionState();
+          if (compositionMarker) {
+            const finalText = compositionMarker.textContent || compositionText || compositionHistory[compositionHistory.length - 1] || "";
+            wrapCompositionText(finalText);
+          }
           const range = getSelectionRange();
+          if (!range) return;
           if (rangeTouchesAdditionOnly(range)) {
             pushTypingUndoSnapshot();
             return;
