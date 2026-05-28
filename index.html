@@ -2038,6 +2038,10 @@
         return wrapper;
       }
 
+      function normalizeDeletionText(value) {
+        return String(value || "").replace(/[\t\n\f\r ]+/g, " ");
+      }
+
       function feedbackNodesIntersectingRange(range) {
         if (!range) return [];
         ensureFeedbackIds();
@@ -2094,7 +2098,7 @@
         span.dataset.change = type;
         span.className = type === "addition" ? "suggest-add" : "suggest-delete";
         span.contentEditable = type === "addition" ? "true" : "false";
-        span.textContent = text;
+        span.textContent = type === "deletion" ? normalizeDeletionText(text) : text;
         return span;
       }
 
@@ -2258,6 +2262,29 @@
 
       function rangeTouchesAdditionOnly(range) {
         return rangeInsideAddition(range) || selectionOnlyContainsAddition(range);
+      }
+
+      function collapsedDeletionStaysInsideAddition(range, direction) {
+        if (!range?.collapsed) return false;
+        const addition = closestChange(range.startContainer, "addition");
+        if (!addition) return false;
+        const probe = document.createRange();
+        probe.selectNodeContents(addition);
+        try {
+          if (direction === "forward") {
+            probe.setStart(range.startContainer, range.startOffset);
+          } else {
+            probe.setEnd(range.startContainer, range.startOffset);
+          }
+        } catch (error) {
+          return false;
+        }
+        return probe.toString().length > 0;
+      }
+
+      function nativeAdditionDeletionAllowed(range, direction) {
+        if (!rangeTouchesAdditionOnly(range)) return false;
+        return !range.collapsed || collapsedDeletionStaysInsideAddition(range, direction);
       }
 
       function ensureCompositionState() {
@@ -2560,16 +2587,17 @@
           wrapCompositionText(finalText);
         }
         const range = getSelectionRange();
-        if (!range) return;
+        if (!range) {
+          if (inputType.startsWith("insert") || inputType.startsWith("delete")) event.preventDefault();
+          return;
+        }
+        const deleteDirection = inputType.toLowerCase().includes("forward") ? "forward" : "backward";
         if (rangeTouchesAdditionOnly(range)) {
-          if (
-            inputType.startsWith("delete") ||
-            inputType === "historyUndo" ||
-            inputType === "historyRedo"
-          ) {
+          if (inputType.startsWith("delete") && nativeAdditionDeletionAllowed(range, deleteDirection)) {
             pushUndoSnapshot();
             return;
           }
+          if (inputType === "historyUndo" || inputType === "historyRedo") return;
           if (inputType.startsWith("insert")) {
             pushTypingUndoSnapshot();
             return;
@@ -2593,14 +2621,9 @@
           insertSuggestion("\n", { typing: true });
           return;
         }
-        if (inputType === "deleteContentBackward") {
+        if (inputType.startsWith("delete")) {
           event.preventDefault();
-          deleteSuggestion("backward");
-          return;
-        }
-        if (inputType === "deleteContentForward") {
-          event.preventDefault();
-          deleteSuggestion("forward");
+          deleteSuggestion(deleteDirection);
         }
       }
 
@@ -2630,14 +2653,24 @@
           range = getSelectionRange();
         }
         if (isImeKey(event)) return;
-        if (!range || event.metaKey || event.ctrlKey || event.altKey) return;
-        if (rangeTouchesAdditionOnly(range)) {
-          if (event.key === "Backspace" || event.key === "Delete") {
-            pushUndoSnapshot();
-          } else if (event.key === "Enter" || event.key.length === 1) {
-            pushTypingUndoSnapshot();
+        if (!range) {
+          if (event.key === "Backspace" || event.key === "Delete" || event.key === "Enter" || event.key.length === 1) {
+            event.preventDefault();
           }
           return;
+        }
+        if (event.metaKey || event.ctrlKey || event.altKey) return;
+        if (rangeTouchesAdditionOnly(range)) {
+          if (event.key === "Backspace" || event.key === "Delete") {
+            const direction = event.key === "Delete" ? "forward" : "backward";
+            if (nativeAdditionDeletionAllowed(range, direction)) {
+              pushUndoSnapshot();
+              return;
+            }
+          } else if (event.key === "Enter" || event.key.length === 1) {
+            pushTypingUndoSnapshot();
+            return;
+          }
         }
         if (event.key === "Backspace") {
           event.preventDefault();
@@ -2669,6 +2702,10 @@
       function normalizeSuggestions() {
         editor.querySelectorAll("[data-typing-anchor]").forEach(anchor => {
           if (anchor.textContent.length > 0) delete anchor.dataset.typingAnchor;
+        });
+        editor.querySelectorAll("[data-change='deletion']").forEach(node => {
+          const normalized = normalizeDeletionText(node.textContent);
+          if (node.textContent !== normalized) node.textContent = normalized;
         });
         mergeAdjacent("[data-change='addition']");
         mergeAdjacent("[data-change='deletion']");
@@ -2884,7 +2921,8 @@
         wrapInlineFeedbackRuns(selectedContents, type, id, note, feedbackNoteImages);
         const lastInserted = selectedContents.lastChild;
         savedRange.insertNode(selectedContents);
-        if (lastInserted) placeCaretAfter(lastInserted);
+        normalizeSuggestions();
+        if (lastInserted?.isConnected) placeCaretAfter(lastInserted);
         savedRange = null;
         feedbackNote.value = "";
         setFeedbackPopoverImages([]);
@@ -2955,6 +2993,7 @@
         taskImage = session.taskImage || "";
         layoutSelect.value = session.layout || "image-left";
         editor.innerHTML = sanitizeEditorHtml(session.editorHtml || "");
+        normalizeSuggestions();
         undoStack = [];
         redoStack = [];
         updateUndoButton();
