@@ -421,6 +421,13 @@
       margin-bottom: 4px;
     }
 
+    .field-note {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
     .checkbox-field {
       display: flex;
       align-items: center;
@@ -1192,6 +1199,7 @@
           <div class="field">
             <label for="docTitle">Title</label>
             <input id="docTitle" value="Writing Feedback">
+            <p class="field-note">This title will also be used as the PDF file name when exported.</p>
           </div>
           <div class="field">
             <label for="studentName">Student name</label>
@@ -1434,6 +1442,8 @@
       let compositionHistory = [];
       let compositionFallbackTimer = 0;
       let compositionStartedAt = 0;
+      let lastImeCommitText = "";
+      let lastImeCommitAt = 0;
       let commentEditUndoIds = new Set();
       let editingFeedbackId = "";
       let typingUndoOpen = false;
@@ -1957,6 +1967,7 @@
       }
 
       function placeCaretAfter(node) {
+        if (!node?.parentNode) return;
         const range = document.createRange();
         range.setStartAfter(node);
         range.collapse(true);
@@ -1966,6 +1977,7 @@
       }
 
       function placeCaretBefore(node) {
+        if (!node?.parentNode) return;
         const range = document.createRange();
         range.setStartBefore(node);
         range.collapse(true);
@@ -2324,7 +2336,8 @@
         return plain.length > 0 && plain === additionsText;
       }
 
-      function deleteSelectionAsSuggestion(recordUndo = true) {
+      function deleteSelectionAsSuggestion(recordUndo = true, options = {}) {
+        const placeAnchor = options.placeAnchor !== false;
         const range = getSelectionRange();
         if (!range || range.collapsed) return false;
         if (recordUndo) pushUndoSnapshot();
@@ -2339,7 +2352,10 @@
           const preserved = deleteRangePreservingFeedback(range);
           if (preserved) {
             normalizeSuggestions();
-            if (preserved.lastInserted) placeTypingAnchorAfter(preserved.lastInserted);
+            if (preserved.lastInserted) {
+              if (placeAnchor) placeTypingAnchorAfter(preserved.lastInserted);
+              else placeCaretAfter(preserved.lastInserted);
+            }
             renderTeacherComments(preserved.activeId);
             updateWordCount();
             return true;
@@ -2350,7 +2366,8 @@
         range.insertNode(deletion);
         const inserted = keepFeedbackOnInsertedChange(deletion, feedbackContext);
         normalizeSuggestions();
-        placeTypingAnchorAfter(inserted);
+        if (placeAnchor) placeTypingAnchorAfter(inserted);
+        else placeCaretAfter(inserted);
         renderTeacherComments(feedbackContext?.id || "");
         updateWordCount();
         return true;
@@ -2429,19 +2446,19 @@
           const existing = additionBeforeCaret();
           if (existing) {
             existing.textContent += text;
-            placeCaretAfter(existing);
+            placeCaretInsideEnd(existing);
             normalizeSuggestions();
             updateWordCount();
             return true;
           }
         } else {
-          deleteSelectionAsSuggestion(false);
+          deleteSelectionAsSuggestion(false, { placeAnchor: false });
         }
         const activeRange = getSelectionRange();
         if (!activeRange) return false;
         const addition = createChangeSpan("addition", text);
         activeRange.insertNode(addition);
-        placeCaretAfter(addition);
+        placeCaretInsideEnd(addition);
         normalizeSuggestions();
         hideFeedbackPopover();
         updateWordCount();
@@ -2456,19 +2473,20 @@
         return marker;
       }
 
-      function startCompositionSuggestion() {
+      function beginCompositionMarkerAtSelection() {
         ensureCompositionState();
-        if (mode !== "suggesting" || compositionMarker) return;
+        if (mode !== "suggesting") return null;
+        if (compositionMarker) return compositionMarker;
         const range = getSelectionRange();
-        if (!range) return;
+        if (!range) return null;
         if (rangeTouchesAdditionOnly(range)) {
           pushTypingUndoSnapshot();
-          return;
+          return null;
         }
         pushTypingUndoSnapshot();
-        if (!range.collapsed) deleteSelectionAsSuggestion(false);
+        if (!range.collapsed) deleteSelectionAsSuggestion(false, { placeAnchor: false });
         const activeRange = getSelectionRange();
-        if (!activeRange) return;
+        if (!activeRange) return null;
         const marker = createCompositionMarker();
         activeRange.insertNode(marker);
         compositionMarker = marker;
@@ -2478,6 +2496,11 @@
         placeCaretInsideEnd(marker);
         hideFeedbackPopover();
         scheduleCompositionFallback();
+        return marker;
+      }
+
+      function startCompositionSuggestion() {
+        beginCompositionMarkerAtSelection();
       }
 
       function updateCompositionSuggestion(event) {
@@ -2486,6 +2509,8 @@
         if (event?.data) {
           compositionText = event.data;
           compositionHistory.push(event.data);
+          compositionMarker.textContent = event.data;
+          placeCaretInsideEnd(compositionMarker);
         }
         scheduleCompositionFallback();
       }
@@ -2526,6 +2551,8 @@
           marker.remove();
           return;
         }
+        lastImeCommitText = finalText;
+        lastImeCommitAt = Date.now();
         const next = marker.nextSibling;
         if (!marker.textContent) consumeCompositionTextAfter(next, finalText);
         const prev = marker.previousSibling;
@@ -2534,7 +2561,7 @@
         marker.classList.remove("composition-add");
         delete marker.dataset.compositionMarker;
         syncChangeEditableState(marker);
-        placeCaretAfter(marker);
+        placeCaretInsideEnd(marker);
         normalizeSuggestions();
         updateWordCount();
       }
@@ -2545,6 +2572,7 @@
         if (event?.data) {
           compositionText = event.data;
           compositionHistory.push(event.data);
+          compositionMarker.textContent = event.data;
         }
         const finalText = compositionMarker.textContent || compositionText || compositionHistory[compositionHistory.length - 1] || "";
         window.clearTimeout(compositionFallbackTimer);
@@ -2556,7 +2584,7 @@
       function deleteSuggestion(direction) {
         const range = getSelectionRange();
         if (!range) return false;
-        if (!range.collapsed) return deleteSelectionAsSuggestion();
+        if (!range.collapsed) return deleteSelectionAsSuggestion(true, { placeAnchor: false });
         const targetRange = characterRange(direction);
         if (targetRange) pushUndoSnapshot();
         return deleteRangeAsSuggestion(targetRange, direction) || true;
@@ -2584,6 +2612,11 @@
         ensureCompositionState();
         if (compositionMarker && !event.isComposing && inputType !== "insertCompositionText") {
           const finalText = compositionMarker.textContent || compositionText || compositionHistory[compositionHistory.length - 1] || "";
+          if (inputType.startsWith("insert")) {
+            event.preventDefault();
+            wrapCompositionText(finalText || event.data || "");
+            return;
+          }
           wrapCompositionText(finalText);
         }
         const range = getSelectionRange();
@@ -2592,6 +2625,18 @@
           return;
         }
         const deleteDirection = inputType.toLowerCase().includes("forward") ? "forward" : "backward";
+        if (
+          inputType === "insertText" &&
+          event.data &&
+          event.data === lastImeCommitText &&
+          Date.now() - lastImeCommitAt < 700
+        ) {
+          const nearbyAddition = closestChange(range.startContainer, "addition") || additionBeforeCaret();
+          if (nearbyAddition?.textContent?.endsWith(event.data)) {
+            event.preventDefault();
+            return;
+          }
+        }
         if (rangeTouchesAdditionOnly(range)) {
           if (inputType.startsWith("delete") && nativeAdditionDeletionAllowed(range, deleteDirection)) {
             pushUndoSnapshot();
@@ -2604,9 +2649,18 @@
           }
         }
         if (event.isComposing || inputType === "insertCompositionText") {
-          if (event.data) {
-            compositionText = event.data;
-            compositionHistory.push(event.data);
+          const marker = compositionMarker || beginCompositionMarkerAtSelection();
+          if (marker) {
+            event.preventDefault();
+            if (event.data) {
+              compositionText = event.data;
+              compositionHistory.push(event.data);
+              marker.textContent = event.data;
+              placeCaretInsideEnd(marker);
+            }
+            scheduleCompositionFallback();
+            updateWordCount();
+            return;
           }
           return;
         }
@@ -2702,6 +2756,14 @@
       function normalizeSuggestions() {
         editor.querySelectorAll("[data-typing-anchor]").forEach(anchor => {
           if (anchor.textContent.length > 0) delete anchor.dataset.typingAnchor;
+        });
+        editor.querySelectorAll("[data-change]").forEach(outer => {
+          const type = outer.dataset.change;
+          outer.querySelectorAll(`[data-change="${type}"]`).forEach(inner => {
+            const fragment = document.createDocumentFragment();
+            while (inner.firstChild) fragment.appendChild(inner.firstChild);
+            inner.replaceWith(fragment);
+          });
         });
         editor.querySelectorAll("[data-change='deletion']").forEach(node => {
           const normalized = normalizeDeletionText(node.textContent);
@@ -3733,6 +3795,7 @@
       window.addEventListener("resize", hideDeletionContextMenu);
 
       setMode("editing");
+      normalizeSuggestions();
       renderImage();
       renderTeacherWatermark();
       renderTeacherComments();
