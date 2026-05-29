@@ -27,9 +27,15 @@ The **How it works** button beside **Download for offline use** shows these inst
 
 ## Sessions
 
+The app autosaves the current draft in the same browser, so refreshing or reopening the app on the same device should restore the latest work.
+
 Use **Save session** to download an editable JSON file containing the current writing, suggestions, comments, comment images, scores, task image, and settings.
 
 Use **Load session** to restore that JSON file later and continue marking.
+
+Autosave is local to the browser and device. To move work to another browser or computer, use **Save session** and **Load session**.
+
+Account sign-in and cloud session storage are possible, but they require an external backend such as Firebase or Supabase because GitHub Pages only hosts static files.
 
 ## CrushIELTS Logo
 

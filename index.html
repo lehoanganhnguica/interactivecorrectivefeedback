@@ -1381,7 +1381,7 @@
         </article>
         <article class="instruction-step">
           <h3>5. Save or continue later</h3>
-          <p>Use Save session to keep an editable JSON copy. Later, use Load session to restore the writing, comments, scores, task image, and settings.</p>
+          <p>The app autosaves the current draft in this browser. Use Save session to keep an editable JSON backup, and Load session to restore it on another device or browser.</p>
         </article>
         <article class="instruction-step">
           <h3>6. Export for students</h3>
@@ -1442,6 +1442,7 @@
       ];
       const feedbackTypeAliases = { punctuation: "grammar" };
       const feedbackClassIds = [...feedbackTypes.map(([id]) => id), ...Object.keys(feedbackTypeAliases)];
+      const localAutosaveKey = "interactiveCorrectiveFeedback.autosave.v1";
       const scoreCriteria = [
         ["task", "Task response/achievement"],
         ["coherence", "Coherence and cohesion"],
@@ -1473,6 +1474,9 @@
       let pendingFeedbackHighlightRange = null;
       let feedbackNoteImages = [];
       let deletionContextTarget = null;
+      let autosaveTimer = 0;
+      let lastAutosaveJson = "";
+      let restoringAutosave = false;
       const pendingFeedbackHighlightName = "pending-feedback-selection";
 
       feedbackType.innerHTML = feedbackTypes.map(([id, label]) => `<option value="${id}">${escapeHtml(label)}</option>`).join("");
@@ -1488,6 +1492,7 @@
         document.body.classList.toggle("suggesting-active", mode === "suggesting");
         statusText.textContent = mode === "editing" ? "Editing mode" : "Suggesting mode";
         hideFeedbackPopover();
+        scheduleAutosave();
       }
 
       function updateWordCount() {
@@ -3121,6 +3126,7 @@
           promptImage.innerHTML = "";
           promptImage.classList.add("hidden");
           contentLayout.classList.remove("with-image", "image-left", "image-top");
+          scheduleAutosave();
           return;
         }
         const img = `<img src="${escapeAttr(taskImage)}" alt="Writing task visual prompt">`;
@@ -3130,6 +3136,7 @@
         contentLayout.classList.add("with-image");
         contentLayout.classList.toggle("image-left", layoutSelect.value === "image-left");
         contentLayout.classList.toggle("image-top", layoutSelect.value === "image-top");
+        scheduleAutosave();
       }
 
       function renderTeacherWatermark() {
@@ -3158,25 +3165,70 @@
         };
       }
 
-      function loadSession(session) {
-        document.getElementById("docTitle").value = session.title || "Writing Feedback";
-        document.getElementById("studentName").value = session.studentName || "";
-        document.getElementById("taskPrompt").value = session.taskPrompt || "";
-        watermarkToggle.checked = session.includeWatermark === true;
-        applyBandScores(session.scores || {});
-        taskImage = session.taskImage || "";
-        layoutSelect.value = session.layout || "image-left";
-        editor.innerHTML = sanitizeEditorHtml(session.editorHtml || "");
-        normalizeSuggestions();
-        undoStack = [];
-        redoStack = [];
-        updateUndoButton();
-        setMode(session.mode === "suggesting" ? "suggesting" : "editing");
-        renderImage();
-        renderTeacherWatermark();
-        renderTeacherComments();
-        updateWordCount();
-        showMessage("Session loaded");
+      function loadSession(session, options = {}) {
+        restoringAutosave = true;
+        try {
+          document.getElementById("docTitle").value = session.title || "Writing Feedback";
+          document.getElementById("studentName").value = session.studentName || "";
+          document.getElementById("taskPrompt").value = session.taskPrompt || "";
+          watermarkToggle.checked = session.includeWatermark === true;
+          applyBandScores(session.scores || {});
+          taskImage = session.taskImage || "";
+          layoutSelect.value = session.layout || "image-left";
+          editor.innerHTML = sanitizeEditorHtml(session.editorHtml || "");
+          normalizeSuggestions();
+          undoStack = [];
+          redoStack = [];
+          updateUndoButton();
+          setMode(session.mode === "suggesting" ? "suggesting" : "editing");
+          renderImage();
+          renderTeacherWatermark();
+          renderTeacherComments();
+          updateWordCount();
+        } finally {
+          restoringAutosave = false;
+        }
+        if (!options.skipMessage) showMessage(options.message || "Session loaded");
+        scheduleAutosave();
+      }
+
+      function autosaveNow(options = {}) {
+        if (restoringAutosave) return;
+        window.clearTimeout(autosaveTimer);
+        try {
+          const session = getSession();
+          session.autosavedAt = new Date().toISOString();
+          const json = JSON.stringify(session);
+          if (json === lastAutosaveJson) return;
+          localStorage.setItem(localAutosaveKey, json);
+          lastAutosaveJson = json;
+          if (options.message) showMessage(options.message);
+        } catch (error) {
+          console.warn("Autosave failed", error);
+          if (options.message) showMessage("Autosave could not save this draft");
+        }
+      }
+
+      function scheduleAutosave() {
+        if (restoringAutosave) return;
+        window.clearTimeout(autosaveTimer);
+        autosaveTimer = window.setTimeout(() => autosaveNow(), 650);
+      }
+
+      function restoreAutosavedSession() {
+        try {
+          const json = localStorage.getItem(localAutosaveKey);
+          if (!json) return false;
+          const session = JSON.parse(json);
+          if (!session || typeof session !== "object") return false;
+          lastAutosaveJson = json;
+          loadSession(session, { skipMessage: true });
+          window.setTimeout(() => showMessage("Autosaved draft restored"), 80);
+          return true;
+        } catch (error) {
+          console.warn("Autosave restore failed", error);
+          return false;
+        }
       }
 
       function downloadFile(filename, type, content) {
@@ -3903,14 +3955,26 @@
 
       window.addEventListener("scroll", hideDeletionContextMenu, true);
       window.addEventListener("resize", hideDeletionContextMenu);
+      document.addEventListener("input", scheduleAutosave, true);
+      document.addEventListener("change", scheduleAutosave, true);
+      new MutationObserver(scheduleAutosave).observe(editor, {
+        childList: true,
+        subtree: true,
+        characterData: true,
+        attributes: true
+      });
+      window.addEventListener("beforeunload", () => autosaveNow());
 
-      setMode("editing");
-      normalizeSuggestions();
-      renderImage();
-      renderTeacherWatermark();
-      renderTeacherComments();
-      updateWordCount();
-      updateUndoButton();
+      if (!restoreAutosavedSession()) {
+        setMode("editing");
+        normalizeSuggestions();
+        renderImage();
+        renderTeacherWatermark();
+        renderTeacherComments();
+        updateWordCount();
+        updateUndoButton();
+        autosaveNow();
+      }
     })();
   </script>
 </body>
