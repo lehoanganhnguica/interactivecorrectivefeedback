@@ -266,6 +266,11 @@
       min-width: 104px;
     }
 
+    .clear-everything {
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
     .toolbar-group {
       display: flex;
       align-items: center;
@@ -1265,6 +1270,7 @@
               <button type="button" id="editingMode" class="active">Editing</button>
               <button type="button" id="suggestingMode">Suggesting</button>
             </div>
+            <button type="button" id="clearEverythingBtn" class="danger clear-everything">Clear everything</button>
             <section class="editor-help" aria-label="How suggesting works">
               <h2>How suggesting works</h2>
               <ol>
@@ -1404,6 +1410,7 @@
       const wordCount = document.getElementById("wordCount");
       const editingMode = document.getElementById("editingMode");
       const suggestingMode = document.getElementById("suggestingMode");
+      const clearEverythingBtn = document.getElementById("clearEverythingBtn");
       const feedbackPopover = document.getElementById("feedbackPopover");
       const feedbackPopoverTitle = document.getElementById("feedbackPopoverTitle");
       const feedbackType = document.getElementById("feedbackType");
@@ -3192,6 +3199,45 @@
         scheduleAutosave();
       }
 
+      function clearEverythingForNewPaper() {
+        const confirmed = window.confirm("Clear everything and start a new paper? This removes the current writing, suggestions, comments, images, scores, and autosaved draft.");
+        if (!confirmed) return;
+        closeTypingUndoGroup();
+        resetCompositionState({ removeMarker: true });
+        savedRange = null;
+        editingFeedbackId = "";
+        feedbackNoteImages = [];
+        pendingFeedbackHighlightRange = null;
+        feedbackNote.value = "";
+        hideFeedbackPopover();
+        hideDeletionContextMenu();
+        clearPendingFeedbackHighlight();
+        document.getElementById("docTitle").value = "Writing Feedback";
+        document.getElementById("studentName").value = "";
+        document.getElementById("taskPrompt").value = "";
+        watermarkToggle.checked = false;
+        applyBandScores({});
+        taskImage = "";
+        imageInput.value = "";
+        layoutSelect.value = "image-left";
+        editor.innerHTML = "";
+        undoStack = [];
+        redoStack = [];
+        feedbackIdCounter = 1;
+        backupLinks.classList.remove("open");
+        backupLinks.replaceChildren();
+        localStorage.removeItem(localAutosaveKey);
+        lastAutosaveJson = "";
+        setMode("editing");
+        renderImage();
+        renderTeacherWatermark();
+        renderTeacherComments();
+        updateWordCount();
+        updateUndoButton();
+        autosaveNow({ message: "Ready for a new paper" });
+        placeCaretAtEnd();
+      }
+
       function autosaveNow(options = {}) {
         if (restoringAutosave) return;
         window.clearTimeout(autosaveTimer);
@@ -3688,6 +3734,7 @@
 
       editingMode.addEventListener("click", () => setMode("editing"));
       suggestingMode.addEventListener("click", () => setMode("suggesting"));
+      clearEverythingBtn.addEventListener("click", clearEverythingForNewPaper);
       feedbackType.addEventListener("change", renderQuickNotes);
       scoreGrid.addEventListener("change", updateBandScore);
       quickNotes.addEventListener("click", event => {
