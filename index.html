@@ -278,7 +278,7 @@
 
     .readability-control {
       display: grid;
-      grid-template-columns: auto minmax(84px, 112px) auto;
+      grid-template-columns: auto minmax(84px, 112px) auto auto;
       align-items: center;
       gap: 6px;
       color: #334155;
@@ -306,6 +306,22 @@
       min-width: 42px;
       color: var(--muted);
       font-variant-numeric: tabular-nums;
+    }
+
+    .default-size-btn {
+      min-height: 28px;
+      border-radius: 10px;
+      padding: 4px 8px;
+      color: #475569;
+      font-size: 12px;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .default-size-btn.is-default {
+      background: #ecfdf5;
+      border-color: #86efac;
+      color: #166534;
     }
 
     .app-actions {
@@ -1524,7 +1540,7 @@
         grid-template-columns: 1fr;
       }
       .readability-control {
-        grid-template-columns: 54px minmax(0, 1fr) 44px;
+        grid-template-columns: 54px minmax(0, 1fr) 44px auto;
         width: 100%;
         min-width: 0;
         white-space: normal;
@@ -1712,11 +1728,12 @@
                   <option value="contrast">Contrast</option>
                 </select>
               </label>
-              <label class="readability-control">
-                Text
+              <div class="readability-control">
+                <label for="studentTextSize">Text</label>
                 <input type="range" id="studentTextSize" min="14" max="30" step="1" value="18" aria-label="Student text size">
                 <output id="studentTextSizeValue" class="readability-value" for="studentTextSize">18px</output>
-              </label>
+                <button type="button" id="resetTextSizeBtn" class="default-size-btn" aria-label="Reset student text size to default 18px">Default</button>
+              </div>
             </div>
           </div>
           <div class="writing-shell">
@@ -1867,6 +1884,7 @@
       const readabilityTheme = document.getElementById("readabilityTheme");
       const studentTextSize = document.getElementById("studentTextSize");
       const studentTextSizeValue = document.getElementById("studentTextSizeValue");
+      const resetTextSizeBtn = document.getElementById("resetTextSizeBtn");
 
       const feedbackTypes = [
         ["grammar", "Grammar", ["Subject-verb agreement", "Verb tense", "Sentence structure", "Comma or punctuation issue"]],
@@ -1966,6 +1984,13 @@
         });
       }
 
+      function updateDefaultTextSizeMarker(textSize) {
+        const isDefault = Number(textSize) === defaultReadability.textSize;
+        resetTextSizeBtn.classList.toggle("is-default", isDefault);
+        resetTextSizeBtn.setAttribute("aria-pressed", String(isDefault));
+        resetTextSizeBtn.title = isDefault ? "Student text is at the default 18px size" : "Reset student text size to default 18px";
+      }
+
       function applyReadabilitySettings(settings = {}) {
         const normalized = normalizeReadabilitySettings(settings);
         document.body.classList.toggle("theme-dark", normalized.theme === "dark");
@@ -1976,6 +2001,7 @@
         studentTextSize.value = String(normalized.textSize);
         studentTextSizeValue.value = `${normalized.textSize}px`;
         studentTextSizeValue.textContent = `${normalized.textSize}px`;
+        updateDefaultTextSizeMarker(normalized.textSize);
         syncUnresizedEditorImages(normalized.imageSize);
         renderTeacherComments();
         scheduleAutosave();
@@ -4389,6 +4415,10 @@
       clearEverythingBtn.addEventListener("click", clearEverythingForNewPaper);
       readabilityTheme.addEventListener("change", () => applyReadabilitySettings(getReadabilitySettings()));
       studentTextSize.addEventListener("input", () => applyReadabilitySettings(getReadabilitySettings()));
+      resetTextSizeBtn.addEventListener("click", () => applyReadabilitySettings({
+        ...getReadabilitySettings(),
+        textSize: defaultReadability.textSize
+      }));
       feedbackType.addEventListener("change", renderQuickNotes);
       scoreGrid.addEventListener("change", updateBandScore);
       quickNotes.addEventListener("click", event => {
