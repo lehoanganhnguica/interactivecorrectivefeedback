@@ -21,9 +21,9 @@ The app is a static browser app and is designed to work on both macOS and Window
    - right-click a green addition to remove it;
    - right-click a red deletion to restore the original text;
    - undo and redo work for app edits.
-5. Select text to add feedback comments. Choose a feedback type, write an explanation, and paste screenshots into the comment if useful.
+5. Select text to add feedback comments. Choose a feedback type, write an explanation, and paste screenshots into the comment if useful. Horizontal landscape images work best in student PDF exports.
 6. Enter whole-band IELTS scores for the four criteria. The app calculates the overall band by averaging and rounding to the nearest half band.
-7. Use the **Readability** controls below the formatting bar to switch between light, dark, and contrast themes, increase or decrease the student text size, and use **Default** to return the student export text to 18px.
+7. Use the **Readability** controls below the formatting bar to switch between light, dark, and contrast themes, increase or decrease the student text size, and use **Default** to return the student export text to 18px. Feedback colors adapt to the selected theme for readability.
 8. Drag the bottom-right corner of a pasted writing image to resize it. Right-click a pasted writing image and choose **Remove image** to delete it.
 9. Export for the student:
    - **Student HTML** downloads a standalone feedback page;
