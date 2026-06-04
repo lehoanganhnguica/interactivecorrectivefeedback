@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
   <title>Writing Feedback Studio</title>
   <style>
     :root {
@@ -30,6 +31,8 @@
       --punctuation-border: #06b6d4;
       --idea-bg: #fae8ff;
       --idea-border: #d946ef;
+      --student-text-size: 18px;
+      --pasted-image-scale: 1;
     }
 
     * { box-sizing: border-box; }
@@ -40,6 +43,28 @@
       color: var(--ink);
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       line-height: 1.5;
+    }
+
+    body.theme-dark {
+      --bg: #0b1120;
+      --panel: #111827;
+      --ink: #e5e7eb;
+      --muted: #cbd5e1;
+      --line: #334155;
+      --accent: #e5e7eb;
+      --green: #22c55e;
+      --shadow: 0 18px 55px rgba(0, 0, 0, 0.36);
+    }
+
+    body.theme-contrast {
+      --bg: #000;
+      --panel: #fff;
+      --ink: #000;
+      --muted: #111;
+      --line: #000;
+      --accent: #000;
+      --green: #006b2e;
+      --shadow: none;
     }
 
     button, input, textarea, select {
@@ -81,6 +106,54 @@
     input[type="checkbox"] {
       width: auto;
       accent-color: var(--accent);
+    }
+
+    body.theme-dark button,
+    body.theme-dark input,
+    body.theme-dark textarea,
+    body.theme-dark select {
+      background: #1e293b;
+      color: #e5e7eb;
+      border-color: #475569;
+    }
+
+    body.theme-dark button:hover {
+      background: #334155;
+      border-color: #64748b;
+    }
+
+    body.theme-dark button.primary,
+    body.theme-dark .mode-toggle button.active {
+      background: #f8fafc;
+      border-color: #f8fafc;
+      color: #0f172a;
+    }
+
+    body.theme-dark #suggestingMode.active {
+      background: #22c55e;
+      color: #052e16;
+    }
+
+    body.theme-contrast button,
+    body.theme-contrast input,
+    body.theme-contrast textarea,
+    body.theme-contrast select {
+      background: #fff;
+      color: #000;
+      border: 2px solid #000;
+    }
+
+    body.theme-contrast button:hover {
+      background: #f3f4f6;
+      border-color: #000;
+    }
+
+    body.theme-contrast button.primary,
+    body.theme-contrast .mode-toggle button.active,
+    body.theme-contrast #suggestingMode.active {
+      background: #000;
+      border-color: #000;
+      color: #fff;
     }
 
     textarea { min-height: 80px; resize: vertical; }
@@ -178,16 +251,61 @@
       color: #fff;
     }
 
-    .title-export-actions {
-      margin-left: auto;
-      padding: 10px;
+    .editor-export-actions {
+      margin-left: 0;
+      padding: 6px 8px;
       border: 1px solid #bbf7d0;
-      border-radius: 20px;
+      border-radius: 18px;
       gap: 8px;
     }
 
-    .title-export-actions .toolbar-label {
+    .editor-export-actions .toolbar-label {
       color: #166534;
+    }
+
+    .readability-actions {
+      background: #f8fafc;
+      border-color: #dbe3ee;
+    }
+
+    .editor-readability-actions {
+      margin-left: 0;
+      padding: 10px;
+      border: 1px solid #dbe3ee;
+      border-radius: 20px;
+      gap: 10px;
+    }
+
+    .readability-control {
+      display: grid;
+      grid-template-columns: auto minmax(84px, 112px) auto;
+      align-items: center;
+      gap: 6px;
+      color: #334155;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .readability-control select {
+      min-width: 112px;
+      border-radius: 12px;
+      padding: 6px 8px;
+    }
+
+    .readability-control input[type="range"] {
+      width: 112px;
+      min-height: 24px;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      accent-color: var(--accent);
+    }
+
+    .readability-value {
+      min-width: 42px;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
     }
 
     .app-actions {
@@ -235,6 +353,112 @@
       line-height: 1.5;
       font-weight: 500;
       letter-spacing: 0;
+    }
+
+    body.theme-dark .topbar,
+    body.theme-dark .panel,
+    body.theme-dark .canvas,
+    body.theme-dark .feedback-reference,
+    body.theme-dark .feedback-popover,
+    body.theme-dark .instructions-card,
+    body.theme-dark .deletion-context-menu {
+      background: #111827;
+      border-color: #334155;
+      color: #e5e7eb;
+    }
+
+    body.theme-dark .import-actions,
+    body.theme-dark .session-actions,
+    body.theme-dark .export-actions,
+    body.theme-dark .app-actions,
+    body.theme-dark .readability-actions,
+    body.theme-dark .editor-export-actions,
+    body.theme-dark .editor-readability-actions,
+    body.theme-dark .editor-help,
+    body.theme-dark .comment-target,
+    body.theme-dark .image-preview,
+    body.theme-dark .instruction-step {
+      background: #172033;
+      border-color: #334155;
+    }
+
+    body.theme-dark .toolbar-label,
+    body.theme-dark .editor-export-actions .toolbar-label,
+    body.theme-dark .readability-control,
+    body.theme-dark .readability-value,
+    body.theme-dark .brand::after,
+    body.theme-dark .editor-help h2,
+    body.theme-dark .editor-help ol,
+    body.theme-dark .score-field,
+    body.theme-dark .comment-target,
+    body.theme-dark .instruction-step p,
+    body.theme-dark .instruction-step ul {
+      color: #cbd5e1;
+    }
+
+    body.theme-dark .brand::before {
+      background: #1e293b;
+      color: #e2e8f0;
+    }
+
+    body.theme-dark .score-panel {
+      background: #111827;
+      border-color: #7f1d1d;
+    }
+
+    body.theme-dark .app-footer a {
+      color: #93c5fd;
+    }
+
+    body.theme-contrast .topbar,
+    body.theme-contrast .panel,
+    body.theme-contrast .canvas,
+    body.theme-contrast .feedback-reference,
+    body.theme-contrast .feedback-popover,
+    body.theme-contrast .instructions-card,
+    body.theme-contrast .deletion-context-menu,
+    body.theme-contrast .import-actions,
+    body.theme-contrast .session-actions,
+    body.theme-contrast .export-actions,
+    body.theme-contrast .app-actions,
+    body.theme-contrast .readability-actions,
+    body.theme-contrast .editor-export-actions,
+    body.theme-contrast .editor-readability-actions,
+    body.theme-contrast .editor-help,
+    body.theme-contrast .comment-target,
+    body.theme-contrast .image-preview,
+    body.theme-contrast .instruction-step,
+    body.theme-contrast .score-panel {
+      background: #fff;
+      border-color: #000;
+      color: #000;
+      box-shadow: none;
+    }
+
+    body.theme-contrast .toolbar-label,
+    body.theme-contrast .editor-export-actions .toolbar-label,
+    body.theme-contrast .readability-control,
+    body.theme-contrast .readability-value,
+    body.theme-contrast .brand::after,
+    body.theme-contrast .editor-help h2,
+    body.theme-contrast .editor-help ol,
+    body.theme-contrast .score-field,
+    body.theme-contrast .comment-target,
+    body.theme-contrast .instruction-step p,
+    body.theme-contrast .instruction-step ul {
+      color: #000;
+    }
+
+    body.theme-contrast .brand::before {
+      background: #000;
+      color: #fff;
+    }
+
+    body.theme-contrast .band-total {
+      background: #000;
+      border-color: #000;
+      color: #fff;
+      box-shadow: none;
     }
 
     .mode-toggle {
@@ -353,6 +577,10 @@
 
     .app-footer p {
       margin: 0;
+    }
+
+    .app-footer .contact-line {
+      margin-top: 4px;
     }
 
     .app-footer a {
@@ -499,6 +727,18 @@
       gap: 10px;
       padding-bottom: 14px;
       border-bottom: 1px solid var(--line);
+    }
+
+    .editor-tools > .editor-export-actions {
+      order: 0;
+      margin-left: auto;
+    }
+
+    .editor-tools > .editor-readability-actions {
+      order: 4;
+      flex: 1 1 100%;
+      justify-content: flex-start;
+      margin-left: 0;
     }
 
     .writing-shell {
@@ -773,7 +1013,7 @@
       isolation: isolate;
       min-height: 620px;
       outline: 0;
-      font-size: 18px;
+      font-size: var(--student-text-size);
       line-height: 1.9;
       padding: 24px;
       overflow-wrap: anywhere;
@@ -799,22 +1039,54 @@
     }
 
     .editor-image-wrap {
+      position: relative;
       display: block;
+      width: min(100%, calc(760px * var(--pasted-image-scale)));
       max-width: 100%;
       margin: 16px auto;
       text-align: center;
+      line-height: 0;
     }
 
     .editor-image-wrap img {
       display: block;
-      width: auto;
-      max-width: min(100%, 760px);
-      max-height: 560px;
+      width: 100%;
+      max-width: 100%;
       height: auto;
       margin: 0 auto;
       border: 1px solid var(--line);
       border-radius: 14px;
       background: #fff;
+    }
+
+    .image-resize-handle {
+      position: absolute;
+      right: -7px;
+      bottom: -7px;
+      width: 18px;
+      height: 18px;
+      min-height: 0;
+      border: 2px solid #fff;
+      border-radius: 6px;
+      padding: 0;
+      background:
+        linear-gradient(135deg, transparent 0 45%, #0f172a 46% 54%, transparent 55%),
+        #2563eb;
+      box-shadow: 0 3px 10px rgba(15, 23, 42, 0.24);
+      cursor: nwse-resize;
+      opacity: 0;
+      transition: opacity 0.15s ease, transform 0.15s ease;
+      touch-action: none;
+    }
+
+    .editor-image-wrap:hover .image-resize-handle,
+    .editor-image-wrap:focus-within .image-resize-handle,
+    .editor-image-wrap.resizing .image-resize-handle {
+      opacity: 1;
+    }
+
+    .editor-image-wrap.resizing .image-resize-handle {
+      transform: scale(1.08);
     }
 
     .editor:focus {
@@ -827,6 +1099,69 @@
       box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.16);
     }
 
+    body.theme-dark .editor {
+      background: #0f172a;
+      color: #f8fafc;
+      border-color: #475569;
+    }
+
+    body.theme-dark .editor:focus {
+      border-color: #94a3b8;
+      box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.22);
+    }
+
+    body.theme-dark .editor-image-wrap img {
+      background: #172033;
+      border-color: #475569;
+    }
+
+    body.theme-dark .editor:empty::before {
+      color: #94a3b8;
+    }
+
+    body.theme-dark .suggest-delete {
+      color: #fecaca;
+      background: #4a1010;
+    }
+
+    body.theme-contrast .editor {
+      background: #fff;
+      color: #000;
+      border: 3px solid #000;
+      box-shadow: none;
+    }
+
+    body.theme-contrast .editor:focus,
+    body.theme-contrast.suggesting-active .editor {
+      border-color: #000;
+      box-shadow: 0 0 0 3px #facc15;
+    }
+
+    body.theme-contrast .editor-image-wrap img {
+      background: #fff;
+      border: 2px solid #000;
+    }
+
+    body.theme-contrast .feedback-node,
+    body.theme-contrast .legend span,
+    body.theme-contrast .comment-card {
+      background: #fff !important;
+      color: #000 !important;
+      border-color: #000 !important;
+      border-width: 2px;
+    }
+
+    body.theme-contrast .suggest-add {
+      color: #006b2e;
+      font-weight: 900;
+    }
+
+    body.theme-contrast .suggest-delete {
+      color: #b00020;
+      background: #fff;
+      text-decoration-thickness: 3px;
+    }
+
     .editor:empty::before {
       content: "Paste or type the student writing here.";
       color: #98a2b3;
@@ -834,6 +1169,7 @@
 
     .suggest-add {
       color: #16a34a;
+      font-weight: 700;
       white-space: pre-wrap;
     }
 
@@ -950,8 +1286,7 @@
     .fb-grammar,
     .comment-card.type-grammar {
       border-style: dotted;
-      background-image: radial-gradient(rgba(15, 23, 42, 0.28) 1px, transparent 1.4px);
-      background-size: 6px 6px;
+      background-image: none;
     }
 
     .comment-card.type-grammar { background-color: var(--grammar-bg); }
@@ -961,7 +1296,7 @@
     .fb-vocabulary,
     .comment-card.type-vocabulary {
       border-style: solid;
-      background-image: repeating-linear-gradient(135deg, rgba(15, 23, 42, 0.15) 0 2px, transparent 2px 8px);
+      background-image: none;
     }
 
     .comment-card.type-vocabulary { background-color: var(--vocabulary-bg); }
@@ -971,9 +1306,7 @@
     .fb-spelling,
     .comment-card.type-spelling {
       border-style: dashed;
-      background-image:
-        repeating-linear-gradient(0deg, rgba(15, 23, 42, 0.11) 0 1px, transparent 1px 7px),
-        repeating-linear-gradient(90deg, rgba(15, 23, 42, 0.11) 0 1px, transparent 1px 7px);
+      background-image: none;
     }
 
     .comment-card.type-spelling { background-color: var(--spelling-bg); }
@@ -983,7 +1316,7 @@
     .fb-coherence,
     .comment-card.type-coherence {
       border-style: double;
-      background-image: repeating-linear-gradient(0deg, rgba(15, 23, 42, 0.13) 0 2px, transparent 2px 9px);
+      background-image: none;
     }
 
     .comment-card.type-coherence { background-color: var(--coherence-bg); }
@@ -1004,7 +1337,7 @@
     .fb-style,
     .comment-card.type-style {
       border-style: dashed;
-      background-image: repeating-linear-gradient(90deg, rgba(15, 23, 42, 0.15) 0 2px, transparent 2px 8px);
+      background-image: none;
     }
 
     .comment-card.type-style { background-color: var(--style-bg); }
@@ -1014,10 +1347,7 @@
     .fb-idea,
     .comment-card.type-idea {
       border-style: solid;
-      background-image:
-        radial-gradient(circle at 2px 2px, rgba(15, 23, 42, 0.2) 1px, transparent 1.6px),
-        radial-gradient(circle at 8px 8px, rgba(15, 23, 42, 0.16) 1px, transparent 1.6px);
-      background-size: 12px 12px;
+      background-image: none;
     }
 
     .comment-card.type-idea { background-color: var(--idea-bg); }
@@ -1169,7 +1499,86 @@
     .hidden { display: none !important; }
 
     @media (max-width: 980px) {
-      main { grid-template-columns: 1fr; }
+      main {
+        grid-template-columns: 1fr;
+        padding: 8px;
+      }
+      .topbar,
+      .canvas,
+      .panel {
+        border-radius: 18px;
+      }
+      .title-row {
+        align-items: stretch;
+      }
+      .title-row .brand {
+        width: 100%;
+        margin-left: 0;
+        margin-right: 0;
+      }
+      .editor-readability-actions {
+        justify-content: flex-start;
+      }
+      .editor-readability-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+      .readability-control {
+        grid-template-columns: 54px minmax(0, 1fr) 44px;
+        width: 100%;
+        min-width: 0;
+        white-space: normal;
+      }
+      .readability-control select {
+        width: 100%;
+        min-width: 0;
+      }
+      .readability-control input[type="range"] {
+        width: 100%;
+      }
+      .canvas {
+        min-width: 0;
+        padding: 12px;
+      }
+      .editor-tools,
+      .writing-shell,
+      .content-layout,
+      .feedback-reference,
+      .editor-help {
+        min-width: 0;
+      }
+      .editor-tools > .toolbar-group,
+      .editor-tools > .statusbar {
+        width: 100%;
+        margin-left: 0;
+      }
+      .editor-tools > .editor-export-actions {
+        width: 100%;
+        margin-left: 0;
+        justify-content: flex-start;
+      }
+      .editor-tools > .editor-readability-actions {
+        width: 100%;
+        margin-left: 0;
+      }
+      .editor-tools > .toolbar-group {
+        flex-wrap: wrap;
+      }
+      .mode-toggle {
+        width: 100%;
+      }
+      .mode-toggle button {
+        min-width: 0;
+      }
+      .statusbar {
+        justify-content: flex-start;
+        white-space: normal;
+      }
+      .editor {
+        min-height: 480px;
+        padding: 18px;
+        border-radius: 18px;
+      }
       .content-layout.with-image.image-left { grid-template-columns: 1fr; }
       .sidebar { order: 2; }
       .editor-help ol { grid-template-columns: 1fr; }
@@ -1189,11 +1598,6 @@
       <div class="topbar">
         <div class="title-row">
           <div class="brand">Corrective Feedback Annotation App</div>
-          <div class="toolbar-group export-actions title-export-actions" aria-label="Export">
-            <span class="toolbar-label">Export</span>
-            <button type="button" id="exportStudentBtn" class="primary">Student HTML</button>
-            <button type="button" id="exportPdfBtn">PDF</button>
-          </div>
         </div>
         <div class="toolbar header-actions">
           <div class="toolbar-group import-actions">
@@ -1244,7 +1648,7 @@
               <option value="image-top">Image above writing</option>
             </select>
           </div>
-          <div class="image-preview" id="imagePreview">Upload or paste image(s) for the writing prompt.</div>
+          <div class="image-preview" id="imagePreview">Teachers can also paste images directly into the text area.</div>
           <div class="field" style="margin-top:10px">
             <input type="file" id="imageInput" accept="image/*">
           </div>
@@ -1270,13 +1674,18 @@
               <button type="button" id="editingMode" class="active">Editing</button>
               <button type="button" id="suggestingMode">Suggesting</button>
             </div>
-            <button type="button" id="clearEverythingBtn" class="danger clear-everything">Clear everything</button>
+            <div class="toolbar-group export-actions editor-export-actions" aria-label="Export">
+              <span class="toolbar-label">Export</span>
+              <button type="button" id="exportStudentBtn" class="primary">Student HTML</button>
+              <button type="button" id="exportPdfBtn">PDF</button>
+            </div>
             <section class="editor-help" aria-label="How suggesting works">
               <h2>How suggesting works</h2>
               <ol>
                 <li>Select text and type to replace it.</li>
                 <li>Teacher additions stay green and can be edited in place.</li>
                 <li>Deleted student text stays visible in red.</li>
+                <li>Right-click green or red changes to remove them.</li>
                 <li>Feedback can be layered on top of changes.</li>
               </ol>
             </section>
@@ -1287,10 +1696,27 @@
               <button type="button" data-command="removeFormat">Remove format</button>
               <button type="button" id="undoBtn" title="Undo last app edit">Undo</button>
               <button type="button" id="redoBtn" title="Redo last undone app edit">Redo</button>
+              <button type="button" id="clearEverythingBtn" class="danger clear-everything">Clear everything</button>
             </div>
             <div class="statusbar">
               <span id="statusText">Editing mode</span>
               <span id="wordCount">0 words</span>
+            </div>
+            <div class="toolbar-group readability-actions editor-readability-actions" aria-label="Readability settings">
+              <span class="toolbar-label">Readability</span>
+              <label class="readability-control">
+                Theme
+                <select id="readabilityTheme" aria-label="Readability theme">
+                  <option value="light">Light</option>
+                  <option value="dark">Dark</option>
+                  <option value="contrast">Contrast</option>
+                </select>
+              </label>
+              <label class="readability-control">
+                Text
+                <input type="range" id="studentTextSize" min="14" max="30" step="1" value="18" aria-label="Student text size">
+                <output id="studentTextSizeValue" class="readability-value" for="studentTextSize">18px</output>
+              </label>
             </div>
           </div>
           <div class="writing-shell">
@@ -1308,7 +1734,7 @@
             </aside>
             <div id="contentLayout" class="content-layout">
               <div id="promptImage" class="prompt-image hidden"></div>
-              <article id="editor" class="editor" contenteditable="true" spellcheck="true"><p>This is just a sample. You can paste your student's writing here, and add any picture of the task using the Add image(s) panel or by simply pasting it into this area.</p><p>Use Editing mode to paste and format the writing first. Then switch to Suggesting mode to start giving feedback and editing your student's work.</p></article>
+              <article id="editor" class="editor" contenteditable="true" spellcheck="true"><p>This is just a sample. You can paste your student's writing here, and add any picture directly into this area in Editing mode with Cmd+V on macOS or Ctrl+V on Windows.</p><p>Use Editing mode to paste and format the writing first. Then switch to Suggesting mode to start giving feedback and editing your student's work.</p></article>
             </div>
             <aside class="teacher-comments">
               <div class="comments-head">
@@ -1331,7 +1757,8 @@
       </section>
     </main>
     <footer class="app-footer">
-      <p>This app works entirely offline after download. Contact: <a href="mailto:lehoang.anhnguica@gmail.com">lehoang.anhnguica@gmail.com</a> · <a href="https://www.facebook.com/lkhoang.gnaohkl/" target="_blank" rel="noopener">facebook.com/lkhoang.gnaohkl</a></p>
+      <p>This app works entirely offline after download. It is constantly updated, and any feedback for improvement is welcome.</p>
+      <p class="contact-line">Contact: <a href="mailto:lehoang.anhnguica@gmail.com">lehoang.anhnguica@gmail.com</a> · <a href="https://www.facebook.com/lkhoang.gnaohkl/" target="_blank" rel="noopener">facebook.com/lkhoang.gnaohkl</a></p>
     </footer>
   </div>
 
@@ -1371,15 +1798,15 @@
       <div class="instructions-grid">
         <article class="instruction-step">
           <h3>1. Add the writing</h3>
-          <p>Use Editing mode to paste or type the student's writing. You can also import a text/HTML file, paste images directly, or upload task images in the Add image(s) panel.</p>
+          <p>Use Editing mode to paste or type the student's writing. Paste writing images directly with Cmd+V on macOS or Ctrl+V on Windows; use Add image(s) for task prompt images.</p>
         </article>
         <article class="instruction-step">
           <h3>2. Mark in Suggesting mode</h3>
-          <p>Switch to Suggesting mode before editing. New teacher text appears green, and deleted student text stays visible in red strikethrough.</p>
+          <p>Switch to Suggesting mode before editing. New teacher text appears bold green, and deleted student text stays visible in red strikethrough. Right-click a green addition to remove it, or right-click a red deletion to restore the original text.</p>
         </article>
         <article class="instruction-step">
           <h3>3. Add feedback comments</h3>
-          <p>Select text to open the feedback window. Choose a feedback type, write an explanation, and paste screenshots into the comment if needed.</p>
+          <p>Select text to open the feedback window. Choose a feedback type, write an explanation, and paste screenshots into the comment if needed. Drag a pasted writing image corner to resize it, or right-click it to remove it.</p>
         </article>
         <article class="instruction-step">
           <h3>4. Use IELTS scores</h3>
@@ -1437,6 +1864,9 @@
       const closeInstructionsBtn = document.getElementById("closeInstructionsBtn");
       const deletionContextMenu = document.getElementById("deletionContextMenu");
       const restoreDeletionBtn = document.getElementById("restoreDeletionBtn");
+      const readabilityTheme = document.getElementById("readabilityTheme");
+      const studentTextSize = document.getElementById("studentTextSize");
+      const studentTextSizeValue = document.getElementById("studentTextSizeValue");
 
       const feedbackTypes = [
         ["grammar", "Grammar", ["Subject-verb agreement", "Verb tense", "Sentence structure", "Comma or punctuation issue"]],
@@ -1450,6 +1880,7 @@
       const feedbackTypeAliases = { punctuation: "grammar" };
       const feedbackClassIds = [...feedbackTypes.map(([id]) => id), ...Object.keys(feedbackTypeAliases)];
       const localAutosaveKey = "interactiveCorrectiveFeedback.autosave.v1";
+      const defaultReadability = Object.freeze({ theme: "light", textSize: 18, imageSize: 100 });
       const scoreCriteria = [
         ["task", "Task response/achievement"],
         ["coherence", "Coherence and cohesion"],
@@ -1481,6 +1912,8 @@
       let pendingFeedbackHighlightRange = null;
       let feedbackNoteImages = [];
       let deletionContextTarget = null;
+      let deletionContextAction = "";
+      let activeImageResize = null;
       let autosaveTimer = 0;
       let lastAutosaveJson = "";
       let restoringAutosave = false;
@@ -1505,6 +1938,48 @@
       function updateWordCount() {
         const words = editor.innerText.trim().split(/\s+/).filter(Boolean).length;
         wordCount.textContent = `${words} ${words === 1 ? "word" : "words"}`;
+      }
+
+      function clampNumber(value, min, max, fallback) {
+        const number = Number(value);
+        if (!Number.isFinite(number)) return fallback;
+        return Math.min(max, Math.max(min, number));
+      }
+
+      function normalizeReadabilityTheme(theme) {
+        return theme === "dark" || theme === "contrast" ? theme : "light";
+      }
+
+      function normalizeReadabilitySettings(settings = {}) {
+        const source = settings && typeof settings === "object" ? settings : {};
+        return {
+          theme: normalizeReadabilityTheme(source.theme),
+          textSize: clampNumber(source.textSize, 14, 30, defaultReadability.textSize),
+          imageSize: defaultReadability.imageSize
+        };
+      }
+
+      function getReadabilitySettings() {
+        return normalizeReadabilitySettings({
+          theme: readabilityTheme.value,
+          textSize: studentTextSize.value
+        });
+      }
+
+      function applyReadabilitySettings(settings = {}) {
+        const normalized = normalizeReadabilitySettings(settings);
+        document.body.classList.toggle("theme-dark", normalized.theme === "dark");
+        document.body.classList.toggle("theme-contrast", normalized.theme === "contrast");
+        document.documentElement.style.setProperty("--student-text-size", `${normalized.textSize}px`);
+        document.documentElement.style.setProperty("--pasted-image-scale", String(normalized.imageSize / 100));
+        readabilityTheme.value = normalized.theme;
+        studentTextSize.value = String(normalized.textSize);
+        studentTextSizeValue.value = `${normalized.textSize}px`;
+        studentTextSizeValue.textContent = `${normalized.textSize}px`;
+        syncUnresizedEditorImages(normalized.imageSize);
+        renderTeacherComments();
+        scheduleAutosave();
+        return normalized;
       }
 
       function updateUndoButton() {
@@ -1577,6 +2052,7 @@
         savedRange = null;
         hideFeedbackPopover();
         normalizeSuggestions();
+        enhanceEditorImages(editor);
         updateWordCount();
         updateUndoButton();
         renderTeacherComments();
@@ -1594,6 +2070,7 @@
         savedRange = null;
         hideFeedbackPopover();
         normalizeSuggestions();
+        enhanceEditorImages(editor);
         updateWordCount();
         updateUndoButton();
         renderTeacherComments();
@@ -2906,10 +3383,15 @@
       function hideDeletionContextMenu() {
         deletionContextMenu.classList.remove("open");
         deletionContextTarget = null;
+        deletionContextAction = "";
       }
 
-      function showDeletionContextMenu(event, deletionNode) {
-        deletionContextTarget = deletionNode;
+      function showDeletionContextMenu(event, changeNode, action) {
+        deletionContextTarget = changeNode;
+        deletionContextAction = action;
+        const label = action === "remove-addition" ? "Remove addition" : action === "remove-image" ? "Remove image" : "Remove crossing out";
+        restoreDeletionBtn.textContent = label;
+        deletionContextMenu.setAttribute("aria-label", action === "remove-image" ? "Image options" : action === "remove-addition" ? "Addition options" : "Deletion options");
         const margin = 8;
         deletionContextMenu.classList.add("open");
         const rect = deletionContextMenu.getBoundingClientRect();
@@ -2935,7 +3417,47 @@
         normalizeSuggestions();
         renderTeacherComments();
         updateWordCount();
+        autosaveNow();
         showMessage("Crossing out removed");
+      }
+
+      function removeAdditionText(additionNode) {
+        if (!additionNode?.parentNode) return;
+        pushUndoSnapshot();
+        const previous = additionNode.previousSibling;
+        const parent = additionNode.parentNode;
+        additionNode.remove();
+        normalizeSuggestions();
+        if (previous?.isConnected) placeCaretAfter(previous);
+        else if (parent?.isConnected && editor.contains(parent)) {
+          const range = document.createRange();
+          range.setStart(parent, 0);
+          range.collapse(true);
+          const sel = window.getSelection();
+          sel.removeAllRanges();
+          sel.addRange(range);
+        } else {
+          placeCaretAtEnd();
+        }
+        renderTeacherComments();
+        updateWordCount();
+        autosaveNow();
+        showMessage("Addition removed");
+      }
+
+      function removeEditorImage(imageNode) {
+        if (!imageNode?.parentNode) return;
+        pushUndoSnapshot();
+        const previous = imageNode.previousSibling;
+        const parent = imageNode.parentNode;
+        imageNode.remove();
+        normalizeSuggestions();
+        if (previous?.isConnected) placeCaretAfter(previous);
+        else if (parent?.isConnected && editor.contains(parent)) placeCaretAtEnd();
+        renderTeacherComments();
+        updateWordCount();
+        autosaveNow();
+        showMessage("Image removed");
       }
 
       function createFeedbackWrapper(type, id, note, images = []) {
@@ -3056,6 +3578,101 @@
         return files;
       }
 
+      function defaultEditorImageWidth(imageSize = defaultReadability.imageSize) {
+        return Math.round(760 * clampNumber(imageSize, 50, 180, defaultReadability.imageSize) / 100);
+      }
+
+      function editorImageMaxWidth() {
+        const width = editor.getBoundingClientRect().width || 760;
+        return Math.max(160, Math.floor(width - 48));
+      }
+
+      function setEditorImageWidth(wrap, width, { manual = false } = {}) {
+        if (!wrap) return 0;
+        const maxWidth = Math.min(1400, editorImageMaxWidth());
+        const nextWidth = Math.round(clampNumber(width, 120, maxWidth, defaultEditorImageWidth()));
+        wrap.style.width = `${nextWidth}px`;
+        wrap.dataset.imageWidth = String(nextWidth);
+        if (manual) wrap.dataset.manualResize = "true";
+        return nextWidth;
+      }
+
+      function addEditorImageHandle(wrap) {
+        if (!wrap || wrap.querySelector(".image-resize-handle")) return;
+        const handle = document.createElement("button");
+        handle.type = "button";
+        handle.className = "image-resize-handle";
+        handle.contentEditable = "false";
+        handle.setAttribute("aria-label", "Drag to resize image");
+        handle.title = "Drag to resize image";
+        wrap.appendChild(handle);
+      }
+
+      function enhanceEditorImages(root = editor) {
+        root.querySelectorAll?.(".editor-image-wrap[data-editor-image]").forEach(wrap => {
+          wrap.contentEditable = "false";
+          wrap.classList.remove("resizing");
+          const img = wrap.querySelector("img");
+          if (img) {
+            if (!img.alt) img.alt = "Pasted image";
+            img.draggable = false;
+          }
+          if (!wrap.style.width && wrap.dataset.imageWidth) wrap.style.width = `${wrap.dataset.imageWidth}px`;
+          if (!wrap.style.width) setEditorImageWidth(wrap, defaultEditorImageWidth());
+          addEditorImageHandle(wrap);
+        });
+      }
+
+      function syncUnresizedEditorImages(imageSize = defaultReadability.imageSize) {
+        const width = defaultEditorImageWidth(imageSize);
+        editor.querySelectorAll(".editor-image-wrap[data-editor-image]").forEach(wrap => {
+          if (wrap.dataset.manualResize === "true") return;
+          setEditorImageWidth(wrap, width);
+        });
+      }
+
+      function beginEditorImageResize(event) {
+        if (activeImageResize) return;
+        const handle = event.target.closest?.(".image-resize-handle");
+        if (!handle) return;
+        const wrap = handle.closest(".editor-image-wrap[data-editor-image]");
+        if (!wrap) return;
+        event.preventDefault();
+        event.stopPropagation();
+        hideDeletionContextMenu();
+        hideFeedbackPopover();
+        pushUndoSnapshot();
+        const rect = wrap.getBoundingClientRect();
+        activeImageResize = {
+          wrap,
+          pointerId: event.pointerId ?? null,
+          startX: event.clientX,
+          startWidth: rect.width
+        };
+        wrap.classList.add("resizing");
+        handle.setPointerCapture?.(event.pointerId);
+      }
+
+      function updateEditorImageResize(event) {
+        if (!activeImageResize) return;
+        if (activeImageResize.pointerId !== null && event.pointerId != null && event.pointerId !== activeImageResize.pointerId) return;
+        event.preventDefault();
+        const nextWidth = activeImageResize.startWidth + event.clientX - activeImageResize.startX;
+        setEditorImageWidth(activeImageResize.wrap, nextWidth, { manual: true });
+      }
+
+      function finishEditorImageResize(event) {
+        if (!activeImageResize) return;
+        if (activeImageResize.pointerId !== null && event.pointerId != null && event.pointerId !== activeImageResize.pointerId) return;
+        event.preventDefault();
+        activeImageResize.wrap.classList.remove("resizing");
+        activeImageResize = null;
+        normalizeSuggestions();
+        renderTeacherComments();
+        updateWordCount();
+        autosaveNow();
+      }
+
       function createEditorImageNode(src) {
         const wrap = document.createElement("span");
         wrap.className = "editor-image-wrap";
@@ -3065,6 +3682,8 @@
         img.src = src;
         img.alt = "Pasted image";
         wrap.appendChild(img);
+        setEditorImageWidth(wrap, defaultEditorImageWidth());
+        addEditorImageHandle(wrap);
         return wrap;
       }
 
@@ -3119,6 +3738,7 @@
         normalizeSuggestions();
         updateWordCount();
         renderTeacherComments();
+        autosaveNow();
         showMessage(files.length === 1 ? "Image pasted into writing" : `${files.length} images pasted into writing`);
         return true;
       }
@@ -3129,7 +3749,7 @@
 
       function renderImage() {
         if (!taskImage) {
-          imagePreview.textContent = "Upload or paste image(s) for the writing prompt.";
+          imagePreview.textContent = "Teachers can also paste images directly into the text area.";
           promptImage.innerHTML = "";
           promptImage.classList.add("hidden");
           contentLayout.classList.remove("with-image", "image-left", "image-top");
@@ -3168,6 +3788,7 @@
           scores: getBandScores(),
           layout: layoutSelect.value,
           mode,
+          readability: getReadabilitySettings(),
           editorHtml: sanitizeEditorHtml(editor.innerHTML)
         };
       }
@@ -3184,10 +3805,12 @@
           layoutSelect.value = session.layout || "image-left";
           editor.innerHTML = sanitizeEditorHtml(session.editorHtml || "");
           normalizeSuggestions();
+          enhanceEditorImages(editor);
           undoStack = [];
           redoStack = [];
           updateUndoButton();
           setMode(session.mode === "suggesting" ? "suggesting" : "editing");
+          applyReadabilitySettings(session.readability || defaultReadability);
           renderImage();
           renderTeacherWatermark();
           renderTeacherComments();
@@ -3220,6 +3843,7 @@
         taskImage = "";
         imageInput.value = "";
         layoutSelect.value = "image-left";
+        applyReadabilitySettings(defaultReadability);
         editor.innerHTML = "";
         undoStack = [];
         redoStack = [];
@@ -3600,23 +4224,39 @@
       function exportCss({ staticComments = false } = {}) {
         return `<style>
     :root{--line:#d9dee7;--ink:#1f2937;--muted:#667085;--grammar-bg:#dbeafe;--grammar-border:#60a5fa;--vocabulary-bg:#fef3c7;--vocabulary-border:#f59e0b;--spelling-bg:#ffedd5;--spelling-border:#fb923c;--coherence-bg:#ede9fe;--coherence-border:#a78bfa;--task-bg:#cffafe;--task-border:#0891b2;--style-bg:#f1f5f9;--style-border:#64748b;--punctuation-bg:#cffafe;--punctuation-border:#06b6d4;--idea-bg:#fae8ff;--idea-border:#d946ef}
-    *{box-sizing:border-box}body{margin:0;background:#f6f7f9;color:var(--ink);font-family:Arial,Helvetica,sans-serif;line-height:1.65}.page{max-width:1180px;margin:0 auto;padding:28px 18px}.header{margin-bottom:18px}.header h1{margin:0 0 8px;font-size:30px;line-height:1.2}.meta{color:var(--muted);font-size:15px}.prompt{white-space:pre-wrap;background:#fff;border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin:16px 0;font-weight:700;font-size:16px;line-height:1.6}.score-summary{display:grid;grid-template-columns:170px minmax(0,1fr);gap:12px;align-items:stretch;background:#fff;border:1px solid #fecaca;border-left:6px solid #b91c1c;border-radius:14px;padding:12px 14px;margin:0 0 16px;box-shadow:0 8px 24px rgba(15,23,42,.06)}.score-overall{display:grid;align-content:center;justify-items:start;gap:2px;background:#111827;color:#fff;border-radius:12px;padding:12px}.score-overall span{text-transform:uppercase;letter-spacing:.06em;font-size:11px;font-weight:800;color:#fecaca}.score-overall strong{font-size:34px;line-height:1;font-weight:900}.score-overall em{font-style:normal;font-size:12px;color:#e5e7eb}.score-breakdown{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.score-chip{display:flex;align-items:center;justify-content:space-between;gap:8px;background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:13px;font-weight:700;line-height:1.25}.score-chip span{color:#475569}.score-chip strong{display:grid;place-items:center;min-width:34px;height:30px;border-radius:999px;background:#b91c1c;color:#fff;font-size:16px}.content{display:grid;grid-template-columns:minmax(0,1fr);gap:26px;align-items:start}.content.with-image.image-left{grid-template-columns:minmax(260px,40%) minmax(0,1fr)}.writing-stack{display:grid;gap:18px;min-width:0}.writing-stack .legend{margin:0}.task-image{display:flex;justify-content:center;align-items:flex-start}.task-image img{width:min(100%,780px);height:auto;max-height:none;display:block;object-fit:contain;border:1px solid var(--line);border-radius:10px}.content.with-image.image-left .task-image img{width:100%;max-width:100%;max-height:560px}.content.with-image.image-top .task-image{padding:0 34px}.content.with-image.image-top .task-image img{width:100%;max-width:780px;max-height:none}.writing{position:relative;isolation:isolate;background:#fff;border:1px solid var(--line);border-radius:10px;padding:36px 34px;font-size:18px;line-height:1.72;overflow-wrap:anywhere;min-height:380px;overflow:hidden}.writing.static-comments{--comment-gutter-inset:10px;padding-left:154px;padding-right:154px;overflow:visible}.writing p{margin:0 0 16px}.writing p:last-child{margin-bottom:0}.editor-image-wrap{display:block;max-width:100%;margin:16px auto;text-align:center}.editor-image-wrap img{display:block;width:auto;max-width:min(100%,780px);max-height:560px;height:auto;margin:0 auto;border:1px solid var(--line);border-radius:10px;background:#fff}.watermark-layer{position:absolute;inset:0;z-index:0;display:flex;align-items:center;justify-content:center;pointer-events:none}.watermark-layer img{display:block;width:240px;height:240px;object-fit:contain;opacity:.1}.writing-content{position:relative;z-index:1}.suggest-add{color:#16a34a}.suggest-delete{color:#dc2626;text-decoration:line-through;text-decoration-thickness:2px;background:#fef2f2}.feedback-node{border:1px solid currentColor;border-bottom-width:2px;border-radius:5px;padding:1px 3px;cursor:pointer;-webkit-box-decoration-break:clone;box-decoration-break:clone}.comment-marker{display:inline-block;margin-left:2px;color:currentColor;font-size:.64em;font-weight:800;line-height:1;vertical-align:super}.comment-row{position:relative}.comment-bubble{display:inline-block;max-width:250px;margin:0 8px 6px;padding:7px 9px;border:1px solid currentColor;border-radius:8px;font-size:12.5px;line-height:1.35;vertical-align:middle;box-shadow:0 4px 12px rgba(15,23,42,.08)}.writing.static-comments .comment-bubble{position:absolute;display:block;width:126px;max-width:126px;margin:0;z-index:3}.writing.static-comments .comment-bubble::before,.writing.static-comments .comment-bubble::after{display:none}.comment-connector-layer,.comment-connector{display:none!important}.writing.static-comments .comment-left{left:10px}.writing.static-comments .comment-right{right:10px}.writing.static-comments .feedback-node{position:relative}.comment-bubble strong{display:block;margin-bottom:3px}.comment-bubble span{display:block}.fb-grammar{background:var(--grammar-bg);color:#1d4ed8;border-color:var(--grammar-border)}.fb-vocabulary{background:var(--vocabulary-bg);color:#92400e;border-color:var(--vocabulary-border)}.fb-spelling{background:var(--spelling-bg);color:#9a3412;border-color:var(--spelling-border)}.fb-coherence{background:var(--coherence-bg);color:#6d28d9;border-color:var(--coherence-border)}.fb-task{background:var(--task-bg);color:#0e7490;border-color:var(--task-border)}.fb-style{background:var(--style-bg);color:#334155;border-color:var(--style-border)}.fb-punctuation{background:var(--grammar-bg);color:#1d4ed8;border-color:var(--grammar-border)}.fb-idea{background:var(--idea-bg);color:#86198f;border-color:var(--idea-border)}.legend{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0 18px}.legend span{border:1px solid currentColor;border-radius:7px;padding:5px 9px;font-size:13px;font-weight:700}.side-note{position:fixed;z-index:10;width:min(360px,calc(100vw - 24px));max-height:min(420px,calc(100vh - 24px));overflow:auto;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 16px 40px rgba(17,24,39,.18);padding:14px;display:none}.side-note.open{display:block}.side-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}.side-head strong{margin-right:auto}.side-note button{border:1px solid var(--line);background:#fff;border-radius:6px;width:32px;height:32px;cursor:pointer}@media(max-width:900px){.content.with-image.image-left{grid-template-columns:1fr}.score-summary{grid-template-columns:1fr}.content.with-image.image-top .task-image{padding:0}.watermark-layer img{width:200px;height:200px}.writing{font-size:17px;padding:28px 22px}.comment-bubble{max-width:220px}.writing.static-comments{padding-left:28px;padding-right:22px}.writing.static-comments .comment-bubble{position:static;width:auto;max-width:100%;margin:8px 0 10px}.comment-connector-layer,.comment-connector,.writing.static-comments .comment-bubble::before,.writing.static-comments .comment-bubble::after{display:none!important}}@media print{@page{size:portrait;margin:0}html,body{width:768px;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}.page{width:760px;max-width:760px;margin:0 auto;padding:12px 4px}.header{margin-bottom:6px}.header h1{font-size:28px}.meta{font-size:12px}.prompt{font-size:12px;line-height:1.34;padding:7px 9px;margin:6px 0}.score-summary{grid-template-columns:104px minmax(0,1fr);gap:6px;padding:6px 7px;margin:0 0 6px;border-left-width:4px;border-radius:9px;box-shadow:none}.score-overall{border-radius:8px;padding:6px}.score-overall span{font-size:7.5px}.score-overall strong{font-size:22px}.score-overall em{font-size:8px}.score-breakdown{gap:4px}.score-chip{font-size:8.4px;gap:4px;padding:4px 5px;border-radius:7px}.score-chip strong{min-width:22px;height:20px;font-size:11px}.legend{gap:4px;margin:0}.legend span{font-size:10px;padding:3px 5px}.writing-stack{gap:8px}.content.with-image.image-top .task-image{padding:0 34px}.content.with-image.image-top .task-image img{width:100%;max-width:692px;max-height:none}.content.with-image.image-left .task-image img{width:100%;max-width:100%;max-height:300px}.writing{box-shadow:none}.writing.static-comments{--comment-gutter-inset:8px;padding:24px 146px 28px;font-size:18.45px;line-height:1.52;min-height:760px}.writing.static-comments .comment-bubble{position:absolute;display:block;width:132px;max-width:132px;margin:0;font-size:9.15px;line-height:1.13;padding:4px 5px;overflow-wrap:anywhere}.writing.static-comments .comment-bubble strong{margin-bottom:2px}.comment-connector-layer,.comment-connector{display:none!important}.side-note{display:none!important}.comment-bubble{box-shadow:none;break-inside:avoid}}
+    *{box-sizing:border-box}body{margin:0;background:#f6f7f9;color:var(--ink);font-family:Arial,Helvetica,sans-serif;line-height:1.65}.page{max-width:1180px;margin:0 auto;padding:28px 18px}.header{margin-bottom:18px}.header h1{margin:0 0 8px;font-size:30px;line-height:1.2}.meta{color:var(--muted);font-size:15px}.prompt{white-space:pre-wrap;background:#fff;border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin:16px 0;font-weight:700;font-size:16px;line-height:1.6}.score-summary{display:grid;grid-template-columns:170px minmax(0,1fr);gap:12px;align-items:stretch;background:#fff;border:1px solid #fecaca;border-left:6px solid #b91c1c;border-radius:14px;padding:12px 14px;margin:0 0 16px;box-shadow:0 8px 24px rgba(15,23,42,.06)}.score-overall{display:grid;align-content:center;justify-items:start;gap:2px;background:#111827;color:#fff;border-radius:12px;padding:12px}.score-overall span{text-transform:uppercase;letter-spacing:.06em;font-size:11px;font-weight:800;color:#fecaca}.score-overall strong{font-size:34px;line-height:1;font-weight:900}.score-overall em{font-style:normal;font-size:12px;color:#e5e7eb}.score-breakdown{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.score-chip{display:flex;align-items:center;justify-content:space-between;gap:8px;background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:13px;font-weight:700;line-height:1.25}.score-chip span{color:#475569}.score-chip strong{display:grid;place-items:center;min-width:34px;height:30px;border-radius:999px;background:#b91c1c;color:#fff;font-size:16px}.content{display:grid;grid-template-columns:minmax(0,1fr);gap:26px;align-items:start}.content.with-image.image-left{grid-template-columns:minmax(260px,40%) minmax(0,1fr)}.writing-stack{display:grid;gap:18px;min-width:0}.writing-stack .legend{margin:0}.task-image{display:flex;justify-content:center;align-items:flex-start}.task-image img{width:min(100%,780px);height:auto;max-height:none;display:block;object-fit:contain;border:1px solid var(--line);border-radius:10px}.content.with-image.image-left .task-image img{width:100%;max-width:100%;max-height:560px}.content.with-image.image-top .task-image{padding:0 34px}.content.with-image.image-top .task-image img{width:100%;max-width:780px;max-height:none}.writing{position:relative;isolation:isolate;background:#fff;border:1px solid var(--line);border-radius:10px;padding:36px 34px;font-size:18px;line-height:1.72;overflow-wrap:anywhere;min-height:380px;overflow:hidden}.writing.static-comments{--comment-gutter-inset:10px;padding-left:154px;padding-right:154px;overflow:visible}.writing p{margin:0 0 16px}.writing p:last-child{margin-bottom:0}.editor-image-wrap{display:block;max-width:100%;margin:16px auto;text-align:center}.editor-image-wrap img{display:block;width:auto;max-width:min(100%,780px);max-height:560px;height:auto;margin:0 auto;border:1px solid var(--line);border-radius:10px;background:#fff}.watermark-layer{position:absolute;inset:0;z-index:0;display:flex;align-items:center;justify-content:center;pointer-events:none}.watermark-layer img{display:block;width:240px;height:240px;object-fit:contain;opacity:.1}.writing-content{position:relative;z-index:1}.suggest-add{color:#16a34a;font-weight:700}.suggest-delete{color:#dc2626;text-decoration:line-through;text-decoration-thickness:2px;background:#fef2f2}.feedback-node{border:1px solid currentColor;border-bottom-width:2px;border-radius:5px;padding:1px 3px;cursor:pointer;-webkit-box-decoration-break:clone;box-decoration-break:clone}.comment-marker{display:inline-block;margin-left:2px;color:currentColor;font-size:.64em;font-weight:800;line-height:1;vertical-align:super}.comment-row{position:relative}.comment-bubble{display:inline-block;max-width:250px;margin:0 8px 6px;padding:7px 9px;border:1px solid currentColor;border-radius:8px;font-size:12.5px;line-height:1.35;vertical-align:middle;box-shadow:0 4px 12px rgba(15,23,42,.08)}.writing.static-comments .comment-bubble{position:absolute;display:block;width:126px;max-width:126px;margin:0;z-index:3}.writing.static-comments .comment-bubble::before,.writing.static-comments .comment-bubble::after{display:none}.comment-connector-layer,.comment-connector{display:none!important}.writing.static-comments .comment-left{left:10px}.writing.static-comments .comment-right{right:10px}.writing.static-comments .feedback-node{position:relative}.comment-bubble strong{display:block;margin-bottom:3px}.comment-bubble span{display:block}.fb-grammar{background:var(--grammar-bg);color:#1d4ed8;border-color:var(--grammar-border)}.fb-vocabulary{background:var(--vocabulary-bg);color:#92400e;border-color:var(--vocabulary-border)}.fb-spelling{background:var(--spelling-bg);color:#9a3412;border-color:var(--spelling-border)}.fb-coherence{background:var(--coherence-bg);color:#6d28d9;border-color:var(--coherence-border)}.fb-task{background:var(--task-bg);color:#0e7490;border-color:var(--task-border)}.fb-style{background:var(--style-bg);color:#334155;border-color:var(--style-border)}.fb-punctuation{background:var(--grammar-bg);color:#1d4ed8;border-color:var(--grammar-border)}.fb-idea{background:var(--idea-bg);color:#86198f;border-color:var(--idea-border)}.legend{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0 18px}.legend span{border:1px solid currentColor;border-radius:7px;padding:5px 9px;font-size:13px;font-weight:700}.side-note{position:fixed;z-index:10;width:min(360px,calc(100vw - 24px));max-height:min(420px,calc(100vh - 24px));overflow:auto;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 16px 40px rgba(17,24,39,.18);padding:14px;display:none}.side-note.open{display:block}.side-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}.side-head strong{margin-right:auto}.side-note button{border:1px solid var(--line);background:#fff;border-radius:6px;width:32px;height:32px;cursor:pointer}@media(max-width:900px){.content.with-image.image-left{grid-template-columns:1fr}.score-summary{grid-template-columns:1fr}.content.with-image.image-top .task-image{padding:0}.watermark-layer img{width:200px;height:200px}.writing{font-size:17px;padding:28px 22px}.comment-bubble{max-width:220px}.writing.static-comments{padding-left:28px;padding-right:22px}.writing.static-comments .comment-bubble{position:static;width:auto;max-width:100%;margin:8px 0 10px}.comment-connector-layer,.comment-connector,.writing.static-comments .comment-bubble::before,.writing.static-comments .comment-bubble::after{display:none!important}}@media print{@page{size:portrait;margin:0}html,body{width:768px;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}.page{width:760px;max-width:760px;margin:0 auto;padding:12px 4px}.header{margin-bottom:6px}.header h1{font-size:28px}.meta{font-size:12px}.prompt{font-size:12px;line-height:1.34;padding:7px 9px;margin:6px 0}.score-summary{grid-template-columns:104px minmax(0,1fr);gap:6px;padding:6px 7px;margin:0 0 6px;border-left-width:4px;border-radius:9px;box-shadow:none}.score-overall{border-radius:8px;padding:6px}.score-overall span{font-size:7.5px}.score-overall strong{font-size:22px}.score-overall em{font-size:8px}.score-breakdown{gap:4px}.score-chip{font-size:8.4px;gap:4px;padding:4px 5px;border-radius:7px}.score-chip strong{min-width:22px;height:20px;font-size:11px}.legend{gap:4px;margin:0}.legend span{font-size:10px;padding:3px 5px}.writing-stack{gap:8px}.content.with-image.image-top .task-image{padding:0 34px}.content.with-image.image-top .task-image img{width:100%;max-width:692px;max-height:none}.content.with-image.image-left .task-image img{width:100%;max-width:100%;max-height:300px}.writing{box-shadow:none}.writing.static-comments{--comment-gutter-inset:8px;padding:24px 146px 28px;font-size:18.45px;line-height:1.52;min-height:760px}.writing.static-comments .comment-bubble{position:absolute;display:block;width:132px;max-width:132px;margin:0;font-size:9.15px;line-height:1.13;padding:4px 5px;overflow-wrap:anywhere}.writing.static-comments .comment-bubble strong{margin-bottom:2px}.comment-connector-layer,.comment-connector{display:none!important}.side-note{display:none!important}.comment-bubble{box-shadow:none;break-inside:avoid}}
     .writing.static-comments{padding:36px 34px;overflow:hidden;min-height:380px}.writing.static-comments .comment-bubble{display:none!important}.writing.static-comments .comment-marker{display:inline-grid;place-items:center;min-width:1.55em;height:1.55em;margin-left:4px;border-radius:999px;background:#111827;color:#fff!important;font-size:.68em;font-weight:900;line-height:1;vertical-align:super;box-shadow:0 0 0 2px #fff,0 1px 4px rgba(15,23,42,.25)}.comment-summary{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px;box-shadow:0 8px 24px rgba(15,23,42,.06);break-inside:auto}.comment-summary-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.comment-summary-head h2{margin:0;font-size:20px;line-height:1.2}.comment-summary-head span{color:var(--muted);font-size:13px;font-weight:800}.comment-summary-list{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.comment-card{border:1px solid currentColor;border-left-width:5px;border-radius:10px;padding:10px 12px;break-inside:avoid;page-break-inside:avoid}.comment-card strong{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:13px;line-height:1.25}.comment-card strong span{display:grid;place-items:center;min-width:26px;height:26px;border-radius:999px;background:#111827;color:#fff!important;border:2px solid #fff;box-shadow:0 1px 4px rgba(15,23,42,.22);font-size:12px;font-weight:900}.comment-card p{margin:0;color:#1f2937;font-size:13px;line-height:1.45}@media(max-width:900px){.comment-summary-list{grid-template-columns:1fr}}@media print{.writing.static-comments{padding:24px 34px 28px;font-size:18.45px;line-height:1.52;min-height:0}.writing.static-comments .comment-marker{min-width:1.6em;height:1.6em;margin-left:3px;font-size:.7em;box-shadow:0 0 0 1px #fff}.comment-summary{padding:10px 12px;border-radius:9px;box-shadow:none}.comment-summary-head{margin-bottom:8px}.comment-summary-head h2{font-size:15px}.comment-summary-head span{font-size:10px}.comment-summary-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.comment-card{border-left-width:4px;border-radius:7px;padding:6px 7px}.comment-card strong{font-size:10px;gap:5px;margin-bottom:3px}.comment-card strong span{min-width:20px;height:20px;font-size:10px;border-width:1px}.comment-card p{font-size:9.5px;line-height:1.25}}
     .student-export{background:#f4f6f8;color:#182230}.student-export .page{max-width:1060px;padding:34px 30px 42px}.student-export .header{margin-bottom:12px}.student-export .header h1{font-size:32px;line-height:1.12;margin-bottom:6px}.student-export .meta{font-size:14px}.student-export .prompt,.student-export .score-summary,.student-export .writing,.student-export .comment-summary{box-shadow:0 1px 2px rgba(15,23,42,.04)}.student-export .prompt{margin:14px 0 14px;padding:14px 16px;border-radius:12px}.student-export .score-summary{margin-bottom:18px;border-radius:14px}.student-export .content{gap:20px}.student-export .writing-stack{gap:14px}.student-export .content.with-image.image-top .task-image{padding:0 34px 2px}.student-export .content.with-image.image-top .task-image img{width:100%;max-width:100%;border-radius:12px;background:#fff}.student-export .legend{gap:7px;margin:0 0 3px}.student-export .legend span{border-radius:8px;padding:5px 8px}.student-export .writing.static-comments{border-radius:13px;padding:34px 34px 36px;font-size:18px;line-height:1.66}.student-export .writing p{margin-bottom:17px}.student-export .comment-summary{border-radius:13px;padding:18px}.student-export .comment-summary-list{gap:10px}.student-export .comment-card{border-radius:11px;padding:11px 12px}.student-export .watermark-layer img{width:260px;height:260px;opacity:.08}@media print{@page{size:portrait;margin:8mm}html,body{width:auto;background:#fff}.student-export{background:#fff}.student-export .page{width:auto;max-width:none;margin:0;padding:0 6px 8px}.student-export .header{margin-bottom:7px}.student-export .header h1{font-size:27px;line-height:1.08;margin-bottom:3px}.student-export .meta{font-size:11px}.student-export .prompt{font-size:11.5px;line-height:1.35;margin:6px 0 7px;padding:7px 9px;border-radius:8px}.student-export .score-summary{grid-template-columns:112px minmax(0,1fr);gap:6px;margin:0 0 8px;padding:7px 8px;border-radius:9px;box-shadow:none}.student-export .score-overall{padding:7px;border-radius:8px}.student-export .score-overall strong{font-size:24px}.student-export .score-chip{font-size:8.8px;padding:4px 5px}.student-export .score-chip strong{min-width:22px;height:20px}.student-export .content{gap:9px}.student-export .writing-stack{gap:8px}.student-export .content.with-image.image-top .task-image{padding:0 28px 2px}.student-export .content.with-image.image-top .task-image img{width:100%;max-width:100%;border-radius:8px}.student-export .legend{gap:4px;margin:0}.student-export .legend span{font-size:9.5px;padding:3px 5px;border-radius:5px}.student-export .writing.static-comments{padding:22px 28px 24px;font-size:17px;line-height:1.5;border-radius:9px;box-shadow:none}.student-export .writing p{margin-bottom:12px}.student-export .writing.static-comments .comment-marker{min-width:1.55em;height:1.55em}.student-export .watermark-layer img{width:230px;height:230px;opacity:.075}.student-export .comment-summary{margin-top:0;padding:10px;border-radius:9px;box-shadow:none}.student-export .comment-summary-head{margin-bottom:8px}.student-export .comment-summary-list{gap:7px}.student-export .comment-card{border-radius:8px;padding:7px 8px}.student-export .comment-card p{font-size:9.5px;line-height:1.28}}
-    .feedback-node.fb-grammar,.comment-card.fb-grammar,.legend .fb-grammar{border-style:dotted;background-image:radial-gradient(rgba(15,23,42,.28) 1px,transparent 1.4px);background-size:6px 6px}
-    .feedback-node.fb-vocabulary,.comment-card.fb-vocabulary,.legend .fb-vocabulary{border-style:solid;background-image:repeating-linear-gradient(135deg,rgba(15,23,42,.15) 0 2px,transparent 2px 8px)}
-    .feedback-node.fb-spelling,.comment-card.fb-spelling,.legend .fb-spelling{border-style:dashed;background-image:repeating-linear-gradient(0deg,rgba(15,23,42,.11) 0 1px,transparent 1px 7px),repeating-linear-gradient(90deg,rgba(15,23,42,.11) 0 1px,transparent 1px 7px)}
-    .feedback-node.fb-coherence,.comment-card.fb-coherence,.legend .fb-coherence{border-style:double;background-image:repeating-linear-gradient(0deg,rgba(15,23,42,.13) 0 2px,transparent 2px 9px)}
+    .feedback-node.fb-grammar,.comment-card.fb-grammar,.legend .fb-grammar{border-style:dotted;background-image:none}
+    .feedback-node.fb-vocabulary,.comment-card.fb-vocabulary,.legend .fb-vocabulary{border-style:solid;background-image:none}
+    .feedback-node.fb-spelling,.comment-card.fb-spelling,.legend .fb-spelling{border-style:dashed;background-image:none}
+    .feedback-node.fb-coherence,.comment-card.fb-coherence,.legend .fb-coherence{border-style:double;background-image:none}
     .feedback-node.fb-task,.comment-card.fb-task,.legend .fb-task{border-style:solid;border-width:2px;background-image:none}
-    .feedback-node.fb-style,.comment-card.fb-style,.legend .fb-style{border-style:dashed;background-image:repeating-linear-gradient(90deg,rgba(15,23,42,.15) 0 2px,transparent 2px 8px)}
-    .feedback-node.fb-idea,.comment-card.fb-idea,.legend .fb-idea{border-style:solid;background-image:radial-gradient(circle at 2px 2px,rgba(15,23,42,.2) 1px,transparent 1.6px),radial-gradient(circle at 8px 8px,rgba(15,23,42,.16) 1px,transparent 1.6px);background-size:12px 12px}
+    .feedback-node.fb-style,.comment-card.fb-style,.legend .fb-style{border-style:dashed;background-image:none}
+    .feedback-node.fb-idea,.comment-card.fb-idea,.legend .fb-idea{border-style:solid;background-image:none}
     .student-export .comment-summary{padding:24px 26px}.student-export .comment-summary-head{margin-bottom:16px}.student-export .comment-summary-head h2{font-size:23px}.student-export .comment-summary-head span{font-size:14px}.student-export .comment-summary-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.student-export .comment-card{padding:18px 18px;border-left-width:8px}.student-export .comment-card strong{font-size:16.5px;gap:10px;margin-bottom:10px}.student-export .comment-card strong span{min-width:34px;height:34px;font-size:15px}.student-export .comment-card p{font-size:16px;line-height:1.55;max-width:none}.student-export .comment-images{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin-top:12px;align-items:start}.student-export .comment-image-thumb{display:flex;width:100%;min-height:170px;max-height:340px;align-items:center;justify-content:center;padding:7px;border:1px solid var(--line);border-radius:10px;background:#fff;overflow:hidden}.student-export .comment-images img{display:block;width:100%;height:auto;max-height:320px;border:0;border-radius:7px;object-fit:contain;background:#fff}.side-note .comment-images{display:grid;grid-template-columns:1fr;gap:8px;margin-top:10px}.side-note .comment-images img{display:block;width:100%;max-height:240px;border:1px solid var(--line);border-radius:8px;object-fit:contain}@media(max-width:760px){.student-export .comment-summary-list{grid-template-columns:1fr}}@media print{.student-export .comment-summary{padding:15px 16px}.student-export .comment-summary-head{margin-bottom:10px}.student-export .comment-summary-head h2{font-size:18px}.student-export .comment-summary-head span{font-size:11px}.student-export .comment-summary-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.student-export .comment-card{padding:11px 12px;border-left-width:6px}.student-export .comment-card strong{font-size:13.5px;gap:7px;margin-bottom:7px}.student-export .comment-card strong span{min-width:26px;height:26px;font-size:12.5px}.student-export .comment-card p{font-size:14.5px;line-height:1.45;max-width:none}.student-export .comment-images{grid-template-columns:1fr;gap:7px;margin-top:8px}.student-export .comment-image-thumb{min-height:130px;max-height:220px;padding:5px;border-radius:7px}.student-export .comment-images img{width:100%;max-height:208px;border-radius:5px}}
+  </style>`;
+      }
+
+      function exportReadabilityCss(settings = {}) {
+        const readability = normalizeReadabilitySettings(settings);
+        const imageScale = readability.imageSize / 100;
+        return `<style>
+    :root{--student-text-size:${readability.textSize}px;--pasted-image-scale:${imageScale}}
+    .writing,.student-export .writing.static-comments{font-size:var(--student-text-size)!important}
+    .editor-image-wrap,.student-export .editor-image-wrap{max-width:100%!important}
+    .editor-image-wrap img,.student-export .editor-image-wrap img{width:100%!important;max-width:100%!important;max-height:none!important}
+    @media(max-width:900px){.writing,.student-export .writing.static-comments{font-size:var(--student-text-size)!important}}
+    @media print{.writing.static-comments,.student-export .writing.static-comments{font-size:var(--student-text-size)!important}}
+    .student-theme-dark{background:#0b1120;color:#e5e7eb}.student-theme-dark .prompt,.student-theme-dark .score-summary,.student-theme-dark .writing,.student-theme-dark .comment-summary{background:#111827;color:#e5e7eb;border-color:#334155;box-shadow:none}.student-theme-dark .score-chip,.student-theme-dark .comment-image-thumb,.student-theme-dark .editor-image-wrap img{background:#172033;border-color:#334155}.student-theme-dark .score-chip span,.student-theme-dark .meta,.student-theme-dark .comment-summary-head span,.student-theme-dark .comment-card p{color:#cbd5e1}.student-theme-dark .suggest-delete{background:#4a1010;color:#fecaca}
+    .student-theme-contrast{background:#000;color:#000}.student-theme-contrast .prompt,.student-theme-contrast .score-summary,.student-theme-contrast .writing,.student-theme-contrast .comment-summary,.student-theme-contrast .comment-card,.student-theme-contrast .comment-image-thumb{background:#fff;color:#000;border:2px solid #000;box-shadow:none}.student-theme-contrast .score-overall,.student-theme-contrast .score-chip strong,.student-theme-contrast .comment-card strong span,.student-theme-contrast .writing.static-comments .comment-marker{background:#000;color:#fff!important;border-color:#000}.student-theme-contrast .feedback-node,.student-theme-contrast .legend span,.student-theme-contrast .comment-card{background:#fff!important;color:#000!important;border-color:#000!important}.student-theme-contrast .suggest-add{color:#006b2e!important;font-weight:900}.student-theme-contrast .suggest-delete{color:#b00020!important;background:#fff!important;text-decoration-thickness:3px}
   </style>`;
       }
 
       function buildStudentDocument(format = "html") {
         const session = getSession();
         const title = session.title || "Writing Feedback";
+        const readability = normalizeReadabilitySettings(session.readability || defaultReadability);
         const hasImage = Boolean(session.taskImage);
         const layoutClass = hasImage ? `content with-image ${session.layout === "image-top" ? "image-top" : "image-left"}` : "content";
         const staticComments = format !== "html";
@@ -3640,8 +4280,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>${escapeHtml(title)}</title>
   ${exportCss({ staticComments })}
+  ${exportReadabilityCss(readability)}
 </head>
-<body class="student-export student-${format} ${staticComments ? "student-static" : "student-interactive"}">
+<body class="student-export student-${format} ${staticComments ? "student-static" : "student-interactive"} student-theme-${readability.theme}">
   <main class="page">
     <section class="header">
       <h1>${escapeHtml(title)}</h1>
@@ -3708,6 +4349,17 @@
         const template = document.createElement("template");
         template.innerHTML = String(html);
         template.content.querySelectorAll("script, style, iframe, object, embed, link, meta").forEach(node => node.remove());
+        template.content.querySelectorAll(".image-resize-handle").forEach(node => node.remove());
+        template.content.querySelectorAll(".editor-image-wrap[data-editor-image]").forEach(wrap => {
+          wrap.classList.remove("resizing");
+          wrap.setAttribute("contenteditable", "false");
+          const savedWidth = clampNumber(wrap.dataset.imageWidth || parseFloat(wrap.style.width), 120, 1400, 0);
+          if (savedWidth) {
+            const width = Math.round(savedWidth);
+            wrap.style.width = `${width}px`;
+            wrap.dataset.imageWidth = String(width);
+          }
+        });
         template.content.querySelectorAll("[data-typing-anchor]").forEach(anchor => {
           anchor.removeAttribute("data-typing-anchor");
           if (!anchor.textContent) anchor.remove();
@@ -3735,6 +4387,8 @@
       editingMode.addEventListener("click", () => setMode("editing"));
       suggestingMode.addEventListener("click", () => setMode("suggesting"));
       clearEverythingBtn.addEventListener("click", clearEverythingForNewPaper);
+      readabilityTheme.addEventListener("change", () => applyReadabilitySettings(getReadabilitySettings()));
+      studentTextSize.addEventListener("input", () => applyReadabilitySettings(getReadabilitySettings()));
       feedbackType.addEventListener("change", renderQuickNotes);
       scoreGrid.addEventListener("change", updateBandScore);
       quickNotes.addEventListener("click", event => {
@@ -3853,6 +4507,13 @@
 
       editor.addEventListener("mouseup", maybeShowFeedbackPopover);
       editor.addEventListener("click", openFeedbackFromEditorClick);
+      editor.addEventListener("pointerdown", beginEditorImageResize);
+      document.addEventListener("pointermove", updateEditorImageResize);
+      document.addEventListener("pointerup", finishEditorImageResize);
+      document.addEventListener("pointercancel", finishEditorImageResize);
+      editor.addEventListener("mousedown", beginEditorImageResize);
+      document.addEventListener("mousemove", updateEditorImageResize);
+      document.addEventListener("mouseup", finishEditorImageResize);
       editor.addEventListener("keyup", event => {
         updateWordCount();
         if (event.key.startsWith("Arrow") || event.key === "Shift") maybeShowFeedbackPopover();
@@ -3874,7 +4535,8 @@
       });
 
       editor.addEventListener("paste", async event => {
-        if (await insertClipboardImagesIntoEditor(event)) return;
+        const files = clipboardImageFiles(event.clipboardData);
+        if (files.length && await insertClipboardImagesIntoEditor(event)) return;
         if (mode === "suggesting") {
           ensureCompositionState();
           if (compositionMarker) {
@@ -3906,20 +4568,32 @@
       });
 
       editor.addEventListener("contextmenu", event => {
+        const imageNode = event.target.closest?.(".editor-image-wrap[data-editor-image]");
+        if (imageNode) {
+          event.preventDefault();
+          hideFeedbackPopover();
+          showDeletionContextMenu(event, imageNode, "remove-image");
+          return;
+        }
         const deletionNode = closestChange(event.target, "deletion");
-        if (!deletionNode) {
+        const additionNode = closestChange(event.target, "addition");
+        const changeNode = deletionNode || additionNode;
+        if (!changeNode) {
           hideDeletionContextMenu();
           return;
         }
         event.preventDefault();
         hideFeedbackPopover();
-        showDeletionContextMenu(event, deletionNode);
+        showDeletionContextMenu(event, changeNode, additionNode ? "remove-addition" : "restore-deletion");
       });
 
       restoreDeletionBtn.addEventListener("click", () => {
         const target = deletionContextTarget;
+        const action = deletionContextAction;
         hideDeletionContextMenu();
-        restoreDeletionText(target);
+        if (action === "remove-addition") removeAdditionText(target);
+        else if (action === "remove-image") removeEditorImage(target);
+        else restoreDeletionText(target);
       });
 
       document.getElementById("importTextBtn").addEventListener("click", () => {
@@ -3931,8 +4605,12 @@
         const reader = new FileReader();
         reader.onload = () => {
           pushUndoSnapshot();
-          if (file.type === "text/html" || /\.html?$/i.test(file.name)) editor.innerHTML = sanitizeEditorHtml(String(reader.result));
-          else editor.textContent = String(reader.result);
+          if (file.type === "text/html" || /\.html?$/i.test(file.name)) {
+            editor.innerHTML = sanitizeEditorHtml(String(reader.result));
+            enhanceEditorImages(editor);
+          } else {
+            editor.textContent = String(reader.result);
+          }
           updateWordCount();
           renderTeacherComments();
           showMessage("Writing imported");
@@ -4013,8 +4691,10 @@
       window.addEventListener("beforeunload", () => autosaveNow());
 
       if (!restoreAutosavedSession()) {
+        applyReadabilitySettings(defaultReadability);
         setMode("editing");
         normalizeSuggestions();
+        enhanceEditorImages(editor);
         renderImage();
         renderTeacherWatermark();
         renderTeacherComments();
