@@ -620,6 +620,17 @@ function showAuth(mode, role = state.authRole) {
   setView("auth");
 }
 
+function getAuthRedirectUrl() {
+  if (window.location.protocol === "file:") return "";
+  const url = new URL(window.location.href);
+  url.hash = "";
+  url.search = "";
+  if (url.pathname.endsWith("/index.html")) {
+    url.pathname = url.pathname.slice(0, -"index.html".length);
+  }
+  return url.href;
+}
+
 async function submitAuth(event) {
   event.preventDefault();
   if (!isSupabaseConfigured) {
@@ -630,10 +641,13 @@ async function submitAuth(event) {
   try {
     const supabase = await getSupabase();
     const credentials = { email: dom.authEmail.value.trim(), password: dom.authPassword.value };
+    const authOptions = { data: { account_role: state.authRole } };
+    const emailRedirectTo = getAuthRedirectUrl();
+    if (emailRedirectTo) authOptions.emailRedirectTo = emailRedirectTo;
     const response = state.authMode === "signup"
       ? await supabase.auth.signUp({
         ...credentials,
-        options: { data: { account_role: state.authRole } }
+        options: authOptions
       })
       : await supabase.auth.signInWithPassword(credentials);
     if (response.error) throw response.error;

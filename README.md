@@ -1,8 +1,8 @@
 # Writing Feedback Cloud Version
 
-This is a separate Vercel/Supabase-ready version of the Writing Feedback app. It keeps the original marking editor available for free guest use, then adds teacher and student account workspaces for saving, organizing, and sharing marked papers.
+This is a separate GitHub Pages, Vercel, and Supabase-ready version of the Writing Feedback app. It keeps the original marking editor available for free guest use, then adds teacher and student account workspaces for saving, organizing, and sharing marked papers.
 
-This version is intentionally static. There is no build step, so it can be opened locally or deployed to Vercel as plain files.
+This version is intentionally static. There is no build step, so it can be opened locally or deployed as plain files.
 
 ## What This Version Adds
 
@@ -31,7 +31,7 @@ Guest mode works without any Supabase setup and autosaves to the current browser
 ## Enable Supabase Account Mode
 
 1. Create a Supabase project.
-2. Open Supabase SQL editor and run `supabase/schema.sql`.
+2. Open Supabase SQL editor, clear the editor completely, paste the full contents of `supabase/schema.sql` starting from line 1, then click Run.
 3. Edit `config.js`.
 4. Add your project values:
 
@@ -44,6 +44,19 @@ Guest mode works without any Supabase setup and autosaves to the current browser
 
 The anon key is safe to expose in the frontend when row-level security is enabled. Do not put the service-role key in this app.
 
+## Deploy To GitHub Pages
+
+1. Push this folder to a GitHub repository.
+2. In the repository, open `Settings` -> `Pages`.
+3. Set the source to deploy from the branch that contains this app.
+4. Select `/root` if `index.html` is in the repository root.
+5. Wait for GitHub to show the published site URL.
+6. In Supabase, open `Authentication` -> `URL Configuration`.
+7. Set `Site URL` to the GitHub Pages URL, such as `https://your-name.github.io/your-repo/`.
+8. Add the same URL to the redirect allow list. You can also add `https://your-name.github.io/your-repo/**`.
+
+GitHub Pages hosts the static app. Supabase handles auth, database storage, and row-level security.
+
 ## Deploy To Vercel
 
 1. Push this folder to a GitHub repository.
@@ -51,7 +64,16 @@ The anon key is safe to expose in the frontend when row-level security is enable
 3. Keep the framework preset as static/no build, or leave build settings blank.
 4. Deploy.
 
-Vercel hosts the static app. Supabase handles auth, database storage, and row-level security.
+Vercel is optional. It can host the same static app if you prefer its preview deployments and rollback tools.
+
+## Confirmation Email 404
+
+If a Supabase confirmation email opens a GitHub Pages `404` page, check these two things:
+
+1. Open the GitHub Pages URL directly before testing auth. If the app itself is 404, enable Pages in `Settings` -> `Pages`, select the correct branch and `/root` folder, and wait for the Pages deployment to finish.
+2. In Supabase `Authentication` -> `URL Configuration`, make sure `Site URL` and the redirect allow list use the exact published app URL, including the repository path and trailing slash.
+
+For GitHub Pages, use the app root URL as the redirect target. Do not use a route like `/auth/callback` unless that file actually exists in the static site.
 
 ## Data Model
 

@@ -88,38 +88,27 @@ create table if not exists public.paper_shares (
   updated_at timestamptz not null default now()
 );
 
-create index if not exists collections_owner_updated_idx
-  on public.collections (owner_id, updated_at desc);
+create index if not exists collections_owner_updated_idx on public.collections (owner_id, updated_at desc);
 
-create index if not exists papers_owner_updated_idx
-  on public.papers (owner_id, updated_at desc);
+create index if not exists papers_owner_updated_idx on public.papers (owner_id, updated_at desc);
 
-create index if not exists papers_owner_collection_updated_idx
-  on public.papers (owner_id, collection_id, updated_at desc);
+create index if not exists papers_owner_collection_updated_idx on public.papers (owner_id, collection_id, updated_at desc);
 
-create index if not exists papers_session_json_gin_idx
-  on public.papers using gin (session_json);
+create index if not exists papers_session_json_gin_idx on public.papers using gin (session_json);
 
-create index if not exists classes_owner_updated_idx
-  on public.classes (owner_id, updated_at desc);
+create index if not exists classes_owner_updated_idx on public.classes (owner_id, updated_at desc);
 
-create unique index if not exists class_members_class_email_unique_idx
-  on public.class_members (class_id, student_email);
+create unique index if not exists class_members_class_email_unique_idx on public.class_members (class_id, student_email);
 
-create index if not exists class_members_teacher_idx
-  on public.class_members (teacher_id, class_id);
+create index if not exists class_members_teacher_idx on public.class_members (teacher_id, class_id);
 
-create index if not exists class_members_student_email_idx
-  on public.class_members (student_email);
+create index if not exists class_members_student_email_idx on public.class_members (student_email);
 
-create unique index if not exists paper_shares_paper_email_unique_idx
-  on public.paper_shares (paper_id, student_email);
+create unique index if not exists paper_shares_paper_email_unique_idx on public.paper_shares (paper_id, student_email);
 
-create index if not exists paper_shares_teacher_idx
-  on public.paper_shares (teacher_id, shared_at desc);
+create index if not exists paper_shares_teacher_idx on public.paper_shares (teacher_id, shared_at desc);
 
-create index if not exists paper_shares_student_email_idx
-  on public.paper_shares (student_email, shared_at desc);
+create index if not exists paper_shares_student_email_idx on public.paper_shares (student_email, shared_at desc);
 
 create or replace function public.set_updated_at()
 returns trigger
