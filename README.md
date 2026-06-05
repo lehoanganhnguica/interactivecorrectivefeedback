@@ -1,65 +1,89 @@
-# Writing Feedback Studio
+# Writing Feedback Cloud Version
 
-A single-file browser app for marking student writing with editing mode, suggesting mode, feedback comments, IELTS band scoring, image prompts, session save/load, and standalone student exports.
+This is a separate Vercel/Supabase-ready version of the Writing Feedback app. It keeps the original marking editor available for free guest use, then adds teacher and student account workspaces for saving, organizing, and sharing marked papers.
 
-## Quick Start
+This version is intentionally static. There is no build step, so it can be opened locally or deployed to Vercel as plain files.
 
-Open `index.html` in a modern browser. No build step, backend, account, or internet connection is required.
+## What This Version Adds
 
-Use the **Download for offline use** button in the app to save a self-contained HTML copy. Open that downloaded file whenever you want to use the app offline.
+- Landing page with three choices: create account, log in, or continue as guest.
+- Guest workspace that autosaves papers locally in the current browser.
+- Teacher account workspace that autosaves collections and marked papers in Supabase.
+- Student account workspace for opening shared marked papers as interactive read-only HTML exports.
+- Teacher classes, student email rosters, and class-based paper sharing.
+- Saved paper records keep the original editor session JSON, so teachers can reopen, edit, save, and export later.
+- Shared paper records keep both the original session JSON and a generated student HTML export.
+- Embedded copy of the existing editor at `editor.html`.
+- Supabase SQL schema with row-level security in `supabase/schema.sql`.
 
-The app is a static browser app and is designed to work on both macOS and Windows in current versions of Chrome, Edge, Firefox, and Safari.
+## Local Preview
 
-## How The App Works
+Open `index.html` directly, or run a small local static server:
 
-1. Fill in the assignment details, student name, and optional task prompt.
-2. Use **Editing** mode to paste, type, import, or format the student's writing.
-3. Add task prompt images in **Add image(s)**. For images inside the student writing, stay in **Editing** mode, click the writing area, then paste with **Cmd+V** on macOS or **Ctrl+V** on Windows.
-4. Switch to **Suggesting** mode to mark changes:
-   - teacher additions appear in bold green;
-   - deleted student text remains visible in red strikethrough;
-   - right-click a green addition to remove it;
-   - right-click a red deletion to restore the original text;
-   - undo and redo work for app edits.
-5. Select text to add feedback comments. Choose a feedback type, write an explanation, and paste screenshots into the comment if useful. Horizontal landscape images work best in student PDF exports.
-6. Enter whole-band IELTS scores for the four criteria. The app calculates the overall band by averaging and rounding to the nearest half band.
-7. Use the **Readability** controls below the formatting bar to switch between light, dark, and contrast themes, increase or decrease the student text size, and use **Default** to return the student export text to 18px. Feedback colors adapt to the selected theme for readability.
-8. Drag the bottom-right corner of a pasted writing image to resize it. Right-click a pasted writing image and choose **Remove image** to delete it.
-9. Export for the student:
-   - **Student HTML** downloads a standalone feedback page;
-   - **PDF** opens the browser print dialog so you can save as PDF.
+```bash
+python3 -m http.server 8780
+```
 
-The **How it works** button beside **Download for offline use** shows these instructions inside the app.
+Then open `http://127.0.0.1:8780`.
 
-## Sessions
+Guest mode works without any Supabase setup and autosaves to the current browser.
 
-The app autosaves the current draft in the same browser, so refreshing, accidentally closing the window, or reopening the app on the same device should restore the latest work.
+## Enable Supabase Account Mode
 
-Use **Save session** to download an editable JSON file containing the current writing, suggestions, comments, comment images, scores, task image, readability choices, and settings.
+1. Create a Supabase project.
+2. Open Supabase SQL editor and run `supabase/schema.sql`.
+3. Edit `config.js`.
+4. Add your project values:
 
-Use **Load session** to restore that JSON file later and continue marking.
+   ```js
+   window.WFS_CONFIG = {
+     supabaseUrl: "https://your-project.supabase.co",
+     supabaseAnonKey: "your-public-anon-key"
+   };
+   ```
 
-Autosave is local to the browser and device. To move work to another browser or computer, use **Save session** and **Load session**.
+The anon key is safe to expose in the frontend when row-level security is enabled. Do not put the service-role key in this app.
 
-Account sign-in and cloud session storage are possible, but they require an external backend such as Firebase or Supabase because GitHub Pages only hosts static files.
+## Deploy To Vercel
 
-## CrushIELTS Logo
+1. Push this folder to a GitHub repository.
+2. Import the repository into Vercel.
+3. Keep the framework preset as static/no build, or leave build settings blank.
+4. Deploy.
 
-The CrushIELTS logo is off by default. Teachers working at CrushIELTS can enable it using the checkbox near the bottom of the teacher view. Other users can leave it off.
+Vercel hosts the static app. Supabase handles auth, database storage, and row-level security.
 
-## Files
+## Data Model
 
-- `index.html` - the complete app
-- `README.md` - usage notes
+- `profiles`: signed-in users with an `account_role` of `teacher` or `student`.
+- `collections`: paper folders owned by a teacher.
+- `papers`: saved marked papers owned by a teacher, optionally assigned to a collection.
+- `papers.session_json`: the complete original editor session, including writing, comments, feedback types, scores, images, readability settings, and export settings.
+- `classes`: teacher-owned class groups.
+- `class_members`: student emails added to a teacher class.
+- `paper_shares`: generated student HTML exports shared with specific student account emails.
 
-## GitHub Pages Deployment
+Students see shares addressed to the email they used for their account. Teachers do not need admin-level user lookup; they add the student account email to a class, then share the current marked paper with that class.
 
-1. Create a new GitHub repository.
-2. Upload `index.html` and `README.md` to the repository root.
-3. In the repository, open **Settings** -> **Pages**.
-4. Set the source to deploy from the main branch root.
-5. Open the published GitHub Pages URL after deployment finishes.
+## Teacher And Student Workflow
 
-## Privacy And Offline Use
+1. A teacher creates a teacher account.
+2. The teacher creates a class in the `Classes` tab.
+3. The teacher adds student account emails to the class roster.
+4. The teacher marks a paper, opens the class, and chooses `Share current paper`.
+5. Each student logs in with a student account using that email.
+6. The shared paper appears in the student workspace, grouped by class.
+7. Students open the shared paper as an interactive HTML export and click highlighted feedback to view the teacher comments.
 
-The app runs locally in the browser. It does not require a server. If you use the downloaded offline copy, the app can work entirely without internet access.
+For production use with very large image-heavy papers, consider moving export images to Supabase Storage instead of storing every generated HTML export directly in Postgres.
+
+## Guest Mode
+
+Guest mode uses browser local storage. It is meant for teachers who do not want accounts. It should be treated like the current offline app: useful immediately and autosaved on the same browser, but not synced across devices.
+
+## Autosave Behavior
+
+- The cloud workspace hides manual session import/export controls because papers autosave while teachers work.
+- Signed-in users autosave paper session JSON to Supabase.
+- Guest users autosave the same paper session JSON to local storage.
+- The embedded editor keeps its export buttons near the editing controls, so teachers can export the current paper as Student HTML or PDF from the marking area.
