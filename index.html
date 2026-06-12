@@ -1131,6 +1131,12 @@
       background: #fff;
     }
 
+    .editor-image-wrap.image-selected {
+      outline: 3px solid #2563eb;
+      outline-offset: 4px;
+      border-radius: 16px;
+    }
+
     .image-resize-handle {
       position: absolute;
       right: -7px;
@@ -1153,6 +1159,7 @@
 
     .editor-image-wrap:hover .image-resize-handle,
     .editor-image-wrap:focus-within .image-resize-handle,
+    .editor-image-wrap.image-selected .image-resize-handle,
     .editor-image-wrap.resizing .image-resize-handle {
       opacity: 1;
     }
@@ -3345,6 +3352,7 @@
       }
 
       function normalizeSuggestions() {
+        normalizeEditorImages(editor);
         editor.querySelectorAll("[data-typing-anchor]").forEach(anchor => {
           if (anchor.textContent.length > 0) delete anchor.dataset.typingAnchor;
         });
@@ -3679,6 +3687,60 @@
         return nextWidth;
       }
 
+      function clearEditorImageSelection(except = null) {
+        editor.querySelectorAll(".editor-image-wrap.image-selected").forEach(wrap => {
+          if (wrap !== except) wrap.classList.remove("image-selected");
+        });
+      }
+
+      function selectEditorImage(wrap) {
+        if (!wrap) return;
+        clearEditorImageSelection(wrap);
+        wrap.classList.add("image-selected");
+      }
+
+      function imageWidthFromLooseImage(img) {
+        const dataWidth = clampNumber(img.dataset?.imageWidth, 120, 1400, 0);
+        const pixelStyle = String(img.style?.width || "").match(/^(\d+(?:\.\d+)?)px$/i);
+        const styleWidth = pixelStyle ? clampNumber(pixelStyle[1], 120, 1400, 0) : 0;
+        const attrWidth = clampNumber(img.getAttribute?.("width"), 120, 1400, 0);
+        const renderedWidth = img.isConnected && editor.contains(img)
+          ? clampNumber(img.getBoundingClientRect().width, 120, 1400, 0)
+          : 0;
+        return dataWidth || styleWidth || attrWidth || renderedWidth || defaultEditorImageWidth();
+      }
+
+      function wrapLooseEditorImages(root = editor, options = {}) {
+        const addHandles = options.addHandles !== false;
+        let changed = false;
+        root.querySelectorAll?.("img").forEach(img => {
+          if (img.closest(".editor-image-wrap[data-editor-image]")) return;
+          const width = imageWidthFromLooseImage(img);
+          const wrap = document.createElement("span");
+          wrap.className = "editor-image-wrap";
+          wrap.dataset.editorImage = "true";
+          wrap.contentEditable = "false";
+          img.before(wrap);
+          wrap.appendChild(img);
+          img.alt = img.alt || "Pasted image";
+          img.draggable = false;
+          img.removeAttribute("width");
+          img.removeAttribute("height");
+          img.style.width = "";
+          img.style.height = "";
+          if (addHandles) {
+            setEditorImageWidth(wrap, width);
+            addEditorImageHandle(wrap);
+          } else {
+            const savedWidth = Math.round(clampNumber(width, 120, 1400, defaultEditorImageWidth()));
+            wrap.style.width = `${savedWidth}px`;
+            wrap.dataset.imageWidth = String(savedWidth);
+          }
+          changed = true;
+        });
+        return changed;
+      }
+
       function addEditorImageHandle(wrap) {
         if (!wrap || wrap.querySelector(".image-resize-handle")) return;
         const handle = document.createElement("button");
@@ -3691,6 +3753,7 @@
       }
 
       function enhanceEditorImages(root = editor) {
+        wrapLooseEditorImages(root);
         root.querySelectorAll?.(".editor-image-wrap[data-editor-image]").forEach(wrap => {
           wrap.contentEditable = "false";
           wrap.classList.remove("resizing");
@@ -3703,6 +3766,12 @@
           if (!wrap.style.width) setEditorImageWidth(wrap, defaultEditorImageWidth());
           addEditorImageHandle(wrap);
         });
+      }
+
+      function normalizeEditorImages(root = editor) {
+        const changed = wrapLooseEditorImages(root);
+        enhanceEditorImages(root);
+        return changed;
       }
 
       function syncUnresizedEditorImages(imageSize = defaultReadability.imageSize) {
@@ -4442,8 +4511,9 @@
         template.innerHTML = String(html);
         template.content.querySelectorAll("script, style, iframe, object, embed, link, meta").forEach(node => node.remove());
         template.content.querySelectorAll(".image-resize-handle").forEach(node => node.remove());
+        wrapLooseEditorImages(template.content, { addHandles: false });
         template.content.querySelectorAll(".editor-image-wrap[data-editor-image]").forEach(wrap => {
-          wrap.classList.remove("resizing");
+          wrap.classList.remove("resizing", "image-selected");
           wrap.setAttribute("contenteditable", "false");
           const savedWidth = clampNumber(wrap.dataset.imageWidth || parseFloat(wrap.style.width), 120, 1400, 0);
           if (savedWidth) {
@@ -4601,7 +4671,21 @@
         }, 240);
       }
 
+      function selectImageFromEditorClick(event) {
+        const imageTarget = event.target.closest?.("img, .editor-image-wrap[data-editor-image]");
+        if (!imageTarget || !editor.contains(imageTarget)) return;
+        normalizeEditorImages(editor);
+        const wrap = imageTarget.closest?.(".editor-image-wrap[data-editor-image]");
+        if (!wrap) return;
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        hideFeedbackPopover();
+        hideDeletionContextMenu();
+        selectEditorImage(wrap);
+      }
+
       editor.addEventListener("mouseup", maybeShowFeedbackPopover);
+      editor.addEventListener("click", selectImageFromEditorClick);
       editor.addEventListener("click", openFeedbackFromEditorClick);
       editor.addEventListener("pointerdown", beginEditorImageResize);
       document.addEventListener("pointermove", updateEditorImageResize);
@@ -4623,6 +4707,7 @@
         editor.querySelectorAll("[data-typing-anchor]").forEach(anchor => {
           if (anchor.textContent.length > 0) delete anchor.dataset.typingAnchor;
         });
+        normalizeEditorImages(editor);
         updateWordCount();
         if (!compositionMarker) scheduleTeacherCommentsRender();
       });
@@ -4664,10 +4749,12 @@
       });
 
       editor.addEventListener("contextmenu", event => {
+        if (event.target.closest?.("img")) normalizeEditorImages(editor);
         const imageNode = event.target.closest?.(".editor-image-wrap[data-editor-image]");
         if (imageNode) {
           event.preventDefault();
           hideFeedbackPopover();
+          selectEditorImage(imageNode);
           showDeletionContextMenu(event, imageNode, "remove-image");
           return;
         }
@@ -4767,6 +4854,7 @@
       document.addEventListener("mousedown", event => {
         if (!deletionContextMenu.contains(event.target)) hideDeletionContextMenu();
         if (!feedbackPopover.contains(event.target)) hideFeedbackPopover();
+        if (!event.target.closest?.(".editor-image-wrap[data-editor-image]")) clearEditorImageSelection();
       });
 
       document.addEventListener("keydown", event => {
