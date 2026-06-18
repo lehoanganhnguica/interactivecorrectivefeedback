@@ -41,6 +41,8 @@
       --idea-text: #86198f;
       --student-text-size: 18px;
       --pasted-image-scale: 1;
+      --sidebar-width: 320px;
+      --workspace-resize-handle-width: 42px;
     }
 
     * { box-sizing: border-box; }
@@ -131,10 +133,10 @@
       border: 1px solid var(--line);
       background: #fff;
       color: var(--ink);
-      border-radius: 16px;
-      padding: 9px 14px;
+      border-radius: 12px;
+      padding: 7px 11px;
       cursor: pointer;
-      min-height: 36px;
+      min-height: 32px;
     }
 
     button:hover { background: #f8fafc; border-color: #cbd5e1; }
@@ -153,10 +155,10 @@
     input, textarea, select {
       width: 100%;
       border: 1px solid var(--line);
-      border-radius: 16px;
+      border-radius: 12px;
       color: var(--ink);
       background: #fff;
-      padding: 9px 10px;
+      padding: 7px 9px;
     }
 
     input[type="checkbox"] {
@@ -212,7 +214,7 @@
       color: #fff;
     }
 
-    textarea { min-height: 80px; resize: vertical; }
+    textarea { min-height: 64px; resize: vertical; }
 
     .app-shell {
       min-height: 100vh;
@@ -224,14 +226,15 @@
     }
 
     .topbar {
-      max-width: 1280px;
-      margin: 0 auto;
-      padding: 24px;
+      width: calc(100% - 16px);
+      max-width: none;
+      margin: 8px auto 0;
+      padding: 14px;
       display: grid;
-      gap: 16px;
+      gap: 12px;
       background: #fff;
       border: 1px solid var(--line);
-      border-radius: 24px;
+      border-radius: 18px;
       box-shadow: var(--shadow);
     }
 
@@ -257,14 +260,14 @@
     .header-actions {
       justify-content: flex-start;
       align-items: stretch;
-      gap: 12px;
+      gap: 8px;
     }
 
     .header-actions .toolbar-group {
       border: 1px solid var(--line);
-      border-radius: 20px;
-      padding: 10px;
-      gap: 8px;
+      border-radius: 14px;
+      padding: 7px;
+      gap: 6px;
     }
 
     .toolbar-label {
@@ -393,7 +396,7 @@
     }
 
     .brand {
-      font-size: clamp(28px, 4vw, 40px);
+      font-size: clamp(24px, 3vw, 34px);
       line-height: 1.1;
       font-weight: 800;
       letter-spacing: -0.02em;
@@ -404,12 +407,12 @@
       content: "Writing teacher feedback tool";
       display: table;
       width: fit-content;
-      margin-bottom: 10px;
+      margin-bottom: 6px;
       border-radius: 999px;
       background: #f1f5f9;
       color: #475569;
-      padding: 4px 12px;
-      font-size: 14px;
+      padding: 3px 9px;
+      font-size: 12px;
       line-height: 1.4;
       font-weight: 700;
       letter-spacing: 0;
@@ -418,11 +421,11 @@
     .brand::after {
       content: "Use Editing mode to paste and format writing. Use Suggesting mode to track teacher additions in green and student deletions in red.";
       display: block;
-      margin-top: 8px;
+      margin-top: 5px;
       max-width: 760px;
       color: var(--muted);
-      font-size: 16px;
-      line-height: 1.5;
+      font-size: 14px;
+      line-height: 1.4;
       font-weight: 500;
       letter-spacing: 0;
     }
@@ -576,32 +579,169 @@
     .toolbar-group:last-child { border-right: 0; }
 
     main {
-      max-width: 1280px;
+      max-width: none;
       width: 100%;
       margin: 0 auto;
-      padding: 12px 16px 32px;
+      padding: 8px 8px 18px;
       display: grid;
-      grid-template-columns: 360px minmax(0, 1fr);
-      gap: 24px;
+      grid-template-columns:
+        minmax(240px, var(--sidebar-width))
+        var(--workspace-resize-handle-width)
+        minmax(0, 1fr);
+      column-gap: 0;
+      row-gap: 10px;
     }
 
     .sidebar {
       display: grid;
       align-content: start;
-      gap: 16px;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .workspace-resize-handle {
+      position: relative;
+      align-self: stretch;
+      min-height: 180px;
+      margin: 0 5px;
+      border: 1px dashed #93c5fd;
+      border-radius: 16px;
+      padding: 0;
+      background: rgba(239, 246, 255, 0.82);
+      cursor: col-resize;
+      touch-action: none;
+      z-index: 8;
+      transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .workspace-resize-handle::before {
+      content: "";
+      position: absolute;
+      top: 8px;
+      bottom: 8px;
+      left: 50%;
+      width: 3px;
+      transform: translateX(-50%);
+      border-radius: 999px;
+      background: #bfdbfe;
+      box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.08);
+    }
+
+    .workspace-resize-grip {
+      position: sticky;
+      top: 18px;
+      display: flex;
+      width: 30px;
+      min-height: 132px;
+      margin: 18px auto;
+      padding: 10px 5px;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: 2px solid #fff;
+      border-radius: 999px;
+      background: #2563eb;
+      color: #fff;
+      box-shadow: 0 7px 18px rgba(37, 99, 235, 0.3);
+      pointer-events: none;
+      transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .workspace-resize-arrows {
+      font-size: 19px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .workspace-resize-label {
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .workspace-resize-handle:hover::before,
+    .workspace-resize-handle:focus-visible::before,
+    .workspace-resize-handle.active::before {
+      background: #60a5fa;
+    }
+
+    .workspace-resize-handle:hover,
+    .workspace-resize-handle:focus-visible,
+    .workspace-resize-handle.active {
+      border-color: #2563eb;
+      background: #dbeafe;
+      box-shadow: inset 0 0 0 1px rgba(37, 99, 235, 0.12);
+    }
+
+    .workspace-resize-handle:hover .workspace-resize-grip,
+    .workspace-resize-handle:focus-visible .workspace-resize-grip,
+    .workspace-resize-handle.active .workspace-resize-grip {
+      background: #1d4ed8;
+      box-shadow: 0 9px 24px rgba(37, 99, 235, 0.42);
+      transform: scale(1.06);
+    }
+
+    .workspace-resize-handle:focus-visible {
+      outline: 3px solid rgba(37, 99, 235, 0.32);
+      outline-offset: 2px;
+    }
+
+    body.workspace-resizing,
+    body.workspace-resizing * {
+      cursor: col-resize !important;
+      user-select: none !important;
+    }
+
+    body.theme-dark .workspace-resize-handle {
+      border-color: #3b82f6;
+      background: rgba(30, 58, 138, 0.28);
+    }
+
+    body.theme-dark .workspace-resize-handle::before {
+      background: #3b82f6;
+    }
+
+    body.theme-dark .workspace-resize-grip {
+      border-color: #bfdbfe;
+      background: #3b82f6;
+    }
+
+    body.theme-contrast .workspace-resize-handle {
+      border: 2px solid #000;
+      background: #fff;
+      box-shadow: none;
+    }
+
+    body.theme-contrast .workspace-resize-handle::before {
+      background: #000;
+      box-shadow: none;
+    }
+
+    body.theme-contrast .workspace-resize-grip {
+      border: 2px solid #fff;
+      background: #000;
+      color: #fff;
+      box-shadow: 0 0 0 2px #000;
     }
 
     .panel {
       background: var(--panel);
       border: 1px solid var(--line);
-      border-radius: 24px;
-      padding: 20px;
+      border-radius: 18px;
+      padding: 16px;
       box-shadow: var(--shadow);
     }
 
     .panel h2 {
       font-size: 18px;
-      margin: 0 0 16px;
+      margin: 0 0 12px;
       letter-spacing: 0;
     }
 
@@ -609,9 +749,9 @@
       flex: 1 1 100%;
       order: 2;
       margin: -2px 0 2px;
-      padding: 10px 12px;
+      padding: 8px 10px;
       border: 1px solid #e2e8f0;
-      border-radius: 16px;
+      border-radius: 12px;
       background: #f8fafc;
     }
 
@@ -638,9 +778,10 @@
     }
 
     .app-footer {
-      max-width: 1280px;
+      max-width: none;
+      width: 100%;
       margin: 0 auto;
-      padding: 0 24px 28px;
+      padding: 0 10px 14px;
       color: var(--muted);
       font-size: 14px;
       line-height: 1.5;
@@ -660,6 +801,89 @@
       font-weight: 700;
       overflow-wrap: anywhere;
     }
+
+
+    .rating-scale-section {
+      grid-column: 1 / -1;
+      min-width: 0;
+      overflow: hidden;
+      border: 1px solid #fca5a5;
+      border-radius: 18px;
+      background: #fff;
+      box-shadow: var(--shadow);
+    }
+
+    .rating-scale-heading {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, #fff 0%, #fff7f7 100%);
+    }
+
+    .rating-scale-heading h2 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .rating-scale-heading p {
+      display: none;
+    }
+
+    .rating-scale-summary {
+      margin-left: auto;
+      flex: 0 0 auto;
+      border: 1px solid #fecaca;
+      border-radius: 999px;
+      background: #fff;
+      color: #991b1b;
+      padding: 6px 10px;
+      font-size: 13px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .rating-scale-frame {
+      display: block;
+      width: 100%;
+      height: 700px;
+      border: 0;
+      background: #fff;
+    }
+
+    body.theme-dark .rating-scale-section,
+    body.theme-dark .rating-scale-heading {
+      border-color: #475569;
+      background: #111827;
+    }
+
+    body.theme-dark .rating-scale-summary {
+      border-color: #7f1d1d;
+      background: #450a0a;
+      color: #fecaca;
+    }
+
+    body.theme-contrast .rating-scale-section,
+    body.theme-contrast .rating-scale-heading,
+    body.theme-contrast .rating-scale-summary {
+      border: 2px solid #000;
+      box-shadow: none;
+    }
+
+    @media (max-width: 980px) {
+      .rating-scale-heading {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+      .rating-scale-summary { margin-left: 0; white-space: normal; }
+      .rating-scale-frame { height: 920px; }
+    }
+
+    @media print {
+      .rating-scale-section { display: none !important; }
+    }
+
 
     .score-panel {
       display: grid;
@@ -744,8 +968,8 @@
 
     .image-preview {
       border: 1px dashed #aab3c1;
-      border-radius: 18px;
-      min-height: 128px;
+      border-radius: 14px;
+      min-height: 104px;
       display: grid;
       place-items: center;
       overflow: hidden;
@@ -766,7 +990,7 @@
     .workspace {
       min-width: 0;
       display: grid;
-      gap: 16px;
+      gap: 12px;
       align-content: start;
     }
 
@@ -785,19 +1009,19 @@
     .canvas {
       background: #fff;
       border: 1px solid var(--line);
-      border-radius: 24px;
+      border-radius: 18px;
       box-shadow: var(--shadow);
-      padding: 20px;
+      padding: 14px;
       display: grid;
-      gap: 16px;
+      gap: 12px;
     }
 
     .editor-tools {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: 10px;
-      padding-bottom: 14px;
+      gap: 8px;
+      padding-bottom: 10px;
       border-bottom: 1px solid var(--line);
     }
 
@@ -808,26 +1032,26 @@
 
     .editor-tools > .editor-readability-actions {
       order: 4;
-      flex: 1 1 100%;
+      flex: 1 1 auto;
       justify-content: flex-start;
       margin-left: 0;
     }
 
     .writing-shell {
       display: grid;
-      gap: 16px;
+      gap: 12px;
       align-items: start;
     }
 
     .feedback-reference {
       border: 1px solid var(--line);
-      border-radius: 20px;
+      border-radius: 14px;
       background: #f8fafc;
-      padding: 14px;
+      padding: 10px;
     }
 
     .feedback-reference h2 {
-      margin: 0 0 10px;
+      margin: 0 0 7px;
       font-size: 15px;
     }
 
@@ -842,8 +1066,8 @@
     }
 
     .watermark-option {
-      margin-top: 12px;
-      padding-top: 12px;
+      margin-top: 8px;
+      padding-top: 8px;
       border-top: 1px solid var(--line);
     }
 
@@ -862,9 +1086,9 @@
     .teacher-comments {
       display: none;
       border: 1px solid var(--line);
-      border-radius: 20px;
+      border-radius: 14px;
       background: #fff;
-      padding: 14px;
+      padding: 10px;
     }
 
     .comments-head {
@@ -1065,7 +1289,7 @@
     .content-layout {
       display: grid;
       grid-template-columns: minmax(0, 1fr);
-      gap: 24px;
+      gap: 16px;
       align-items: start;
     }
 
@@ -1083,16 +1307,18 @@
     .editor {
       position: relative;
       isolation: isolate;
-      min-height: 620px;
+      width: 100%;
+      justify-self: center;
+      min-height: 300px;
       outline: 0;
       font-size: var(--student-text-size);
-      line-height: 1.9;
-      padding: 24px;
+      line-height: 1.7;
+      padding: 18px;
       overflow-wrap: anywhere;
       overflow: hidden;
       background: #f8fafc;
       border: 1px solid #e2e8f0;
-      border-radius: 24px;
+      border-radius: 18px;
     }
 
     .editor.watermark-preview::after {
@@ -1582,6 +1808,9 @@
         grid-template-columns: 1fr;
         padding: 8px;
       }
+      .workspace-resize-handle {
+        display: none;
+      }
       .topbar,
       .canvas,
       .panel {
@@ -1654,9 +1883,10 @@
         white-space: normal;
       }
       .editor {
-        min-height: 480px;
-        padding: 18px;
-        border-radius: 18px;
+        width: 100%;
+        min-height: 260px;
+        padding: 14px;
+        border-radius: 14px;
       }
       .content-layout.with-image.image-left { grid-template-columns: 1fr; }
       .sidebar { order: 2; }
@@ -1665,7 +1895,7 @@
     }
 
     @media print {
-      header, .sidebar, .editor-tools, .feedback-reference, .feedback-popover, .instructions-modal, .app-footer { display: none !important; }
+      header, .sidebar, .workspace-resize-handle, .editor-tools, .feedback-reference, .feedback-popover, .instructions-modal, .app-footer { display: none !important; }
       main { display: block; padding: 0; }
       .canvas { border: 0; box-shadow: none; }
     }
@@ -1734,16 +1964,25 @@
           <button type="button" id="removeImageBtn" class="danger">Remove image</button>
         </section>
 
-        <section class="panel score-panel">
-          <div class="score-head">
-            <h2>3. IELTS band score</h2>
-            <div id="overallBand" class="band-total">Overall: -</div>
-          </div>
-          <p class="score-note">Enter whole-band scores for the four IELTS Writing criteria. The total is the average rounded to the nearest half band.</p>
-          <div id="scoreGrid" class="score-grid"></div>
-        </section>
-
       </aside>
+
+      <div
+        id="workspaceResizeHandle"
+        class="workspace-resize-handle"
+        role="separator"
+        aria-label="Resize assignment details and editing workspace"
+        aria-orientation="vertical"
+        aria-valuemin="240"
+        aria-valuemax="320"
+        aria-valuenow="320"
+        tabindex="0"
+        title="Drag left or right to resize. Double-click to reset."
+      >
+        <span class="workspace-resize-grip" aria-hidden="true">
+          <span class="workspace-resize-arrows">↔</span>
+          <span class="workspace-resize-label">Drag to resize</span>
+        </span>
+      </div>
 
       <section class="workspace">
         <div id="backupLinks" class="backup-links"></div>
@@ -1835,6 +2074,22 @@
           </div>
         </div>
       </section>
+
+      <section class="rating-scale-section" aria-labelledby="ratingScaleHeading">
+        <header class="rating-scale-heading">
+          <div>
+            <h2 id="ratingScaleHeading">3. IELTS Writing Rating Scales</h2>
+            <p>Explore official descriptors, select criterion bands, compare language, and review the resulting score profile.</p>
+          </div>
+          <div id="ratingScaleSummary" class="rating-scale-summary">No Writing score selected</div>
+        </header>
+        <iframe
+          id="ieltsRatingFrame"
+          class="rating-scale-frame"
+          title="IELTS Rating Scales descriptor explorer and score calculator"
+          loading="lazy"
+        ></iframe>
+      </section>
     </main>
     <footer class="app-footer">
       <p>This app works entirely offline after download. It is constantly updated, and any feedback for improvement is welcome.</p>
@@ -1909,10 +2164,3822 @@
     </section>
   </div>
 
+
+  <template id="ieltsRatingTemplate">
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#e31837">
+  <link rel="icon" href="data:,">
+  <title>IELTS Writing Rating Scales</title>
+  <style>
+    :root {
+      --red: #e31837;
+      --red-dark: #b90f2b;
+      --red-soft: #fff1f3;
+      --ink: #17191f;
+      --muted: #667085;
+      --subtle: #8a93a3;
+      --line: #d9dee7;
+      --line-strong: #bcc5d2;
+      --surface: #ffffff;
+      --surface-alt: #f7f8fa;
+      --surface-cool: #f2f5f8;
+      --positive: #2ca33a;
+      --positive-soft: #eaf8ec;
+      --limit: #f26a21;
+      --limit-soft: #fff0e7;
+      --control: #7a3fe0;
+      --control-soft: #f2ebff;
+      --organize: #3377e8;
+      --organize-soft: #eaf2ff;
+      --annotation: #ffe887;
+      --band-axis-width: 58px;
+      --criterion-min-width: 265px;
+      --visible-criteria: 4;
+      --descriptor-size: 13px;
+      --matrix-width: calc(var(--band-axis-width) + var(--criterion-min-width) + var(--criterion-min-width) + var(--criterion-min-width) + var(--criterion-min-width));
+      --radius: 10px;
+      --header-height: 48px;
+      --toolbar-height: 54px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background: var(--surface);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 15px;
+      line-height: 1.45;
+    }
+
+    body { overflow: hidden; }
+    button, input, select { font: inherit; }
+    button, select { color: inherit; }
+    button { -webkit-tap-highlight-color: transparent; }
+    .hidden { display: none !important; }
+
+    .app {
+      height: 100dvh;
+      display: grid;
+      grid-template-rows: auto auto minmax(0, 1fr);
+      background: var(--surface);
+    }
+
+    .topbar {
+      min-height: var(--header-height);
+      display: flex;
+      align-items: stretch;
+      border-bottom: 1px solid var(--line);
+      background: #fff;
+      z-index: 20;
+    }
+
+    .brand-block {
+      width: 72px;
+      flex: 0 0 72px;
+      display: grid;
+      place-items: center;
+      background: var(--red);
+      color: #fff;
+      font-size: 20px;
+      font-weight: 900;
+      letter-spacing: -1.2px;
+    }
+
+    .product-name {
+      display: flex;
+      align-items: center;
+      min-width: 200px;
+      padding: 0 14px;
+      font-size: 16px;
+      font-weight: 780;
+      letter-spacing: -.25px;
+      white-space: nowrap;
+    }
+
+    .primary-tabs {
+      display: flex;
+      align-items: stretch;
+      gap: 4px;
+    }
+
+    .primary-tab {
+      position: relative;
+      border: 0;
+      padding: 0 10px;
+      background: transparent;
+      color: #353944;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 650;
+    }
+
+    .primary-tab::after {
+      content: "";
+      position: absolute;
+      left: 10px;
+      right: 10px;
+      bottom: 0;
+      height: 3px;
+      background: transparent;
+    }
+
+    .primary-tab.active {
+      color: var(--ink);
+      font-weight: 780;
+    }
+
+    .primary-tab.active::after { background: var(--red); }
+
+    .top-actions {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      gap: 6px;
+    }
+
+    .icon-button {
+      min-width: 34px;
+      min-height: 34px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      background: transparent;
+      cursor: pointer;
+      color: #394150;
+      font-size: 13px;
+      font-weight: 650;
+    }
+
+    .icon-button:hover,
+    .icon-button:focus-visible {
+      background: var(--surface-alt);
+      border-color: var(--line);
+      outline: 0;
+    }
+
+    .icon-button svg,
+    .control-icon svg,
+    .info-icon svg {
+      width: 20px;
+      height: 20px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: 330px minmax(0, 1fr) minmax(220px, 300px);
+      align-items: center;
+      gap: 6px;
+      min-height: 54px;
+      padding: 6px 10px;
+      border-bottom: 1px solid var(--line);
+      background: #fff;
+      z-index: 18;
+    }
+
+    .toolbar-group {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      min-width: 0;
+      flex-wrap: nowrap;
+    }
+
+    .toolbar-group.center { justify-content: center; }
+    .toolbar-group.end { justify-content: flex-end; }
+    .toolbar-group.center,
+    .band-navigator,
+    .legend {
+      scrollbar-width: none;
+    }
+    .toolbar-group.center::-webkit-scrollbar,
+    .band-navigator::-webkit-scrollbar,
+    .legend::-webkit-scrollbar {
+      display: none;
+    }
+
+    .select-control,
+    .tool-button,
+    .search-control {
+      height: 34px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      transition: border-color .15s, box-shadow .15s, background .15s;
+    }
+
+    .select-control {
+      position: relative;
+      display: flex;
+      align-items: center;
+      width: 160px;
+      min-width: 0;
+      flex: 0 0 160px;
+    }
+
+    .select-control.wide {
+      width: 190px;
+      min-width: 0;
+      flex-basis: 190px;
+    }
+
+    .control-icon {
+      width: 34px;
+      height: 100%;
+      display: grid;
+      place-items: center;
+      color: #303744;
+      pointer-events: none;
+    }
+
+    .select-control select {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      outline: 0;
+      appearance: none;
+      min-width: 0;
+      padding: 0 30px 0 0;
+      background: transparent;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 620;
+      text-overflow: ellipsis;
+    }
+
+    .select-control::after {
+      content: "";
+      position: absolute;
+      right: 12px;
+      width: 8px;
+      height: 8px;
+      border-right: 1.8px solid #2f3744;
+      border-bottom: 1.8px solid #2f3744;
+      transform: rotate(45deg) translateY(-3px);
+      pointer-events: none;
+    }
+
+    .select-control:focus-within,
+    .search-control:focus-within {
+      border-color: #8b94a3;
+      box-shadow: 0 0 0 3px rgba(227, 24, 55, .08);
+    }
+
+    .tool-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 0 10px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 640;
+      white-space: nowrap;
+    }
+
+    .tool-button:hover { background: var(--surface-alt); }
+
+    .tool-button.active {
+      border-color: var(--red);
+      background: var(--red-soft);
+      color: var(--red-dark);
+    }
+
+    .switch {
+      width: 32px;
+      height: 18px;
+      padding: 2px;
+      border-radius: 999px;
+      background: #b8c0cc;
+      transition: background .15s;
+    }
+
+    .switch::after {
+      content: "";
+      display: block;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, .25);
+      transition: transform .15s;
+    }
+
+    .tool-button.active .switch { background: var(--red); }
+    .tool-button.active .switch::after { transform: translateX(14px); }
+
+    .annotation-palette {
+      display: flex;
+      gap: 5px;
+      margin-left: -5px;
+    }
+
+    .annotation-color {
+      width: 22px;
+      height: 22px;
+      padding: 0;
+      border: 2px solid #fff;
+      border-radius: 6px;
+      box-shadow: 0 0 0 1px var(--line-strong);
+      cursor: pointer;
+    }
+
+    .annotation-color.active { box-shadow: 0 0 0 2px var(--ink); }
+    .annotation-color[data-color="yellow"] { background: #ffe887; }
+    .annotation-color[data-color="green"] { background: #bcecc6; }
+    .annotation-color[data-color="pink"] { background: #ffc5d0; }
+    .annotation-color[data-color="blue"] { background: #bed9ff; }
+
+    .annotation-clear {
+      height: 30px;
+      padding: 0 8px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .annotation-clear:hover { background: var(--surface-alt); color: var(--ink); }
+
+    .font-control {
+      height: 32px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 6px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .font-control > span {
+      font-size: 11px;
+      font-weight: 750;
+    }
+
+    .font-control button {
+      width: 23px;
+      height: 23px;
+      display: grid;
+      place-items: center;
+      padding: 0;
+      border: 0;
+      border-radius: 5px;
+      background: var(--surface-alt);
+      color: #374151;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .font-control button:hover { background: var(--surface-cool); }
+
+    .font-control input {
+      width: 58px;
+      accent-color: var(--red);
+    }
+
+    .font-control output {
+      min-width: 28px;
+      color: #4b5563;
+      text-align: right;
+      font-size: 11px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .search-control {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      min-width: 0;
+      color: var(--muted);
+    }
+
+    .search-control svg {
+      width: 20px;
+      height: 20px;
+      margin-left: 10px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+    }
+
+    .search-control input {
+      min-width: 0;
+      flex: 1;
+      height: 100%;
+      border: 0;
+      outline: 0;
+      padding: 0 10px;
+      font-size: 12px;
+      color: var(--ink);
+      background: transparent;
+    }
+
+    .search-count {
+      min-width: 44px;
+      padding-right: 12px;
+      color: var(--subtle);
+      text-align: right;
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .main {
+      min-height: 0;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      background: #fff;
+    }
+
+    .bandbar {
+      min-height: 44px;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      align-items: center;
+      gap: 14px;
+      padding: 6px 14px;
+      border-bottom: 1px solid var(--line);
+      background: #fff;
+    }
+
+    .band-navigator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .band-label {
+      color: #303744;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .band-direction { font-size: 12px; }
+
+    .legend {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 20px;
+      color: #656d7b;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .bold-legend strong {
+      color: var(--ink);
+      font-weight: 850;
+    }
+
+    .legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .legend-dot.positive { background: var(--positive); }
+    .legend-dot.limit { background: var(--limit); }
+    .legend-dot.control { background: var(--control); }
+    .legend-dot.organize { background: var(--organize); }
+
+    .workspace {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 240px;
+      gap: 12px;
+      padding: 0 10px 10px 14px;
+      background: #fff;
+    }
+
+    .matrix-frame {
+      min-width: 0;
+      min-height: 0;
+      overflow: hidden;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      background: #fff;
+    }
+
+    .matrix-scroll {
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      scrollbar-color: #b9c0cb #f1f3f6;
+      scrollbar-width: thin;
+      overscroll-behavior: contain;
+    }
+
+    .matrix {
+      display: grid;
+      grid-template-columns: var(--band-axis-width) repeat(var(--visible-criteria), minmax(var(--criterion-min-width), 1fr));
+      width: max(100%, var(--matrix-width));
+      min-width: var(--matrix-width);
+      align-items: stretch;
+      background: #fff;
+    }
+
+    .matrix-head,
+    .band-axis-cell,
+    .descriptor-cell {
+      border-right: 1px solid var(--line-strong);
+      border-bottom: 1px solid var(--line-strong);
+    }
+
+    .matrix-head {
+      position: sticky;
+      top: 0;
+      z-index: 8;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 10px;
+      background: #fff;
+      color: var(--red);
+      font-size: 16px;
+      font-weight: 820;
+    }
+
+    .matrix-head.corner {
+      left: 0;
+      z-index: 12;
+      justify-content: center;
+      color: #272c35;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .45px;
+    }
+
+    .matrix-head.criterion-head {
+      justify-content: space-between;
+      gap: 10px;
+      padding-inline: 12px;
+      text-align: left;
+    }
+
+    .criterion-head-main {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .criterion-head-main strong {
+      color: #292f38;
+      font-size: 13px;
+      line-height: 1.25;
+    }
+
+    .criterion-head-score {
+      min-width: 30px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--surface-alt);
+      color: var(--subtle);
+      font-size: 13px;
+      font-weight: 850;
+    }
+
+    .criterion-head-score.has-score {
+      border-color: rgba(227, 24, 55, .35);
+      background: var(--red-soft);
+      color: var(--red-dark);
+    }
+
+    .band-axis-cell {
+      position: sticky;
+      left: 0;
+      z-index: 6;
+      min-height: 132px;
+      display: grid;
+      place-items: center;
+      padding: 10px 4px;
+      background: #f8f9fb;
+      color: var(--red);
+      font-size: 22px;
+      font-weight: 860;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .criterion-category {
+      width: 9px;
+      height: 9px;
+      flex: 0 0 auto;
+      margin-top: 6px;
+      border-radius: 50%;
+      background: var(--category-color, var(--organize));
+    }
+
+    .descriptor-cell {
+      position: relative;
+      min-height: 132px;
+      padding: 12px 14px;
+      background: #fff;
+      cursor: pointer;
+      transition: background .15s, box-shadow .15s;
+    }
+
+    .descriptor-cell:hover { background: #fbfcfd; }
+
+    .descriptor-cell:focus-visible {
+      z-index: 4;
+      outline: 3px solid rgba(227, 24, 55, .22);
+      outline-offset: -3px;
+    }
+
+    .descriptor-cell.selected {
+      z-index: 3;
+      background: linear-gradient(180deg, #fff 0%, var(--red-soft) 100%);
+      box-shadow: inset 0 0 0 2px var(--red);
+    }
+
+    .descriptor-cell.search-match { background: #fffbe8; }
+
+    .descriptor-cell ul {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .descriptor-cell li {
+      position: relative;
+      margin: 0 0 8px;
+      padding-left: 16px;
+      color: #262b34;
+      font-size: var(--descriptor-size);
+      line-height: 1.4;
+      -webkit-user-select: text;
+      user-select: text;
+    }
+
+    .descriptor-cell li:last-child { margin-bottom: 0; }
+
+    .descriptor-cell li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: .59em;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--bullet-color, #a2a9b4);
+    }
+
+    .descriptor-cell li[data-category="positive"] { --bullet-color: var(--positive); }
+    .descriptor-cell li[data-category="limit"] { --bullet-color: var(--limit); }
+    .descriptor-cell li[data-category="control"] { --bullet-color: var(--control); }
+    .descriptor-cell li[data-category="organize"] { --bullet-color: var(--organize); }
+
+    .matrix.annotating .descriptor-cell,
+    .matrix.annotating .descriptor-cell li { cursor: text; }
+
+    .manual-mark {
+      border-radius: 3px;
+      padding: 0 1px;
+      box-decoration-break: clone;
+      -webkit-box-decoration-break: clone;
+    }
+
+    .manual-mark[data-color="yellow"] { background: #fff19a; }
+    .manual-mark[data-color="green"] { background: #bff0cd; }
+    .manual-mark[data-color="pink"] { background: #ffc6d4; }
+    .manual-mark[data-color="blue"] { background: #bcd9ff; }
+
+    .official-bold {
+      color: #111318;
+      font-weight: 850;
+    }
+
+    mark {
+      border-radius: 3px;
+      padding: 0 1px;
+      color: inherit;
+    }
+
+    mark.compare-positive { background: var(--positive-soft); box-shadow: inset 0 -1px 0 var(--positive); }
+    mark.compare-limit { background: var(--limit-soft); box-shadow: inset 0 -1px 0 var(--limit); }
+    mark.compare-control { background: var(--control-soft); box-shadow: inset 0 -1px 0 var(--control); }
+    mark.compare-organize { background: var(--organize-soft); box-shadow: inset 0 -1px 0 var(--organize); }
+    mark.search-hit { background: #ffe16b; box-shadow: inset 0 -1px 0 #b98a00; }
+
+    .score-sidebar {
+      min-height: 0;
+      overflow: auto;
+      padding-top: 0;
+    }
+
+    .score-card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      padding: 14px 12px;
+    }
+
+    .score-card h2 {
+      margin: 0;
+      color: var(--red);
+      font-size: 17px;
+      font-weight: 820;
+    }
+
+    .score-value {
+      margin: 7px 0 0;
+      color: var(--red);
+      font-size: 48px;
+      font-weight: 790;
+      line-height: 1;
+      letter-spacing: -2px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .score-caption {
+      margin-top: 5px;
+      color: var(--subtle);
+      font-size: 12px;
+    }
+
+    .clear-button {
+      min-height: 40px;
+      margin-top: 10px;
+      padding: 0 14px;
+      border: 1px solid var(--red);
+      border-radius: 7px;
+      background: #fff;
+      color: var(--red);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .clear-button:hover { background: var(--red-soft); }
+    .clear-button:disabled { cursor: default; opacity: .45; }
+
+    .score-divider {
+      height: 1px;
+      margin: 14px 0 12px;
+      background: var(--line);
+    }
+
+    .score-section-title {
+      margin-bottom: 12px;
+      color: #2e333c;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .score-row {
+      display: grid;
+      grid-template-columns: 8px minmax(0, 1fr) 48px;
+      align-items: center;
+      gap: 9px;
+      min-height: 48px;
+    }
+
+    .score-row-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--category-color, var(--organize));
+    }
+
+    .score-row-label {
+      color: #5b6472;
+      font-size: 11px;
+      line-height: 1.25;
+    }
+
+    .score-row-value {
+      height: 40px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: var(--surface-alt);
+      color: #7a8290;
+      font-size: 22px;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .score-row-value.has-score {
+      border-color: rgba(227, 24, 55, .28);
+      background: var(--red-soft);
+      color: var(--red-dark);
+    }
+
+    .average-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 12px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+      color: #7a8290;
+      font-size: 12px;
+    }
+
+    .average-line strong {
+      min-width: 48px;
+      height: 32px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: var(--surface-alt);
+      color: #394150;
+      font-size: 14px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .help-note {
+      display: grid;
+      grid-template-columns: 24px 1fr;
+      gap: 10px;
+      margin-top: 12px;
+      padding: 8px 8px 0;
+      color: #596273;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .info-icon {
+      display: grid;
+      place-items: center;
+      color: #4b5563;
+    }
+
+    .source-note {
+      margin-top: 10px;
+      padding: 9px 8px 0;
+      border-top: 1px solid var(--line);
+      color: var(--subtle);
+      font-size: 10.5px;
+      line-height: 1.45;
+    }
+
+    .profile-view {
+      min-height: 0;
+      overflow: auto;
+      padding: 18px clamp(16px, 3vw, 40px) 26px;
+      background: var(--surface-alt);
+    }
+
+    .profile-sheet {
+      max-width: 1120px;
+      margin: 0 auto;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+    }
+
+    .profile-heading {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 20px 22px 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .profile-heading h1 {
+      margin: 0 0 5px;
+      font-size: 28px;
+      line-height: 1.15;
+      letter-spacing: -.6px;
+    }
+
+    .profile-heading p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .writing-overall {
+      min-width: 190px;
+      text-align: right;
+    }
+
+    .writing-overall span {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 750;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+
+    .writing-overall strong {
+      display: block;
+      color: var(--red);
+      font-size: 38px;
+      line-height: 1.1;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .profile-section {
+      display: grid;
+      grid-template-columns: 190px minmax(0, 1fr) 120px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .profile-section:last-child { border-bottom: 0; }
+
+    .profile-section-title {
+      padding: 18px 20px;
+      border-right: 1px solid var(--line);
+    }
+
+    .profile-section-title h2 {
+      margin: 0 0 5px;
+      font-size: 17px;
+    }
+
+    .profile-section-title p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .profile-criteria { padding: 10px 18px; }
+
+    .profile-criterion-row {
+      display: grid;
+      grid-template-columns: minmax(190px, 1fr) 84px minmax(160px, 2fr);
+      align-items: center;
+      gap: 16px;
+      min-height: 44px;
+    }
+
+    .profile-criterion-name {
+      color: #3e4653;
+      font-size: 12px;
+      font-weight: 650;
+    }
+
+    .profile-criterion-score {
+      font-weight: 820;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .profile-track {
+      height: 7px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #eceff3;
+    }
+
+    .profile-track span {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--red);
+    }
+
+    .profile-result {
+      display: grid;
+      place-items: center;
+      border-left: 1px solid var(--line);
+      color: var(--red);
+      font-size: 32px;
+      font-weight: 820;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .empty-profile {
+      color: var(--subtle);
+      font-size: 13px;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 24px;
+      z-index: 50;
+      transform: translate(-50%, 18px);
+      padding: 10px 14px;
+      border-radius: 8px;
+      background: #242832;
+      color: #fff;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .18s, transform .18s;
+      font-size: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, .18);
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
+    @media (max-width: 1180px) {
+      .toolbar {
+        grid-template-columns: 330px minmax(430px, 1fr) minmax(210px, 260px);
+        gap: 12px;
+        padding-inline: 16px;
+      }
+      .select-control { width: 145px; flex-basis: 145px; }
+      .select-control.wide { width: 178px; flex-basis: 178px; }
+      .tool-button { padding-inline: 12px; }
+      .legend { gap: 12px; }
+      .workspace { grid-template-columns: minmax(0, 1fr) 240px; padding-left: 16px; }
+    }
+
+    @media (max-width: 940px) {
+      body { overflow: auto; }
+      .app {
+        min-height: 100dvh;
+        height: auto;
+        grid-template-rows: auto auto minmax(520px, 1fr);
+      }
+      .topbar { flex-wrap: wrap; }
+      .brand-block { width: 76px; flex-basis: 76px; }
+      .product-name { min-width: 0; flex: 1; }
+      .primary-tabs { order: 3; width: 100%; height: 44px; padding-left: 12px; border-top: 1px solid var(--line); }
+      .top-actions { padding-right: 10px; }
+      .toolbar {
+        grid-template-columns: 1fr;
+        gap: 8px;
+        padding: 8px;
+      }
+      .toolbar-group,
+      .toolbar-group.center,
+      .toolbar-group.end { justify-content: flex-start; flex-wrap: wrap; }
+      .search-control { max-width: none; }
+      .bandbar {
+        grid-template-columns: 1fr;
+        gap: 8px;
+        padding: 8px 10px;
+      }
+      .legend { justify-content: flex-start; overflow-x: auto; }
+      .workspace {
+        grid-template-columns: 1fr;
+        grid-template-rows: minmax(440px, 66vh) auto;
+        padding: 0 8px 16px;
+      }
+      .score-sidebar { overflow: visible; }
+      .score-card {
+        display: grid;
+        grid-template-columns: 150px minmax(0, 1fr);
+        gap: 0 22px;
+      }
+      .score-card > h2,
+      .score-card > .score-value,
+      .score-card > .score-caption,
+      .score-card > .clear-button { grid-column: 1; }
+      .score-card > .score-divider,
+      .score-card > .score-section-title,
+      .score-card > #scoreRows,
+      .score-card > .average-line { grid-column: 2; }
+      .score-divider { margin-top: 0; }
+      .help-note, .source-note { display: none; }
+    }
+
+    @media (max-width: 680px) {
+      :root {
+        --band-axis-width: 44px;
+        --criterion-min-width: 245px;
+      }
+      .top-actions .action-label { display: none; }
+      .brand-block { width: 70px; flex-basis: 70px; font-size: 21px; }
+      .product-name { padding-inline: 12px; font-size: 16px; }
+      .primary-tab { padding-inline: 8px; font-size: 13px; }
+      .toolbar-group:first-child { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
+      .select-control, .select-control.wide { min-width: 0; width: 100%; }
+      .toolbar-group.center { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 2px; }
+      .tool-button { min-width: max-content; }
+      .legend { font-size: 11px; }
+      .workspace { grid-template-rows: minmax(420px, 62vh) auto; }
+      .descriptor-cell { padding: 12px; }
+      .score-card { display: block; }
+      .score-card > .score-divider { margin-top: 20px; }
+      .profile-view { padding: 16px 10px 28px; }
+      .profile-heading { align-items: flex-start; flex-direction: column; padding: 22px 20px; }
+      .writing-overall { text-align: left; }
+      .profile-section { grid-template-columns: 1fr; }
+      .profile-section-title,
+      .profile-result { border: 0; }
+      .profile-section-title { padding-bottom: 8px; }
+      .profile-criteria { padding: 8px 20px 16px; }
+      .profile-result { min-height: 70px; border-top: 1px solid var(--line); }
+      .profile-criterion-row { grid-template-columns: minmax(150px, 1fr) 42px; }
+      .profile-track { grid-column: 1 / -1; margin-bottom: 8px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand-block" aria-label="IELTS">IELTS</div>
+      <div class="product-name">IELTS Writing Rating Scales</div>
+      <nav class="primary-tabs" aria-label="App views">
+        <button class="primary-tab active" type="button" data-view="explorer">Explore descriptors</button>
+        <button class="primary-tab" type="button" data-view="profile">Score profile</button>
+      </nav>
+      <div class="top-actions">
+        <button class="icon-button" type="button" id="helpButton">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M9.7 9a2.5 2.5 0 0 1 4.8 1c0 1.7-2.5 2-2.5 3.8"></path><path d="M12 17.3h.01"></path></svg>
+          <span class="action-label">Guide</span>
+        </button>
+      </div>
+    </header>
+
+    <section class="toolbar" id="toolbar" aria-label="Rating scale controls">
+      <div class="toolbar-group">
+        <label class="select-control">
+          <span class="control-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M7 18.2 3.8 20v-4A7 7 0 1 1 7 18.2Z"></path><path d="M8 10h.01M12 10h.01M16 10h.01"></path></svg>
+          </span>
+          <select id="sectionSelect" aria-label="Assessment"></select>
+        </label>
+
+        <label class="select-control wide">
+          <span class="control-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M6 7h12M6 12h12M6 17h8"></path></svg>
+          </span>
+          <select id="criterionSelect" aria-label="Criterion"></select>
+        </label>
+      </div>
+
+      <div class="toolbar-group center">
+        <button class="tool-button active" type="button" id="compareButton" aria-pressed="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7h12M7 7l3-3M7 7l3 3M17 17H5M17 17l-3-3M17 17l-3 3"></path></svg>
+          <span>Compare language</span>
+          <span class="switch" aria-hidden="true"></span>
+        </button>
+
+        <button class="tool-button" type="button" id="annotateButton" aria-pressed="false">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 20 4.3-1 10-10a2 2 0 0 0-3-3l-10 10L4 20Z"></path><path d="m13.5 7.5 3 3"></path></svg>
+          <span>Annotate</span>
+        </button>
+
+        <div class="annotation-palette hidden" id="annotationPalette" aria-label="Annotation color">
+          <button class="annotation-color active" type="button" data-color="yellow" aria-label="Yellow annotation"></button>
+          <button class="annotation-color" type="button" data-color="green" aria-label="Green annotation"></button>
+          <button class="annotation-color" type="button" data-color="pink" aria-label="Pink annotation"></button>
+          <button class="annotation-color" type="button" data-color="blue" aria-label="Blue annotation"></button>
+          <button class="annotation-clear" type="button" id="clearAnnotations">Clear marks</button>
+        </div>
+
+        <div class="font-control" role="group" aria-label="Descriptor text size" title="Descriptor text size">
+          <span>Text</span>
+          <button type="button" id="fontDecrease" aria-label="Decrease descriptor text size">A−</button>
+          <input id="fontSize" type="range" min="11" max="18" step="0.5" value="13" aria-label="Descriptor text size">
+          <button type="button" id="fontIncrease" aria-label="Increase descriptor text size">A+</button>
+          <output id="fontSizeValue" for="fontSize">13</output>
+        </div>
+      </div>
+
+      <div class="toolbar-group end">
+        <label class="search-control">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m16 16 4 4"></path></svg>
+          <input id="searchInput" type="search" placeholder="Search descriptors" autocomplete="off" spellcheck="false">
+          <output class="search-count" id="searchCount"></output>
+        </label>
+      </div>
+    </section>
+
+    <main class="main" id="explorerView">
+      <div class="bandbar">
+        <nav class="band-navigator" id="bandNavigator" aria-label="Band navigator"></nav>
+        <div class="legend" id="legend" aria-label="Comparison language legend">
+          <span class="legend-item compare-legend-item"><span class="legend-dot positive"></span>Positive performance</span>
+          <span class="legend-item compare-legend-item"><span class="legend-dot limit"></span>Limitations</span>
+          <span class="legend-item compare-legend-item"><span class="legend-dot control"></span>Accuracy / control</span>
+          <span class="legend-item compare-legend-item"><span class="legend-dot organize"></span>Organization</span>
+          <span class="legend-item bold-legend hidden" id="boldLegend"><strong>Bold</strong>Official limiting feature</span>
+        </div>
+      </div>
+
+      <div class="workspace">
+        <section class="matrix-frame" aria-label="IELTS band descriptor matrix">
+          <div class="matrix-scroll" id="matrixScroll">
+            <div class="matrix" id="matrix"></div>
+          </div>
+        </section>
+
+        <aside class="score-sidebar">
+          <div class="score-card">
+            <h2 id="scoreTitle">Task 2 band</h2>
+            <div class="score-value" id="scoreValue">—</div>
+            <div class="score-caption" id="scoreCaption">Select descriptor cells to build a profile</div>
+            <button class="clear-button" type="button" id="clearScores" disabled>Clear scores</button>
+            <div class="score-divider"></div>
+            <div class="score-section-title">Criterion scores</div>
+            <div id="scoreRows"></div>
+            <div class="average-line"><span>Average of selected criteria</span><strong id="rawAverage">—</strong></div>
+          </div>
+
+          <div class="help-note" id="helpNote">
+            <span class="info-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M12 10v6M12 7.5h.01"></path></svg>
+            </span>
+            <span>Click any descriptor cell to select a score. In annotation mode, drag across text to highlight a phrase, click a plain line to mark the whole line, and right-click a highlight to remove it.</span>
+          </div>
+          <div class="source-note" id="sourceNote"></div>
+        </aside>
+      </div>
+    </main>
+
+    <main class="profile-view hidden" id="profileView">
+      <div class="profile-sheet">
+        <header class="profile-heading">
+          <div>
+            <h1>Score profile</h1>
+            <p>Provisional analytic scores selected in the descriptor explorer.</p>
+          </div>
+          <div class="writing-overall">
+            <span>Weighted Writing band</span>
+            <strong id="writingOverall">—</strong>
+          </div>
+        </header>
+        <div id="profileSections"></div>
+      </div>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+window.IELTS_DATA = {
+  "meta": {
+    "title": "IELTS Writing Rating Scales",
+    "sourceNote": "Writing descriptors extracted from the supplied IELTS Writing Band Descriptor PDFs (updated May 2023 where noted)."
+  },
+  "sections": {
+    "Speaking": {
+      "shortLabel": "Speaking",
+      "criteria": [
+        "Fluency and coherence",
+        "Lexical resource",
+        "Grammatical range and accuracy",
+        "Pronunciation"
+      ],
+      "note": "A candidate must fully fit the positive features at a particular level and is rated on average performance across all parts of the test.",
+      "bands": {
+        "9": {
+          "Fluency and coherence": [
+            {
+              "text": "Fluent with only very occasional repetition or self-correction.",
+              "bold": []
+            },
+            {
+              "text": "Any hesitation that occurs is used only to prepare the content of the next utterance and not to find words or grammar.",
+              "bold": []
+            },
+            {
+              "text": "Speech is situationally appropriate and cohesive features are fully acceptable.",
+              "bold": []
+            },
+            {
+              "text": "Topic development is fully coherent and appropriately extended.",
+              "bold": []
+            }
+          ],
+          "Lexical resource": [
+            {
+              "text": "Total flexibility and precise use in all contexts.",
+              "bold": []
+            },
+            {
+              "text": "Sustained use of accurate and idiomatic language.",
+              "bold": []
+            }
+          ],
+          "Grammatical range and accuracy": [
+            {
+              "text": "Structures are precise and accurate at all times, apart from ‘mistakes’ characteristic of native speaker speech.",
+              "bold": []
+            }
+          ],
+          "Pronunciation": [
+            {
+              "text": "Uses a full range of phonological features to convey precise and/or subtle meaning.",
+              "bold": []
+            },
+            {
+              "text": "Flexible use of features of connected speech is sustained throughout.",
+              "bold": []
+            },
+            {
+              "text": "Can be effortlessly understood throughout.",
+              "bold": []
+            },
+            {
+              "text": "Accent has no effect on intelligibility.",
+              "bold": []
+            }
+          ]
+        },
+        "8": {
+          "Fluency and coherence": [
+            {
+              "text": "Fluent with only very occasional repetition or self-correction.",
+              "bold": []
+            },
+            {
+              "text": "Hesitation may occasionally be used to find words or grammar, but most will be content related.",
+              "bold": []
+            },
+            {
+              "text": "Topic development is coherent, appropriate and relevant.",
+              "bold": []
+            }
+          ],
+          "Lexical resource": [
+            {
+              "text": "Wide resource, readily and flexibly used to discuss all topics and convey precise meaning.",
+              "bold": []
+            },
+            {
+              "text": "Skilful use of less common and idiomatic items despite occasional inaccuracies in word choice and collocation.",
+              "bold": []
+            },
+            {
+              "text": "Effective use of paraphrase as required.",
+              "bold": []
+            }
+          ],
+          "Grammatical range and accuracy": [
+            {
+              "text": "Wide range of structures, flexibly used.",
+              "bold": []
+            },
+            {
+              "text": "The majority of sentences are error free.",
+              "bold": []
+            },
+            {
+              "text": "Occasional inappropriacies and non-systematic errors occur. A few basic errors may persist.",
+              "bold": []
+            }
+          ],
+          "Pronunciation": [
+            {
+              "text": "Uses a wide range of phonological features to convey precise and/or subtle meaning.",
+              "bold": []
+            },
+            {
+              "text": "Can sustain appropriate rhythm. Flexible use of stress and intonation across long utterances, despite occasional lapses.",
+              "bold": []
+            },
+            {
+              "text": "Can be easily understood throughout.",
+              "bold": []
+            },
+            {
+              "text": "Accent has minimal effect on intelligibility.",
+              "bold": []
+            }
+          ]
+        },
+        "7": {
+          "Fluency and coherence": [
+            {
+              "text": "Able to keep going and readily produce long turns without noticeable effort.",
+              "bold": []
+            },
+            {
+              "text": "Some hesitation, repetition and/or self-correction may occur, often mid-sentence and indicate problems with accessing appropriate language. However, these will not affect coherence.",
+              "bold": []
+            },
+            {
+              "text": "Flexible use of spoken discourse markers, connectives and cohesive features.",
+              "bold": []
+            }
+          ],
+          "Lexical resource": [
+            {
+              "text": "Resource flexibly used to discuss a variety of topics.",
+              "bold": []
+            },
+            {
+              "text": "Some ability to use less common and idiomatic items and an awareness of style and collocation is evident though inappropriacies occur.",
+              "bold": []
+            },
+            {
+              "text": "Effective use of paraphrase as required.",
+              "bold": []
+            }
+          ],
+          "Grammatical range and accuracy": [
+            {
+              "text": "A range of structures flexibly used. Error-free sentences are frequent.",
+              "bold": []
+            },
+            {
+              "text": "Both simple and complex sentences are used effectively despite some errors. A few basic errors persist.",
+              "bold": []
+            }
+          ],
+          "Pronunciation": [
+            {
+              "text": "Displays all the positive features of band 6, and some, but not all, of the positive features of band 8.",
+              "bold": []
+            }
+          ]
+        },
+        "6": {
+          "Fluency and coherence": [
+            {
+              "text": "Able to keep going and demonstrates a willingness to produce long turns.",
+              "bold": []
+            },
+            {
+              "text": "Coherence may be lost at times as a result of hesitation, repetition and/or self-correction.",
+              "bold": []
+            },
+            {
+              "text": "Uses a range of spoken discourse markers, connectives and cohesive features though not always appropriately.",
+              "bold": []
+            }
+          ],
+          "Lexical resource": [
+            {
+              "text": "Resource sufficient to discuss topics at length.",
+              "bold": []
+            },
+            {
+              "text": "Vocabulary use may be inappropriate but meaning is clear.",
+              "bold": []
+            },
+            {
+              "text": "Generally able to paraphrase successfully.",
+              "bold": []
+            }
+          ],
+          "Grammatical range and accuracy": [
+            {
+              "text": "Produces a mix of short and complex sentence forms and a variety of structures with limited flexibility.",
+              "bold": []
+            },
+            {
+              "text": "Though errors frequently occur in complex structures, these rarely impede communication.",
+              "bold": []
+            }
+          ],
+          "Pronunciation": [
+            {
+              "text": "Uses a range of phonological features, but control is variable.",
+              "bold": []
+            },
+            {
+              "text": "Chunking is generally appropriate, but rhythm may be affected by a lack of stress-timing and/or a rapid speech rate.",
+              "bold": []
+            },
+            {
+              "text": "Some effective use of intonation and stress, but this is not sustained.",
+              "bold": []
+            },
+            {
+              "text": "Individual words or phonemes may be mispronounced but this causes only occasional lack of clarity.",
+              "bold": []
+            },
+            {
+              "text": "Can generally be understood throughout without much effort.",
+              "bold": []
+            }
+          ]
+        },
+        "5": {
+          "Fluency and coherence": [
+            {
+              "text": "Usually able to keep going, but relies on repetition and self-correction to do so and/or on slow speech.",
+              "bold": []
+            },
+            {
+              "text": "Hesitations are often associated with mid-sentence searches for fairly basic lexis and grammar.",
+              "bold": []
+            },
+            {
+              "text": "Overuse of certain discourse markers, connectives and other cohesive features.",
+              "bold": []
+            },
+            {
+              "text": "More complex speech usually causes disfluency but simpler language may be produced fluently.",
+              "bold": []
+            }
+          ],
+          "Lexical resource": [
+            {
+              "text": "Resource sufficient to discuss familiar and unfamiliar topics but there is limited flexibility.",
+              "bold": []
+            },
+            {
+              "text": "Attempts paraphrase but not always with success.",
+              "bold": []
+            }
+          ],
+          "Grammatical range and accuracy": [
+            {
+              "text": "Basic sentence forms are fairly well controlled for accuracy.",
+              "bold": []
+            },
+            {
+              "text": "Complex structures are attempted but these are limited in range, nearly always contain errors and may lead to the need for reformulation.",
+              "bold": []
+            }
+          ],
+          "Pronunciation": [
+            {
+              "text": "Displays all the positive features of band 4, and some, but not all, of the positive features of band 6.",
+              "bold": []
+            }
+          ]
+        },
+        "4": {
+          "Fluency and coherence": [
+            {
+              "text": "Unable to keep going without noticeable pauses.",
+              "bold": []
+            },
+            {
+              "text": "Speech may be slow with frequent repetition.",
+              "bold": []
+            },
+            {
+              "text": "Often self-corrects.",
+              "bold": []
+            },
+            {
+              "text": "Can link simple sentences but often with repetitious use of connectives.",
+              "bold": []
+            },
+            {
+              "text": "Some breakdowns in coherence.",
+              "bold": []
+            }
+          ],
+          "Lexical resource": [
+            {
+              "text": "Resource sufficient for familiar topics but only basic meaning can be conveyed on unfamiliar topics.",
+              "bold": []
+            },
+            {
+              "text": "Frequent inappropriacies and errors in word choice.",
+              "bold": []
+            },
+            {
+              "text": "Rarely attempts paraphrase.",
+              "bold": []
+            }
+          ],
+          "Grammatical range and accuracy": [
+            {
+              "text": "Can produce basic sentence forms and some short utterances are error-free.",
+              "bold": []
+            },
+            {
+              "text": "Subordinate clauses are rare and, overall, turns are short, structures are repetitive and errors are frequent.",
+              "bold": []
+            }
+          ],
+          "Pronunciation": [
+            {
+              "text": "Uses some acceptable phonological features, but the range is limited. Produces some acceptable chunking, but there are frequent lapses in overall rhythm. Attempts to use intonation and stress, but control is limited. Individual words or phonemes are frequently mispronounced, causing lack of clarity. Understanding requires some effort and there may be patches of speech that cannot be understood.",
+              "bold": []
+            }
+          ]
+        },
+        "3": {
+          "Fluency and coherence": [
+            {
+              "text": "Frequent, sometimes long, pauses occur while candidate searches for words.",
+              "bold": []
+            },
+            {
+              "text": "Limited ability to link simple sentences and go beyond simple responses to questions.",
+              "bold": []
+            },
+            {
+              "text": "Frequently unable to convey basic message.",
+              "bold": []
+            }
+          ],
+          "Lexical resource": [
+            {
+              "text": "Resource limited to simple vocabulary used primarily to convey personal information.",
+              "bold": []
+            },
+            {
+              "text": "Vocabulary inadequate for unfamiliar topics.",
+              "bold": []
+            }
+          ],
+          "Grammatical range and accuracy": [
+            {
+              "text": "Basic sentence forms are attempted but grammatical errors are numerous except in apparently memorised utterances.",
+              "bold": []
+            }
+          ],
+          "Pronunciation": [
+            {
+              "text": "Displays some features of band 2, and some, but not all, of the positive features of band 4.",
+              "bold": []
+            }
+          ]
+        },
+        "2": {
+          "Fluency and coherence": [
+            {
+              "text": "Lengthy pauses before nearly every word.",
+              "bold": []
+            },
+            {
+              "text": "Isolated words may be recognisable but speech is of virtually no communicative significance.",
+              "bold": []
+            }
+          ],
+          "Lexical resource": [
+            {
+              "text": "Very limited resource. Utterances consist of isolated words or memorised utterances.",
+              "bold": []
+            },
+            {
+              "text": "Little communication possible without the support of mime or gesture.",
+              "bold": []
+            }
+          ],
+          "Grammatical range and accuracy": [
+            {
+              "text": "No evidence of basic sentence forms.",
+              "bold": []
+            }
+          ],
+          "Pronunciation": [
+            {
+              "text": "Uses few acceptable phonological features (possibly because sample is insufficient).",
+              "bold": []
+            },
+            {
+              "text": "Overall problems with delivery impair attempts at connected speech.",
+              "bold": []
+            },
+            {
+              "text": "Individual words and phonemes are mainly mispronounced and little meaning is conveyed.",
+              "bold": []
+            },
+            {
+              "text": "Often unintelligible.",
+              "bold": []
+            }
+          ]
+        },
+        "1": {
+          "Fluency and coherence": [
+            {
+              "text": "Essentially none.",
+              "bold": []
+            },
+            {
+              "text": "Speech is totally incoherent.",
+              "bold": []
+            }
+          ],
+          "Lexical resource": [
+            {
+              "text": "No resource bar a few isolated words.",
+              "bold": []
+            },
+            {
+              "text": "No communication possible.",
+              "bold": []
+            }
+          ],
+          "Grammatical range and accuracy": [
+            {
+              "text": "No rateable language unless memorised.",
+              "bold": []
+            }
+          ],
+          "Pronunciation": [
+            {
+              "text": "Can produce occasional individual words and phonemes that are recognisable, but no overall meaning is conveyed.",
+              "bold": []
+            },
+            {
+              "text": "Unintelligible.",
+              "bold": []
+            }
+          ]
+        },
+        "0": {
+          "Fluency and coherence": [
+            {
+              "text": "Does not attend",
+              "bold": []
+            }
+          ],
+          "Lexical resource": [
+            {
+              "text": "Does not attend",
+              "bold": []
+            }
+          ],
+          "Grammatical range and accuracy": [
+            {
+              "text": "Does not attend",
+              "bold": []
+            }
+          ],
+          "Pronunciation": [
+            {
+              "text": "Does not attend",
+              "bold": []
+            }
+          ]
+        }
+      }
+    },
+    "Writing Task 1": {
+      "shortLabel": "Task 1",
+      "criteria": [
+        "Task achievement",
+        "Coherence and cohesion",
+        "Lexical resource",
+        "Grammatical range and accuracy"
+      ],
+      "note": "A script must fully fit the positive features at a particular level. Negative features can limit a rating.",
+      "bands": {
+        "9": {
+          "Task achievement": [
+            {
+              "text": "All the requirements of the task are fully and appropriately satisfied.",
+              "bold": []
+            },
+            {
+              "text": "There may be extremely rare lapses in content.",
+              "bold": []
+            }
+          ],
+          "Coherence and cohesion": [
+            {
+              "text": "The message can be followed effortlessly.",
+              "bold": []
+            },
+            {
+              "text": "Cohesion is used in such a way that it very rarely attracts attention.",
+              "bold": []
+            },
+            {
+              "text": "Any lapses in coherence or cohesion are minimal.",
+              "bold": []
+            },
+            {
+              "text": "Paragraphing is skilfully managed.",
+              "bold": []
+            }
+          ],
+          "Lexical resource": [
+            {
+              "text": "Full flexibility and precise use are evident within the scope of the task.",
+              "bold": []
+            },
+            {
+              "text": "A wide range of vocabulary is used accurately and appropriately with very natural and sophisticated control of lexical features.",
+              "bold": []
+            },
+            {
+              "text": "Minor errors in spelling and word formation are extremely rare and have minimal impact on communication.",
+              "bold": []
+            }
+          ],
+          "Grammatical range and accuracy": [
+            {
+              "text": "A wide range of structures within the scope of the task is used with full flexibility and control.",
+              "bold": []
+            },
+            {
+              "text": "Punctuation and grammar are used appropriately throughout.",
+              "bold": []
+            },
+            {
+              "text": "Minor errors are extremely rare and have minimal impact on communication",
+              "bold": []
+            }
+          ]
+        },
+        "8": {
+          "Task achievement": [
+            {
+              "text": "The response covers all the requirements of the task appropriately, relevantly and sufficiently.",
+              "bold": []
+            },
+            {
+              "text": "(Academic) Key features are skilfully selected, and clearly presented, highlighted and illustrated.",
+              "bold": []
+            },
+            {
+              "text": "(General Training) All bullet points are clearly presented, and appropriately illustrated or extended.",
+              "bold": []
+            },
+            {
+              "text": "There may be occasional omissions or lapses in content.",
+              "bold": []
+            }
+          ],
+          "Coherence and cohesion": [
+            {
+              "text": "The message can be followed with ease.",
+              "bold": []
+            },
+            {
+              "text": "Information and ideas are logically sequenced, and cohesion is well managed.",
+              "bold": []
+            },
+            {
+              "text": "Occasional lapses in coherence or cohesion may occur.",
+              "bold": []
+            },
+            {
+              "text": "Paragraphing is used sufficiently and appropriately.",
+              "bold": []
+            }
+          ],
+          "Lexical resource": [
+            {
+              "text": "A wide resource is fluently and flexibly used to convey precise meanings within the scope of the task.",
+              "bold": []
+            },
+            {
+              "text": "There is skilful use of uncommon and/or idiomatic items when appropriate, despite occasional inaccuracies in word choice and collocation.",
+              "bold": []
+            },
+            {
+              "text": "Occasional errors in spelling and/or word formation may occur, but have minimal impact on communication.",
+              "bold": []
+            }
+          ],
+          "Grammatical range and accuracy": [
+            {
+              "text": "A wide range of structures within the scope of the task is flexibly and accurately used.",
+              "bold": []
+            },
+            {
+              "text": "The majority of sentences are error-free, and punctuation is well managed.",
+              "bold": []
+            },
+            {
+              "text": "Occasional, non-systematic errors and inappropriacies occur, but have minimal impact on communication.",
+              "bold": []
+            }
+          ]
+        },
+        "7": {
+          "Task achievement": [
+            {
+              "text": "The response covers the requirements of the task.",
+              "bold": []
+            },
+            {
+              "text": "The content is relevant and accurate – there may be a few omissions or lapses. The format is appropriate.",
+              "bold": []
+            },
+            {
+              "text": "(Academic) Key features which are selected are covered and clearly highlighted but could be more fully or more appropriately illustrated or extended.",
+              "bold": []
+            },
+            {
+              "text": "(Academic) It presents a clear overview, the data are appropriately categorised, and main trends or differences are identified.",
+              "bold": []
+            },
+            {
+              "text": "(General Training) All bullet points are covered and clearly highlighted but could be more fully or more appropriately illustrated or extended. It presents a clear purpose. The tone is consistent and appropriate to the task. Any lapses are minimal.",
+              "bold": []
+            }
+          ],
+          "Coherence and cohesion": [
+            {
+              "text": "Information and ideas are logically organised and there is a clear progression throughout the response. A few lapses may occur.",
+              "bold": []
+            },
+            {
+              "text": "A range of cohesive devices including reference and substitution is used flexibly but with some inaccuracies or some over/under use.",
+              "bold": []
+            }
+          ],
+          "Lexical resource": [
+            {
+              "text": "The resource is sufficient to allow some flexibility and precision.",
+              "bold": []
+            },
+            {
+              "text": "There is some ability to use less common and/or idiomatic items.",
+              "bold": []
+            },
+            {
+              "text": "An awareness of style and collocation is evident, though inappropriacies occur.",
+              "bold": []
+            },
+            {
+              "text": "There are only a few errors in spelling and/or word formation, and they do not detract from overall clarity.",
+              "bold": []
+            }
+          ],
+          "Grammatical range and accuracy": [
+            {
+              "text": "A variety of complex structures is used with some flexibility and accuracy.",
+              "bold": []
+            },
+            {
+              "text": "Grammar and punctuation are generally well controlled, and error-free sentences are frequent.",
+              "bold": []
+            },
+            {
+              "text": "A few errors in grammar may persist, but these do not impede communication.",
+              "bold": []
+            }
+          ]
+        },
+        "6": {
+          "Task achievement": [
+            {
+              "text": "The response focuses on the requirements of the task and an appropriate format is used.",
+              "bold": []
+            },
+            {
+              "text": "(Academic) Key features which are selected are covered and adequately highlighted. A relevant overview is attempted. Information is appropriately selected and supported using figures/data.",
+              "bold": []
+            },
+            {
+              "text": "(General Training) All bullet points are covered and adequately highlighted. The purpose is generally clear. There may be minor inconsistencies in tone.",
+              "bold": []
+            },
+            {
+              "text": "Some irrelevant, inappropriate or inaccurate information may occur in areas of detail or when illustrating or extending the main points.",
+              "bold": []
+            },
+            {
+              "text": "Some details may be missing (or excessive) and further extension or illustration may be needed.",
+              "bold": []
+            }
+          ],
+          "Coherence and cohesion": [
+            {
+              "text": "Information and ideas are generally arranged coherently and there is a clear overall progression.",
+              "bold": []
+            },
+            {
+              "text": "Cohesive devices are used to some good effect but cohesion within and/or between sentences may be faulty or mechanical due to misuse, overuse or omission.",
+              "bold": []
+            },
+            {
+              "text": "The use of reference and substitution may lack flexibility or clarity and result in some repetition or error",
+              "bold": []
+            }
+          ],
+          "Lexical resource": [
+            {
+              "text": "The resource is generally adequate and appropriate for the task.",
+              "bold": []
+            },
+            {
+              "text": "The meaning is generally clear in spite of a rather restricted range or a lack of precision in word choice.",
+              "bold": []
+            },
+            {
+              "text": "If the writer is a risk-taker, there will be a wider range of vocabulary used but higher degrees of inaccuracy or inappropriacy.",
+              "bold": []
+            },
+            {
+              "text": "There are some errors in spelling and/or word formation, but these do not impede communication.",
+              "bold": []
+            }
+          ],
+          "Grammatical range and accuracy": [
+            {
+              "text": "A mix of simple and complex sentence forms is used but flexibility is limited.",
+              "bold": []
+            },
+            {
+              "text": "Examples of more complex structures are not marked by the same level of accuracy as in simple structures.",
+              "bold": []
+            },
+            {
+              "text": "Errors in grammar and punctuation occur, but rarely impede communication",
+              "bold": []
+            }
+          ]
+        },
+        "5": {
+          "Task achievement": [
+            {
+              "text": "The response generally addresses the requirements of the task. The format may be inappropriate in places.",
+              "bold": []
+            },
+            {
+              "text": "(Academic) Key features which are selected are not adequately covered. The recounting of detail is mainly mechanical. There may be no data to support the description.",
+              "bold": [
+                [
+                  118,
+                  166
+                ]
+              ]
+            },
+            {
+              "text": "(General Training) All bullet points are presented but one or more may not be adequately covered. The purpose may be unclear at times. The tone may be variable and sometimes inappropriate.",
+              "bold": []
+            },
+            {
+              "text": "There may be a tendency to focus on details (without referring to the bigger picture).",
+              "bold": []
+            },
+            {
+              "text": "The inclusion of irrelevant, inappropriate or inaccurate material in key areas detracts from the task achievement.",
+              "bold": []
+            },
+            {
+              "text": "There is limited detail when extending and illustrating the main points.",
+              "bold": []
+            }
+          ],
+          "Coherence and cohesion": [
+            {
+              "text": "Organisation is evident but is not wholly logical and there may be a lack of overall progression. Nevertheless, there is a sense of underlying coherence to the response.",
+              "bold": []
+            },
+            {
+              "text": "The relationship of ideas can be followed but the sentences are not fluently linked to each other.",
+              "bold": []
+            },
+            {
+              "text": "There may be limited/overuse of cohesive devices with some inaccuracy.",
+              "bold": []
+            },
+            {
+              "text": "The writing may be repetitive due to inadequate and/or inaccurate use of reference and substitution.",
+              "bold": []
+            }
+          ],
+          "Lexical resource": [
+            {
+              "text": "The resource is limited but minimally adequate for the task.",
+              "bold": []
+            },
+            {
+              "text": "Simple vocabulary may be used accurately but the range does not permit much variation in expression.",
+              "bold": []
+            },
+            {
+              "text": "There may be frequent lapses in the appropriacy of word choice, and a lack of flexibility is apparent in frequent simplifications and/or repetitions.",
+              "bold": []
+            },
+            {
+              "text": "Errors in spelling and/or word formation may be noticeable and may cause some difficulty for the reader.",
+              "bold": []
+            }
+          ],
+          "Grammatical range and accuracy": [
+            {
+              "text": "The range of structures is limited and rather repetitive.",
+              "bold": []
+            },
+            {
+              "text": "Although complex sentences are attempted, they tend to be faulty, and the greatest accuracy is achieved on simple sentences.",
+              "bold": []
+            },
+            {
+              "text": "Grammatical errors may be frequent and cause some difficulty for the reader.",
+              "bold": []
+            },
+            {
+              "text": "Punctuation may be faulty.",
+              "bold": []
+            }
+          ]
+        },
+        "4": {
+          "Task achievement": [
+            {
+              "text": "The response is an attempt to address the task.",
+              "bold": []
+            },
+            {
+              "text": "(Academic) Few key features have been selected.",
+              "bold": []
+            },
+            {
+              "text": "(General Training) Not all bullet points are presented.",
+              "bold": [
+                [
+                  0,
+                  55
+                ]
+              ]
+            },
+            {
+              "text": "(General Training) The purpose of the letter is not clearly explained and may be confused. The tone may be inappropriate.",
+              "bold": []
+            },
+            {
+              "text": "The format may be inappropriate.",
+              "bold": []
+            },
+            {
+              "text": "Key features/bullet points which are presented may be irrelevant, repetitive, inaccurate or inappropriate.",
+              "bold": []
+            }
+          ],
+          "Coherence and cohesion": [
+            {
+              "text": "Information and ideas are evident but not arranged coherently, and there is no clear progression within the response.",
+              "bold": []
+            },
+            {
+              "text": "Relationships between ideas can be unclear and/or inadequately marked. There is some use of basic cohesive devices, which may be inaccurate or repetitive.",
+              "bold": []
+            },
+            {
+              "text": "There is inaccurate use or a lack of substitution or referencing.",
+              "bold": []
+            }
+          ],
+          "Lexical resource": [
+            {
+              "text": "The resource is limited and inadequate for or unrelated to the task. Vocabulary is basic and may be used repetitively.",
+              "bold": [
+                [
+                  46,
+                  68
+                ]
+              ]
+            },
+            {
+              "text": "There may be inappropriate use of lexical chunks (e.g. memorised phrases, formulaic language and/or language from the input material).",
+              "bold": []
+            },
+            {
+              "text": "Inappropriate word choice and/or errors in word formation and/or in spelling may impede meaning.",
+              "bold": []
+            }
+          ],
+          "Grammatical range and accuracy": [
+            {
+              "text": "A very limited range of structures is used.",
+              "bold": []
+            },
+            {
+              "text": "Subordinate clauses are rare and simple sentences predominate.",
+              "bold": [
+                [
+                  0,
+                  62
+                ]
+              ]
+            },
+            {
+              "text": "Some structures are produced accurately but grammatical errors are frequent and may impede meaning.",
+              "bold": []
+            },
+            {
+              "text": "Punctuation is often faulty or inadequate.",
+              "bold": []
+            }
+          ]
+        },
+        "3": {
+          "Task achievement": [
+            {
+              "text": "i Tnhaec cruesraptoen oser idnoaepsp rnoopt raiadtder.ess the requirements of the task (possibly because of misunderstanding of the data/diagram/situation).",
+              "bold": []
+            },
+            {
+              "text": "Key features/bullet points which are presented may be largely irrelevant.",
+              "bold": []
+            },
+            {
+              "text": "Limited information is presented, and this may be used repetitively.",
+              "bold": []
+            }
+          ],
+          "Coherence and cohesion": [
+            {
+              "text": "There is no apparent logical organisation. Ideas are discernible but difficult to relate to each other.",
+              "bold": []
+            },
+            {
+              "text": "Minimal use of sequencers or cohesive devices. Those used do not necessarily indicate a logical relationship between ideas.",
+              "bold": []
+            },
+            {
+              "text": "There is difficulty in identifying referencing.",
+              "bold": []
+            }
+          ],
+          "Lexical resource": [
+            {
+              "text": "The resource is inadequate (which may be due to the response being significantly underlength).",
+              "bold": []
+            },
+            {
+              "text": "Possible over-dependence on input material or memorised language.",
+              "bold": []
+            },
+            {
+              "text": "Control of word choice and/or spelling is very limited, and errors predominate. These errors may severely impede meaning.",
+              "bold": []
+            }
+          ],
+          "Grammatical range and accuracy": [
+            {
+              "text": "Sentence forms are attempted, but errors in grammar and punctuation predominate (except in memorised phrases or those taken from the input material). This prevents most meaning from coming through.",
+              "bold": []
+            },
+            {
+              "text": "Length may be insufficient to provide evidence of control of sentence forms.",
+              "bold": [
+                [
+                  0,
+                  76
+                ]
+              ]
+            }
+          ]
+        },
+        "2": {
+          "Task achievement": [
+            {
+              "text": "The content barely relates to the task.",
+              "bold": []
+            }
+          ],
+          "Coherence and cohesion": [
+            {
+              "text": "TThheerree iiss dlitiftfleic ureltlye vinan idt emnetisfsyaingge,r eofre trheen cing. entire response may be off-topic.",
+              "bold": []
+            },
+            {
+              "text": "There is little evidence of control of organisational features.",
+              "bold": []
+            }
+          ],
+          "Lexical resource": [
+            {
+              "text": "The resource is extremely limited with few recognisable strings, apart from memorised phrases.",
+              "bold": []
+            },
+            {
+              "text": "There is no apparent control of word formation and/or spelling.",
+              "bold": []
+            }
+          ],
+          "Grammatical range and accuracy": [
+            {
+              "text": "There is little or no evidence of sentence forms (except in memorised phrases).",
+              "bold": []
+            }
+          ]
+        },
+        "1": {
+          "Task achievement": [
+            {
+              "text": "Responses of 20 words or fewer are rated at Band 1.",
+              "bold": []
+            },
+            {
+              "text": "The content is wholly unrelated to the task.",
+              "bold": []
+            },
+            {
+              "text": "Any copied rubric must be discounted.",
+              "bold": []
+            }
+          ],
+          "Coherence and cohesion": [
+            {
+              "text": "Responses of 20 words or fewer are rated at Band 1.",
+              "bold": [
+                [
+                  0,
+                  51
+                ]
+              ]
+            },
+            {
+              "text": "The writing fails to communicate any message and appears to be by a virtual non-writer.",
+              "bold": []
+            }
+          ],
+          "Lexical resource": [
+            {
+              "text": "a Rnedsp/oorn sspeesl loinfg 2.0 words or fewer are rated at Band 1.",
+              "bold": []
+            },
+            {
+              "text": "No resource is apparent, except for a few isolated words.",
+              "bold": []
+            }
+          ],
+          "Grammatical range and accuracy": [
+            {
+              "text": "Responses of 20 words or fewer are rated at Band 1.",
+              "bold": [
+                [
+                  0,
+                  51
+                ]
+              ]
+            },
+            {
+              "text": "No rateable language is evident.",
+              "bold": []
+            }
+          ]
+        },
+        "0": {
+          "Task achievement": [
+            {
+              "text": "non-writer. Should only be used where a candidate did not attend or attempt the question in any way, used a language other than English throughout, or where there is proof that a candidate’s answer has been totally memorised.",
+              "bold": [
+                [
+                  151,
+                  225
+                ]
+              ]
+            }
+          ],
+          "Coherence and cohesion": [
+            {
+              "text": "non-writer. Should only be used where a candidate did not attend or attempt the question in any way, used a language other than English throughout, or where there is proof that a candidate’s answer has been totally memorised.",
+              "bold": [
+                [
+                  151,
+                  225
+                ]
+              ]
+            }
+          ],
+          "Lexical resource": [
+            {
+              "text": "non-writer. Should only be used where a candidate did not attend or attempt the question in any way, used a language other than English throughout, or where there is proof that a candidate’s answer has been totally memorised.",
+              "bold": [
+                [
+                  151,
+                  225
+                ]
+              ]
+            }
+          ],
+          "Grammatical range and accuracy": [
+            {
+              "text": "non-writer. Should only be used where a candidate did not attend or attempt the question in any way, used a language other than English throughout, or where there is proof that a candidate’s answer has been totally memorised.",
+              "bold": [
+                [
+                  151,
+                  225
+                ]
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "Writing Task 2": {
+      "shortLabel": "Task 2",
+      "criteria": [
+        "Task response",
+        "Coherence and cohesion",
+        "Lexical resource",
+        "Grammatical range and accuracy"
+      ],
+      "note": "A script must fully fit the positive features at a particular level. Negative features can limit a rating.",
+      "bands": {
+        "9": {
+          "Task response": [
+            {
+              "text": "The prompt is appropriately addressed and explored in depth.",
+              "bold": []
+            },
+            {
+              "text": "A clear and fully developed position is presented which directly answers the question/s.",
+              "bold": []
+            },
+            {
+              "text": "Ideas are relevant, fully extended and well supported.",
+              "bold": []
+            },
+            {
+              "text": "Any lapses in content or support are extremely rare.",
+              "bold": []
+            }
+          ],
+          "Coherence and cohesion": [
+            {
+              "text": "The message can be followed effortlessly.",
+              "bold": []
+            },
+            {
+              "text": "Cohesion is used in such a way that it very rarely attracts attention.",
+              "bold": []
+            },
+            {
+              "text": "Any lapses in coherence or cohesion are minimal.",
+              "bold": []
+            },
+            {
+              "text": "Paragraphing is skilfully managed.",
+              "bold": []
+            }
+          ],
+          "Lexical resource": [
+            {
+              "text": "Full flexibility and precise use are widely evident.",
+              "bold": []
+            },
+            {
+              "text": "A wide range of vocabulary is used accurately and appropriately with very natural and sophisticated control of lexical features.",
+              "bold": []
+            },
+            {
+              "text": "Minor errors in spelling and word formation are extremely rare and have minimal impact on communication.",
+              "bold": []
+            }
+          ],
+          "Grammatical range and accuracy": [
+            {
+              "text": "A wide range of structures is used with full flexibility and control.",
+              "bold": []
+            },
+            {
+              "text": "Punctuation and grammar are used appropriately throughout.",
+              "bold": []
+            },
+            {
+              "text": "Minor errors are extremely rare and have minimal impact on communication.",
+              "bold": []
+            }
+          ]
+        },
+        "8": {
+          "Task response": [
+            {
+              "text": "The prompt is appropriately and sufficiently addressed.",
+              "bold": []
+            },
+            {
+              "text": "A clear and well-developed position is presented in response to the question/s.",
+              "bold": []
+            },
+            {
+              "text": "Ideas are relevant, well extended and supported.",
+              "bold": []
+            },
+            {
+              "text": "There may be occasional omissions or lapses in content.",
+              "bold": []
+            }
+          ],
+          "Coherence and cohesion": [
+            {
+              "text": "The message can be followed with ease.",
+              "bold": []
+            },
+            {
+              "text": "Information and ideas are logically sequenced, and cohesion is well managed.",
+              "bold": []
+            },
+            {
+              "text": "Occasional lapses in coherence and cohesion may occur.",
+              "bold": []
+            },
+            {
+              "text": "Paragraphing is used sufficiently and appropriately.",
+              "bold": []
+            }
+          ],
+          "Lexical resource": [
+            {
+              "text": "A wide resource is fluently and flexibly used to convey precise meanings.",
+              "bold": []
+            },
+            {
+              "text": "There is skilful use of uncommon and/or idiomatic items when appropriate, despite occasional inaccuracies in word choice and collocation.",
+              "bold": []
+            },
+            {
+              "text": "Occasional errors in spelling and/or word formation may occur, but have minimal impact on communication.",
+              "bold": []
+            }
+          ],
+          "Grammatical range and accuracy": [
+            {
+              "text": "A wide range of structures is flexibly and accurately used.",
+              "bold": []
+            },
+            {
+              "text": "The majority of sentences are error-free, and punctuation is well managed.",
+              "bold": []
+            },
+            {
+              "text": "Occasional, non-systematic errors and inappropriacies occur, but have minimal impact on communication.",
+              "bold": []
+            }
+          ]
+        },
+        "7": {
+          "Task response": [
+            {
+              "text": "The main parts of the prompt are appropriately addressed.",
+              "bold": []
+            },
+            {
+              "text": "A clear and developed position is presented.",
+              "bold": []
+            },
+            {
+              "text": "Main ideas are extended and supported but there may be a tendency to over-generalise or there may be a lack of focus and precision in supporting ideas/material.",
+              "bold": []
+            }
+          ],
+          "Coherence and cohesion": [
+            {
+              "text": "Information and ideas are logically organised, and there is a clear progression throughout the response. (A few lapses may occur, but these are minor.)",
+              "bold": []
+            },
+            {
+              "text": "A range of cohesive devices including reference and substitution is used flexibly but with some inaccuracies or some over/under use.",
+              "bold": []
+            },
+            {
+              "text": "Paragraphing is generally used effectively to support overall coherence, and the sequencing of ideas within a paragraph is generally logical.",
+              "bold": []
+            }
+          ],
+          "Lexical resource": [
+            {
+              "text": "The resource is sufficient to allow some flexibility and precision.",
+              "bold": []
+            },
+            {
+              "text": "There is some ability to use less common and/or idiomatic items.",
+              "bold": []
+            },
+            {
+              "text": "An awareness of style and collocation is evident, though inappropriacies occur.",
+              "bold": []
+            },
+            {
+              "text": "There are only a few errors in spelling and/or word formation and they do not detract from overall clarity.",
+              "bold": []
+            }
+          ],
+          "Grammatical range and accuracy": [
+            {
+              "text": "A variety of complex structures is used with some flexibility and accuracy.",
+              "bold": []
+            },
+            {
+              "text": "Grammar and punctuation are generally well controlled, and error-free sentences are frequent.",
+              "bold": []
+            },
+            {
+              "text": "A few errors in grammar may persist, but these do not impede communication.",
+              "bold": []
+            }
+          ]
+        },
+        "6": {
+          "Task response": [
+            {
+              "text": "The main parts of the prompt are addressed (though some may be more fully covered than others). An appropriate format is used.",
+              "bold": []
+            },
+            {
+              "text": "A position is presented that is directly relevant to the prompt, although the conclusions drawn may be unclear, unjustified or repetitive.",
+              "bold": []
+            },
+            {
+              "text": "Main ideas are relevant, but some may be insufficiently developed or may lack clarity, while some supporting arguments and evidence may be less relevant or inadequate.",
+              "bold": []
+            }
+          ],
+          "Coherence and cohesion": [
+            {
+              "text": "Information and ideas are generally arranged coherently and there is a clear overall progression.",
+              "bold": []
+            },
+            {
+              "text": "Cohesive devices are used to some good effect but cohesion within and/or between sentences may be faulty or mechanical due to misuse, overuse or omission.",
+              "bold": []
+            },
+            {
+              "text": "The use of reference and substitution may lack flexibility or clarity and result in some repetition or error.",
+              "bold": []
+            },
+            {
+              "text": "Paragraphing may not always be logical and/or the central topic may not always be clear.",
+              "bold": []
+            }
+          ],
+          "Lexical resource": [
+            {
+              "text": "The resource is generally adequate and appropriate for the task.",
+              "bold": []
+            },
+            {
+              "text": "The meaning is generally clear in spite of a rather restricted range or a lack of precision in word choice.",
+              "bold": []
+            },
+            {
+              "text": "If the writer is a risk-taker, there will be a wider range of vocabulary used but higher degrees of inaccuracy or inappropriacy.",
+              "bold": []
+            },
+            {
+              "text": "There are some errors in spelling and/or word formation, but these do not impede communication.",
+              "bold": []
+            }
+          ],
+          "Grammatical range and accuracy": [
+            {
+              "text": "A mix of simple and complex sentence forms is used but flexibility is limited.",
+              "bold": []
+            },
+            {
+              "text": "Examples of more complex structures are not marked by the same level of accuracy as in simple structures.",
+              "bold": []
+            },
+            {
+              "text": "Errors in grammar and punctuation occur, but rarely impede communication.",
+              "bold": []
+            }
+          ]
+        },
+        "5": {
+          "Task response": [
+            {
+              "text": "The main parts of the prompt are incompletely addressed. The format may be inappropriate in places.",
+              "bold": [
+                [
+                  33,
+                  56
+                ]
+              ]
+            },
+            {
+              "text": "The writer expresses a position, but the development is not always clear.",
+              "bold": []
+            },
+            {
+              "text": "Some main ideas are put forward, but they are limited and are not sufficiently developed and/or there may be irrelevant detail.",
+              "bold": []
+            },
+            {
+              "text": "There may be some repetition.",
+              "bold": []
+            }
+          ],
+          "Coherence and cohesion": [
+            {
+              "text": "Organisation is evident but is not wholly logical and there may be a lack of overall progression. Nevertheless, there is a sense of underlying coherence to the response.",
+              "bold": []
+            },
+            {
+              "text": "The relationship of ideas can be followed but the sentences are not fluently linked to each other.",
+              "bold": []
+            },
+            {
+              "text": "There may be limited/overuse of cohesive devices with some inaccuracy.",
+              "bold": []
+            },
+            {
+              "text": "The writing may be repetitive due to inadequate and/or inaccurate use of reference and substitution.",
+              "bold": []
+            },
+            {
+              "text": "Paragraphing may be inadequate or missing.",
+              "bold": [
+                [
+                  0,
+                  42
+                ]
+              ]
+            }
+          ],
+          "Lexical resource": [
+            {
+              "text": "The resource is limited but minimally adequate for the task.",
+              "bold": []
+            },
+            {
+              "text": "Simple vocabulary may be used accurately but the range does not permit much variation in expression.",
+              "bold": []
+            },
+            {
+              "text": "There may be frequent lapses in the appropriacy of word choice and a lack of flexibility is apparent in frequent simplifications and/or repetitions.",
+              "bold": []
+            },
+            {
+              "text": "Errors in spelling and/or word formation may be noticeable and may cause some difficulty for the reader.",
+              "bold": []
+            }
+          ],
+          "Grammatical range and accuracy": [
+            {
+              "text": "The range of structures is limited and rather repetitive.",
+              "bold": []
+            },
+            {
+              "text": "Although complex sentences are attempted, they tend to be faulty, and the greatest accuracy is achieved on simple sentences.",
+              "bold": []
+            },
+            {
+              "text": "Grammatical errors may be frequent and cause some difficulty for the reader.",
+              "bold": []
+            },
+            {
+              "text": "Punctuation may be faulty.",
+              "bold": []
+            }
+          ]
+        },
+        "4": {
+          "Task response": [
+            {
+              "text": "The prompt is tackled in a minimal way, or the answer is tangential, possibly due to some misunderstanding of the prompt. The format may be inappropriate.",
+              "bold": [
+                [
+                  122,
+                  154
+                ]
+              ]
+            },
+            {
+              "text": "A position is discernible, but the reader has to read carefully to find it.",
+              "bold": []
+            },
+            {
+              "text": "Main ideas are difficult to identify and such ideas that are identifiable may lack relevance, clarity and/or support.",
+              "bold": []
+            },
+            {
+              "text": "Large parts of the response may be repetitive.",
+              "bold": []
+            }
+          ],
+          "Coherence and cohesion": [
+            {
+              "text": "Information and ideas are evident but not arranged coherently and there is no clear progression within the response.",
+              "bold": []
+            },
+            {
+              "text": "Relationships between ideas can be unclear and/or inadequately marked. There is some use of basic cohesive devices, which may be inaccurate or repetitive.",
+              "bold": []
+            },
+            {
+              "text": "There is inaccurate use or a lack of substitution or referencing.",
+              "bold": []
+            },
+            {
+              "text": "There may be no paragraphing and/or no clear main topic within paragraphs.",
+              "bold": []
+            }
+          ],
+          "Lexical resource": [
+            {
+              "text": "The resource is limited and inadequate for or unrelated to the task. Vocabulary is basic and may be used repetitively.",
+              "bold": [
+                [
+                  46,
+                  67
+                ]
+              ]
+            },
+            {
+              "text": "There may be inappropriate use of lexical chunks (e.g. memorised phrases, formulaic language and/or language from the input material).",
+              "bold": []
+            },
+            {
+              "text": "Inappropriate word choice and/or errors in word formation and/or in spelling may impede meaning.",
+              "bold": []
+            }
+          ],
+          "Grammatical range and accuracy": [
+            {
+              "text": "A very limited range of structures is used.",
+              "bold": []
+            },
+            {
+              "text": "Subordinate clauses are rare and simple sentences predominate.",
+              "bold": [
+                [
+                  0,
+                  62
+                ]
+              ]
+            },
+            {
+              "text": "Some structures are produced accurately but grammatical errors are frequent and may impede meaning.",
+              "bold": []
+            },
+            {
+              "text": "Punctuation is often faulty or inadequate.",
+              "bold": []
+            }
+          ]
+        },
+        "3": {
+          "Task response": [
+            {
+              "text": "No part of the prompt is adequately addressed, or the prompt has been misunderstood.",
+              "bold": []
+            },
+            {
+              "text": "No relevant position can be identified, and/or there is little direct response to the question/s.",
+              "bold": []
+            },
+            {
+              "text": "There are few ideas, and these may be irrelevant or insufficiently developed.",
+              "bold": []
+            }
+          ],
+          "Coherence and cohesion": [
+            {
+              "text": "w Thitehrien ips anroa garpappahrse.nt logical organisation. Ideas are discernible but difficult to relate to each other.",
+              "bold": []
+            },
+            {
+              "text": "There is minimal use of sequencers or cohesive devices. Those used do not necessarily indicate a logical relationship between ideas.",
+              "bold": []
+            },
+            {
+              "text": "There is difficulty in identifying referencing.",
+              "bold": []
+            },
+            {
+              "text": "Any attempts at paragraphing are unhelpful.",
+              "bold": []
+            }
+          ],
+          "Lexical resource": [
+            {
+              "text": "The resource is inadequate (which may be due to the response being significantly underlength). Possible over-dependence on input material or memorised language.",
+              "bold": []
+            },
+            {
+              "text": "Control of word choice and/or spelling is very limited, and errors predominate. These errors may severely impede meaning.",
+              "bold": []
+            }
+          ],
+          "Grammatical range and accuracy": [
+            {
+              "text": "Sentence forms are attempted, but errors in grammar and punctuation predominate (except in memorised phrases or those taken from the input material). This prevents most meaning from coming through.",
+              "bold": []
+            },
+            {
+              "text": "Length may be insufficient to provide evidence of control of sentence forms.",
+              "bold": [
+                [
+                  0,
+                  76
+                ]
+              ]
+            }
+          ]
+        },
+        "2": {
+          "Task response": [
+            {
+              "text": "The content is barely related to the prompt.",
+              "bold": []
+            },
+            {
+              "text": "No position can be identified.",
+              "bold": []
+            },
+            {
+              "text": "There may be glimpses of one or two ideas without development.",
+              "bold": []
+            }
+          ],
+          "Coherence and cohesion": [
+            {
+              "text": "AThneyr aet itse mlittpltes r aetl epvaarnatg mraepshsiangge a, roer uthneh eelnptfuirle. response may be off-topic.",
+              "bold": []
+            },
+            {
+              "text": "There is little evidence of control of organisational features.",
+              "bold": []
+            }
+          ],
+          "Lexical resource": [
+            {
+              "text": "The resource is extremely limited with few recognisable strings, apart from memorised phrases.",
+              "bold": []
+            },
+            {
+              "text": "There is no apparent control of word formation and/or spelling.",
+              "bold": []
+            }
+          ],
+          "Grammatical range and accuracy": [
+            {
+              "text": "There is little or no evidence of sentence forms (except in memorised phrases).",
+              "bold": []
+            }
+          ]
+        },
+        "1": {
+          "Task response": [
+            {
+              "text": "d Reevseploonpsmeesn otf. 20 words or fewer are rated at Band 1.",
+              "bold": []
+            },
+            {
+              "text": "The content is wholly unrelated to the prompt.",
+              "bold": []
+            },
+            {
+              "text": "Any copied rubric must be discounted.",
+              "bold": []
+            }
+          ],
+          "Coherence and cohesion": [
+            {
+              "text": "Responses of 20 words or fewer are rated at Band 1.",
+              "bold": [
+                [
+                  0,
+                  51
+                ]
+              ]
+            },
+            {
+              "text": "The writing fails to communicate any message and appears to be by a virtual non-writer.",
+              "bold": []
+            }
+          ],
+          "Lexical resource": [
+            {
+              "text": "f Roersmpaotniosne sa nodf /2o0r wspoerldlins go.r fewer are rated at Band 1.",
+              "bold": []
+            },
+            {
+              "text": "No resource is apparent, except for a few isolated words.",
+              "bold": []
+            }
+          ],
+          "Grammatical range and accuracy": [
+            {
+              "text": "Responses of 20 words or fewer are rated at Band 1.",
+              "bold": [
+                [
+                  0,
+                  51
+                ]
+              ]
+            },
+            {
+              "text": "No rateable language is evident.",
+              "bold": []
+            }
+          ]
+        },
+        "0": {
+          "Task response": [
+            {
+              "text": "Any copied rubric must be discounted. isolated words. Should only be used where a candidate did not attend or attempt the question in any way, used a language other than English throughout, or where there is proof that a candidate’s answer has been totally memorised.",
+              "bold": [
+                [
+                  193,
+                  267
+                ]
+              ]
+            }
+          ],
+          "Coherence and cohesion": [
+            {
+              "text": "Any copied rubric must be discounted. isolated words. Should only be used where a candidate did not attend or attempt the question in any way, used a language other than English throughout, or where there is proof that a candidate’s answer has been totally memorised.",
+              "bold": [
+                [
+                  193,
+                  267
+                ]
+              ]
+            }
+          ],
+          "Lexical resource": [
+            {
+              "text": "Any copied rubric must be discounted. isolated words. Should only be used where a candidate did not attend or attempt the question in any way, used a language other than English throughout, or where there is proof that a candidate’s answer has been totally memorised.",
+              "bold": [
+                [
+                  193,
+                  267
+                ]
+              ]
+            }
+          ],
+          "Grammatical range and accuracy": [
+            {
+              "text": "Any copied rubric must be discounted. isolated words. Should only be used where a candidate did not attend or attempt the question in any way, used a language other than English throughout, or where there is proof that a candidate’s answer has been totally memorised.",
+              "bold": [
+                [
+                  193,
+                  267
+                ]
+              ]
+            }
+          ]
+        }
+      }
+    }
+  }
+};
+
+  </script>
+  <script>
+    (() => {
+      "use strict";
+
+      const data = window.IELTS_DATA;
+      delete data.sections.Speaking;
+      const sectionNames = Object.keys(data.sections);
+      const bands = [9, 8, 7, 6, 5, 4, 3, 2, 1, 0];
+      const storageKey = "writing-feedback-rating-scales-state-v1";
+      const categoryColors = ["#2ca33a", "#7a3fe0", "#3377e8", "#3377e8"];
+
+      const compareGroups = [
+        {
+          name: "positive",
+          terms: [
+            "effortlessly", "with ease", "fully", "flexibly", "accurately",
+            "appropriately", "effectively", "well developed", "well-developed",
+            "clear progression", "coherent", "relevant", "sufficient",
+            "precise", "natural", "successfully", "error-free", "well controlled",
+            "easily understood", "minimal impact", "wide range", "wide resource",
+            "full flexibility", "skilful", "frequent"
+          ]
+        },
+        {
+          name: "limit",
+          terms: [
+            "limited", "inappropriate", "inaccurate", "error", "errors",
+            "lapses", "faulty", "repetition", "repetitive", "hesitation",
+            "mispronounced", "unintelligible", "impede", "difficulty",
+            "unclear", "inadequate", "rarely", "not always", "may persist",
+            "underlength", "no evidence", "unable", "minimal way"
+          ]
+        },
+        {
+          name: "control",
+          terms: [
+            "control", "accuracy", "grammar", "punctuation", "word choice",
+            "collocation", "spelling", "word formation", "sentence forms",
+            "structures", "vocabulary", "lexical", "phonological"
+          ]
+        },
+        {
+          name: "organize",
+          terms: [
+            "cohesion", "cohesive", "coherence", "paragraphing", "progression",
+            "sequenced", "organised", "organized", "connectives",
+            "discourse markers", "topic development", "position", "main ideas",
+            "overview", "support", "extended", "illustrated"
+          ]
+        }
+      ];
+
+      const state = {
+        section: "Writing Task 2",
+        lastWritingSection: "Writing Task 2",
+        criterion: "__all",
+        view: "explorer",
+        compare: true,
+        annotate: false,
+        annotationColor: "yellow",
+        fontSize: 13,
+        query: "",
+        activeBand: 9,
+        scores: Object.fromEntries(sectionNames.map(name => [
+          name,
+          Object.fromEntries(data.sections[name].criteria.map(criterion => [criterion, null]))
+        ])),
+        annotations: {}
+      };
+
+      const $ = selector => document.querySelector(selector);
+      const $$ = selector => [...document.querySelectorAll(selector)];
+      const escapeHtml = value => String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+      const escapeRegExp = value => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const roundHalf = value => Math.round(value * 2) / 2;
+      const formatBand = value => value == null || Number.isNaN(value) ? "—" : value.toFixed(1);
+      const descriptorText = descriptor => typeof descriptor === "string" ? descriptor : descriptor.text;
+      const descriptorBold = descriptor => Array.isArray(descriptor?.bold) ? descriptor.bold : [];
+
+      function descriptorForKey(key) {
+        const [section, criterion, band, indexText] = key.split("|");
+        return data.sections?.[section]?.bands?.[band]?.[criterion]?.[Number(indexText)];
+      }
+
+      function normalizeAnnotations(savedAnnotations) {
+        const normalized = {};
+        Object.entries(savedAnnotations || {}).forEach(([key, value]) => {
+          const text = descriptorText(descriptorForKey(key) || "");
+          if (!text) return;
+          if (typeof value === "string") {
+            normalized[key] = [{ start: 0, end: text.length, color: value }];
+            return;
+          }
+          if (!Array.isArray(value)) return;
+          const ranges = value
+            .map(range => ({
+              start: Math.max(0, Number(range.start) || 0),
+              end: Math.min(text.length, Number(range.end) || 0),
+              color: ["yellow", "green", "pink", "blue"].includes(range.color) ? range.color : "yellow"
+            }))
+            .filter(range => range.start < range.end)
+            .sort((a, b) => a.start - b.start);
+          if (ranges.length) normalized[key] = ranges;
+        });
+        return normalized;
+      }
+
+      function ratingScaleSnapshot() {
+        return {
+          section: state.section,
+          lastWritingSection: state.lastWritingSection,
+          criterion: state.criterion,
+          view: state.view,
+          compare: state.compare,
+          fontSize: state.fontSize,
+          scores: state.scores,
+          annotations: state.annotations
+        };
+      }
+
+      function applySavedState(saved) {
+        if (!saved || typeof saved !== "object") return;
+        if (sectionNames.includes(saved.section)) state.section = saved.section;
+        const savedWritingSection = saved.lastWritingSection || saved.section;
+        if (["Writing Task 1", "Writing Task 2"].includes(savedWritingSection)) {
+          state.lastWritingSection = savedWritingSection;
+        }
+        if (typeof saved.compare === "boolean") state.compare = saved.compare;
+        if (Number.isFinite(saved.fontSize)) {
+          state.fontSize = Math.max(11, Math.min(18, saved.fontSize));
+        }
+        sectionNames.forEach(section => {
+          data.sections[section].criteria.forEach(criterion => {
+            state.scores[section][criterion] = null;
+            const value = saved.scores?.[section]?.[criterion];
+            if (Number.isInteger(value) && value >= 0 && value <= 9) {
+              state.scores[section][criterion] = value;
+            }
+          });
+        });
+        state.annotations = saved.annotations && typeof saved.annotations === "object"
+          ? normalizeAnnotations(saved.annotations)
+          : {};
+        if (saved.view === "profile" || saved.view === "explorer") state.view = saved.view;
+        state.criterion = "__all";
+      }
+
+      function notifyParent(type = "ielts-rating-scale-update") {
+        if (window.parent === window) return;
+        window.parent.postMessage({ type, state: ratingScaleSnapshot() }, "*");
+      }
+
+      function loadState() {
+        try {
+          const saved = JSON.parse(localStorage.getItem(storageKey) || "null");
+          if (saved) applySavedState(saved);
+        } catch (_) {
+          try { localStorage.removeItem(storageKey); } catch (_) {}
+        }
+      }
+
+      function saveState() {
+        const snapshot = ratingScaleSnapshot();
+        try { localStorage.setItem(storageKey, JSON.stringify(snapshot)); } catch (_) {}
+        notifyParent();
+      }
+
+      window.addEventListener("message", event => {
+        const message = event.data;
+        if (!message || typeof message !== "object") return;
+        if (message.type === "ielts-rating-scale-load") {
+          applySavedState(message.state);
+        } else if (message.type === "ielts-rating-scale-reset") {
+          applySavedState({
+            section: "Writing Task 2",
+            lastWritingSection: "Writing Task 2",
+            scores: {},
+            annotations: {}
+          });
+        } else {
+          return;
+        }
+        renderCriterionOptions();
+        renderBandNavigator();
+        syncToolbar();
+        switchView(state.view);
+        renderAll({ preserveScroll: false });
+        $("#matrixScroll").scrollTo({ left: 0, top: 0 });
+      });
+
+      function showToast(message) {
+        const toast = $("#toast");
+        toast.textContent = message;
+        toast.classList.add("show");
+        clearTimeout(showToast.timer);
+        showToast.timer = setTimeout(() => toast.classList.remove("show"), 1800);
+      }
+
+      function selectedValues(sectionName) {
+        return data.sections[sectionName].criteria
+          .map(criterion => state.scores[sectionName][criterion])
+          .filter(value => value != null);
+      }
+
+      function sectionResult(sectionName) {
+        const values = selectedValues(sectionName);
+        if (!values.length) return { raw: null, reported: null, complete: false };
+        const raw = values.reduce((sum, value) => sum + value, 0) / values.length;
+        return {
+          raw,
+          reported: roundHalf(raw),
+          complete: values.length === data.sections[sectionName].criteria.length
+        };
+      }
+
+      function writingResult() {
+        const task1 = sectionResult("Writing Task 1");
+        const task2 = sectionResult("Writing Task 2");
+        if (!task1.complete || !task2.complete) return null;
+        return roundHalf((task1.raw + 2 * task2.raw) / 3);
+      }
+
+      function categoryForText(text) {
+        const lower = text.toLowerCase();
+        if (compareGroups[1].terms.some(term => lower.includes(term))) return "limit";
+        if (compareGroups[3].terms.some(term => lower.includes(term))) return "organize";
+        if (compareGroups[2].terms.some(term => lower.includes(term))) return "control";
+        if (compareGroups[0].terms.some(term => lower.includes(term))) return "positive";
+        return "neutral";
+      }
+
+      function comparisonRanges(text) {
+        if (!state.compare) return [];
+        const matches = [];
+        compareGroups.forEach((group, groupIndex) => {
+          group.terms.forEach(term => {
+            const expression = new RegExp(escapeRegExp(term), "ig");
+            let match;
+            while ((match = expression.exec(text))) {
+              matches.push({
+                start: match.index,
+                end: match.index + match[0].length,
+                name: group.name,
+                priority: groupIndex,
+                length: match[0].length
+              });
+              if (!match[0].length) expression.lastIndex += 1;
+            }
+          });
+        });
+        matches.sort((a, b) => b.length - a.length || a.priority - b.priority || a.start - b.start);
+        const accepted = [];
+        matches.forEach(candidate => {
+          if (!accepted.some(item => candidate.start < item.end && candidate.end > item.start)) {
+            accepted.push(candidate);
+          }
+        });
+        return accepted.sort((a, b) => a.start - b.start);
+      }
+
+      function searchRanges(text) {
+        const query = state.query.trim();
+        if (!query) return [];
+        const ranges = [];
+        const expression = new RegExp(escapeRegExp(query), "ig");
+        let match;
+        while ((match = expression.exec(text))) {
+          ranges.push({ start: match.index, end: match.index + match[0].length });
+          if (!match[0].length) expression.lastIndex += 1;
+        }
+        return ranges;
+      }
+
+      function rangeAt(ranges, start, end) {
+        return ranges.find(range => range.start <= start && range.end >= end);
+      }
+
+      function renderedDescriptor(descriptor, key) {
+        const text = descriptorText(descriptor);
+        const boldRanges = descriptorBold(descriptor).map(([start, end]) => ({ start, end }));
+        const manualRanges = state.annotations[key] || [];
+        const queryRanges = searchRanges(text);
+        const compareRanges = state.query.trim() ? [] : comparisonRanges(text);
+        const boundaries = new Set([0, text.length]);
+        [...boldRanges, ...manualRanges, ...queryRanges, ...compareRanges].forEach(range => {
+          boundaries.add(Math.max(0, range.start));
+          boundaries.add(Math.min(text.length, range.end));
+        });
+        const points = [...boundaries].sort((a, b) => a - b);
+        let html = "";
+        for (let index = 0; index < points.length - 1; index += 1) {
+          const start = points[index];
+          const end = points[index + 1];
+          if (start >= end) continue;
+          let segment = escapeHtml(text.slice(start, end));
+          if (rangeAt(boldRanges, start, end)) {
+            segment = `<strong class="official-bold">${segment}</strong>`;
+          }
+          const manual = rangeAt(manualRanges, start, end);
+          const compare = rangeAt(compareRanges, start, end);
+          const query = rangeAt(queryRanges, start, end);
+          if (manual) {
+            segment = `<mark class="manual-mark" data-annotation-key="${escapeHtml(key)}" data-mark-start="${manual.start}" data-mark-end="${manual.end}" data-color="${manual.color}">${segment}</mark>`;
+          } else {
+            if (compare) segment = `<mark class="compare-${compare.name}">${segment}</mark>`;
+            if (query) segment = `<mark class="search-hit">${segment}</mark>`;
+          }
+          html += segment;
+        }
+        return html;
+      }
+
+      function annotationKey(section, criterion, band, index) {
+        return [section, criterion, band, index].join("|");
+      }
+
+      function initializeControls() {
+        $("#sectionSelect").innerHTML = sectionNames
+          .map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`)
+          .join("");
+        $("#sectionSelect").value = state.section;
+        renderCriterionOptions();
+        renderBandNavigator();
+        syncToolbar();
+        $("#sourceNote").textContent = data.meta.sourceNote;
+      }
+
+      function renderCriterionOptions() {
+        const criteria = data.sections[state.section].criteria;
+        if (state.criterion !== "__all" && !criteria.includes(state.criterion)) {
+          state.criterion = "__all";
+        }
+        $("#criterionSelect").innerHTML = [
+          '<option value="__all">All criteria</option>',
+          ...criteria.map(criterion => `<option value="${escapeHtml(criterion)}">${escapeHtml(criterion)}</option>`)
+        ].join("");
+        $("#criterionSelect").value = state.criterion;
+      }
+
+      function renderBandNavigator() {
+        $("#bandNavigator").innerHTML = `
+          <span class="band-label">Vertical band scale</span>
+          <span class="band-direction">Band 9 at the top · Band 0 at the bottom</span>`;
+      }
+
+      function syncToolbar() {
+        $("#compareButton").classList.toggle("active", state.compare);
+        $("#compareButton").setAttribute("aria-pressed", String(state.compare));
+        $("#annotateButton").classList.toggle("active", state.annotate);
+        $("#annotateButton").setAttribute("aria-pressed", String(state.annotate));
+        $("#annotationPalette").classList.toggle("hidden", !state.annotate);
+        $$(".compare-legend-item").forEach(item => item.classList.toggle("hidden", !state.compare));
+        $("#boldLegend").classList.remove("hidden");
+        $("#matrix").classList.toggle("annotating", state.annotate);
+        document.documentElement.style.setProperty("--descriptor-size", `${state.fontSize}px`);
+        $("#fontSize").value = state.fontSize;
+        $("#fontSizeValue").textContent = Number.isInteger(state.fontSize) ? String(state.fontSize) : state.fontSize.toFixed(1);
+        $$(".annotation-color").forEach(button => {
+          button.classList.toggle("active", button.dataset.color === state.annotationColor);
+        });
+      }
+
+      function renderMatrix({ preserveScroll = true } = {}) {
+        const scroll = $("#matrixScroll");
+        const previousLeft = preserveScroll ? scroll.scrollLeft : 0;
+        const previousTop = preserveScroll ? scroll.scrollTop : 0;
+        const section = data.sections[state.section];
+        const criteria = state.criterion === "__all" ? section.criteria : [state.criterion];
+        const query = state.query.trim().toLowerCase();
+        let matchCount = 0;
+        const matrix = $("#matrix");
+        matrix.style.setProperty("--visible-criteria", criteria.length);
+        matrix.style.gridTemplateColumns = `var(--band-axis-width) repeat(${criteria.length}, minmax(var(--criterion-min-width), 1fr))`;
+        matrix.style.setProperty(
+          "--matrix-width",
+          `calc(var(--band-axis-width) + ${criteria.map(() => "var(--criterion-min-width)").join(" + ")})`
+        );
+
+        const header = [
+          '<div class="matrix-head corner">Band</div>',
+          ...criteria.map(criterion => {
+            const criterionIndex = section.criteria.indexOf(criterion);
+            const selectedScore = state.scores[state.section][criterion];
+            return `
+              <div class="matrix-head criterion-head" style="--category-color:${categoryColors[criterionIndex] || categoryColors[3]}">
+                <span class="criterion-head-main">
+                  <span class="criterion-category" aria-hidden="true"></span>
+                  <strong>${escapeHtml(criterion)}</strong>
+                </span>
+                <span class="criterion-head-score ${selectedScore != null ? "has-score" : ""}">${selectedScore ?? "—"}</span>
+              </div>`;
+          })
+        ].join("");
+
+        const rows = bands.map(band => {
+          const cells = criteria.map(criterion => {
+            const descriptors = section.bands[String(band)][criterion] || [];
+            const matchingDescriptors = descriptors.filter(descriptor =>
+              descriptorText(descriptor).toLowerCase().includes(query)
+            );
+            const cellMatches = Boolean(query && matchingDescriptors.length);
+            if (cellMatches) matchCount += matchingDescriptors.length;
+            const selected = state.scores[state.section][criterion] === band;
+            const bullets = descriptors.map((descriptor, index) => {
+              const text = descriptorText(descriptor);
+              const key = annotationKey(state.section, criterion, band, index);
+              return `<li data-annotation-key="${escapeHtml(key)}" data-category="${categoryForText(text)}">${renderedDescriptor(descriptor, key)}</li>`;
+            }).join("");
+            return `
+              <div class="descriptor-cell ${selected ? "selected" : ""} ${cellMatches ? "search-match" : ""}"
+                   data-criterion="${escapeHtml(criterion)}"
+                   data-band="${band}"
+                   role="button"
+                   tabindex="0"
+                   aria-pressed="${selected}"
+                   aria-label="Set ${escapeHtml(criterion)} to Band ${band}">
+                <ul>${bullets}</ul>
+              </div>`;
+          }).join("");
+          return `<div class="band-axis-cell" data-band-axis="${band}">${band}</div>${cells}`;
+        }).join("");
+
+        matrix.innerHTML = header + rows;
+        $("#searchCount").textContent = state.query ? `${matchCount} ${matchCount === 1 ? "match" : "matches"}` : "";
+        requestAnimationFrame(() => {
+          scroll.scrollLeft = previousLeft;
+          scroll.scrollTop = previousTop;
+          if (!preserveScroll && state.query && matchCount) {
+            const firstMatch = $(".descriptor-cell.search-match");
+            firstMatch?.scrollIntoView({ block: "center", inline: "center", behavior: "smooth" });
+          }
+        });
+      }
+
+      function renderScoreSidebar() {
+        const section = data.sections[state.section];
+        const result = sectionResult(state.section);
+        const values = selectedValues(state.section);
+        $("#scoreTitle").textContent = `${section.shortLabel} band`;
+        $("#scoreValue").textContent = formatBand(result.reported);
+        $("#scoreCaption").textContent = result.complete
+          ? "Provisional reported band"
+          : values.length
+            ? `${values.length} of ${section.criteria.length} criteria selected`
+            : "Select descriptor cells to build a profile";
+        $("#rawAverage").textContent = result.raw == null ? "—" : result.raw.toFixed(2);
+        $("#clearScores").disabled = values.length === 0;
+
+        $("#scoreRows").innerHTML = section.criteria.map((criterion, index) => {
+          const value = state.scores[state.section][criterion];
+          return `
+            <div class="score-row" style="--category-color:${categoryColors[index] || categoryColors[3]}">
+              <span class="score-row-dot" aria-hidden="true"></span>
+              <span class="score-row-label">${escapeHtml(criterion)}</span>
+              <span class="score-row-value ${value != null ? "has-score" : ""}">${value ?? "—"}</span>
+            </div>`;
+        }).join("");
+
+        $("#helpNote").querySelector("span:last-child").textContent =
+          `${section.note} Click a descriptor cell to select its band. In annotation mode, drag across a phrase to highlight it; right-click a highlight to remove it.`;
+      }
+
+      function renderProfile() {
+        $("#writingOverall").textContent = formatBand(writingResult());
+        $("#profileSections").innerHTML = sectionNames.map(sectionName => {
+          const section = data.sections[sectionName];
+          const result = sectionResult(sectionName);
+          const chosen = selectedValues(sectionName).length;
+          const criteriaRows = section.criteria.map(criterion => {
+            const value = state.scores[sectionName][criterion];
+            return `
+              <div class="profile-criterion-row">
+                <span class="profile-criterion-name">${escapeHtml(criterion)}</span>
+                <span class="profile-criterion-score">${value ?? "—"}</span>
+                <span class="profile-track" aria-hidden="true"><span style="width:${value == null ? 0 : (value / 9) * 100}%"></span></span>
+              </div>`;
+          }).join("");
+          return `
+            <section class="profile-section">
+              <div class="profile-section-title">
+                <h2>${escapeHtml(sectionName)}</h2>
+                <p>${chosen} of ${section.criteria.length} criteria selected</p>
+              </div>
+              <div class="profile-criteria">${criteriaRows}</div>
+              <div class="profile-result" aria-label="${escapeHtml(sectionName)} reported band">${formatBand(result.reported)}</div>
+            </section>`;
+        }).join("");
+      }
+
+      function renderAll(options) {
+        renderMatrix(options);
+        renderScoreSidebar();
+        renderProfile();
+        saveState();
+      }
+
+      function selectScore(cell) {
+        const criterion = cell.dataset.criterion;
+        const band = Number(cell.dataset.band);
+        state.scores[state.section][criterion] =
+          state.scores[state.section][criterion] === band ? null : band;
+        renderAll();
+      }
+
+      function setFontSize(value) {
+        state.fontSize = Math.max(11, Math.min(18, Math.round(Number(value) * 2) / 2));
+        syncToolbar();
+        saveState();
+      }
+
+      function addAnnotationRange(key, start, end, color = state.annotationColor) {
+        const text = descriptorText(descriptorForKey(key) || "");
+        let safeStart = Math.max(0, Math.min(text.length, start));
+        let safeEnd = Math.max(0, Math.min(text.length, end));
+        while (safeStart < safeEnd && /\s/.test(text[safeStart])) safeStart += 1;
+        while (safeEnd > safeStart && /\s/.test(text[safeEnd - 1])) safeEnd -= 1;
+        if (safeStart >= safeEnd) return false;
+        const ranges = (state.annotations[key] || [])
+          .filter(range => safeEnd <= range.start || safeStart >= range.end);
+        ranges.push({ start: safeStart, end: safeEnd, color });
+        ranges.sort((a, b) => a.start - b.start);
+        state.annotations[key] = ranges;
+        return true;
+      }
+
+      function removeAnnotationRange(key, start, end) {
+        const ranges = (state.annotations[key] || [])
+          .filter(range => range.start !== start || range.end !== end);
+        if (ranges.length) state.annotations[key] = ranges;
+        else delete state.annotations[key];
+      }
+
+      function toggleWholeLineAnnotation(line) {
+        const key = line.dataset.annotationKey;
+        const text = descriptorText(descriptorForKey(key) || "");
+        if (!key || !text) return;
+        const ranges = state.annotations[key] || [];
+        const full = ranges.find(range => range.start === 0 && range.end === text.length);
+        if (full && full.color === state.annotationColor) {
+          removeAnnotationRange(key, 0, text.length);
+        } else {
+          state.annotations[key] = [{ start: 0, end: text.length, color: state.annotationColor }];
+        }
+        renderAll();
+      }
+
+      function selectionOffsets(line, range) {
+        const before = document.createRange();
+        before.selectNodeContents(line);
+        before.setEnd(range.startContainer, range.startOffset);
+        const start = before.toString().length;
+        return { start, end: start + range.toString().length };
+      }
+
+      function applyAnnotationSelection() {
+        if (!state.annotate) return;
+        const selection = window.getSelection();
+        if (!selection || selection.isCollapsed || !selection.rangeCount) return;
+        const range = selection.getRangeAt(0);
+        let startNode = range.startContainer.nodeType === Node.TEXT_NODE
+          ? range.startContainer.parentElement
+          : range.startContainer;
+        let endNode = range.endContainer.nodeType === Node.TEXT_NODE
+          ? range.endContainer.parentElement
+          : range.endContainer;
+        const line = startNode?.closest?.("li[data-annotation-key]");
+        if (!line || line !== endNode?.closest?.("li[data-annotation-key]")) return;
+        const { start, end } = selectionOffsets(line, range);
+        if (!addAnnotationRange(line.dataset.annotationKey, start, end)) return;
+        selection.removeAllRanges();
+        renderAll();
+      }
+
+      let annotationPointerStart = null;
+      let annotationDragged = false;
+
+      function switchView(view) {
+        state.view = view;
+        $$(".primary-tab").forEach(button => {
+          button.classList.toggle("active", button.dataset.view === view);
+        });
+        $("#toolbar").classList.toggle("hidden", view !== "explorer");
+        $("#explorerView").classList.toggle("hidden", view !== "explorer");
+        $("#profileView").classList.toggle("hidden", view !== "profile");
+        if (view === "profile") renderProfile();
+      }
+
+      loadState();
+      initializeControls();
+      renderAll({ preserveScroll: false });
+      switchView(state.view);
+      notifyParent("ielts-rating-scale-ready");
+
+      $("#sectionSelect").addEventListener("change", event => {
+        state.section = event.target.value;
+        if (state.section === "Writing Task 1" || state.section === "Writing Task 2") {
+          state.lastWritingSection = state.section;
+        }
+        state.criterion = "__all";
+        state.activeBand = 9;
+        renderCriterionOptions();
+        renderBandNavigator();
+        syncToolbar();
+        renderAll({ preserveScroll: false });
+        $("#matrixScroll").scrollTo({ left: 0, top: 0 });
+      });
+
+      $("#criterionSelect").addEventListener("change", event => {
+        state.criterion = event.target.value;
+        renderAll({ preserveScroll: false });
+      });
+
+      $("#compareButton").addEventListener("click", () => {
+        state.compare = !state.compare;
+        syncToolbar();
+        renderMatrix();
+        saveState();
+      });
+
+      $("#annotateButton").addEventListener("click", () => {
+        state.annotate = !state.annotate;
+        syncToolbar();
+        showToast(state.annotate ? "Annotation mode on" : "Annotation mode off");
+      });
+
+      $("#annotationPalette").addEventListener("click", event => {
+        const button = event.target.closest("[data-color]");
+        if (!button) return;
+        state.annotationColor = button.dataset.color;
+        syncToolbar();
+      });
+
+      $("#clearAnnotations").addEventListener("click", () => {
+        state.annotations = {};
+        renderAll();
+        showToast("Annotations cleared");
+      });
+
+      $("#fontSize").addEventListener("input", event => setFontSize(event.target.value));
+      $("#fontDecrease").addEventListener("click", () => setFontSize(state.fontSize - 0.5));
+      $("#fontIncrease").addEventListener("click", () => setFontSize(state.fontSize + 0.5));
+
+      $("#searchInput").addEventListener("input", event => {
+        state.query = event.target.value;
+        renderMatrix({ preserveScroll: !state.query });
+      });
+
+      $("#matrix").addEventListener("click", event => {
+        const line = event.target.closest("li[data-annotation-key]");
+        if (state.annotate) {
+          event.stopPropagation();
+          if (annotationDragged) return;
+          if (!line) return;
+          const mark = event.target.closest(".manual-mark");
+          if (mark) {
+            removeAnnotationRange(
+              mark.dataset.annotationKey,
+              Number(mark.dataset.markStart),
+              Number(mark.dataset.markEnd)
+            );
+            renderAll();
+            return;
+          }
+          toggleWholeLineAnnotation(line);
+          return;
+        }
+        const cell = event.target.closest(".descriptor-cell");
+        if (cell) selectScore(cell);
+      });
+
+      $("#matrix").addEventListener("keydown", event => {
+        if (state.annotate || !["Enter", " "].includes(event.key)) return;
+        const cell = event.target.closest(".descriptor-cell");
+        if (!cell) return;
+        event.preventDefault();
+        selectScore(cell);
+      });
+
+      $("#matrix").addEventListener("mousedown", event => {
+        if (!state.annotate || !event.target.closest("li[data-annotation-key]")) return;
+        annotationPointerStart = { x: event.clientX, y: event.clientY };
+        annotationDragged = false;
+      });
+
+      $("#matrix").addEventListener("mousemove", event => {
+        if (!annotationPointerStart) return;
+        annotationDragged = Math.hypot(
+          event.clientX - annotationPointerStart.x,
+          event.clientY - annotationPointerStart.y
+        ) > 4;
+      });
+
+      $("#matrix").addEventListener("mouseup", () => {
+        setTimeout(() => {
+          applyAnnotationSelection();
+          annotationPointerStart = null;
+          annotationDragged = false;
+        }, 0);
+      });
+
+      $("#matrix").addEventListener("contextmenu", event => {
+        const mark = event.target.closest(".manual-mark");
+        if (!mark) return;
+        event.preventDefault();
+        removeAnnotationRange(
+          mark.dataset.annotationKey,
+          Number(mark.dataset.markStart),
+          Number(mark.dataset.markEnd)
+        );
+        renderAll();
+      });
+
+      $("#clearScores").addEventListener("click", () => {
+        data.sections[state.section].criteria.forEach(criterion => {
+          state.scores[state.section][criterion] = null;
+        });
+        renderAll();
+        showToast(`${data.sections[state.section].shortLabel} scores cleared`);
+      });
+
+      $(".primary-tabs").addEventListener("click", event => {
+        const button = event.target.closest("[data-view]");
+        if (button) switchView(button.dataset.view);
+      });
+
+      $("#helpButton").addEventListener("click", () => {
+        if (state.view !== "explorer") switchView("explorer");
+        $("#helpNote").scrollIntoView({ behavior: "smooth", block: "center" });
+        $("#helpNote").animate(
+          [{ background: "#fff1f3" }, { background: "transparent" }],
+          { duration: 900, easing: "ease-out" }
+        );
+      });
+    })();
+  </script>
+</body>
+</html>
+
+  </template>
+
   <script>
     (() => {
       const editor = document.getElementById("editor");
+      const mainLayout = document.querySelector("main");
       const sidebar = document.querySelector(".sidebar");
+      const workspace = document.querySelector(".workspace");
+      const workspaceResizeHandle = document.getElementById("workspaceResizeHandle");
       const statusText = document.getElementById("statusText");
       const wordCount = document.getElementById("wordCount");
       const editingMode = document.getElementById("editingMode");
@@ -1937,8 +6004,9 @@
       const watermarkToggle = document.getElementById("watermarkToggle");
       const commentList = document.getElementById("commentList");
       const commentCount = document.getElementById("commentCount");
-      const scoreGrid = document.getElementById("scoreGrid");
-      const overallBand = document.getElementById("overallBand");
+      const ieltsRatingFrame = document.getElementById("ieltsRatingFrame");
+      const ieltsRatingTemplate = document.getElementById("ieltsRatingTemplate");
+      const ratingScaleSummary = document.getElementById("ratingScaleSummary");
       const instructionsModal = document.getElementById("instructionsModal");
       const instructionsBtn = document.getElementById("instructionsBtn");
       const closeInstructionsBtn = document.getElementById("closeInstructionsBtn");
@@ -1962,6 +6030,9 @@
       const feedbackClassIds = [...feedbackTypes.map(([id]) => id), ...Object.keys(feedbackTypeAliases)];
       const localAutosaveKey = "interactiveCorrectiveFeedback.autosave.v1";
       const defaultReadability = Object.freeze({ theme: "light", textSize: 18, imageSize: 100 });
+      const defaultWorkspaceLayout = Object.freeze({ sidebarWidth: 320 });
+      const minimumSidebarWidth = 240;
+      const minimumWorkspaceWidth = 520;
       const scoreCriteria = [
         ["task", "Task response/achievement"],
         ["coherence", "Coherence and cohesion"],
@@ -1995,13 +6066,17 @@
       let deletionContextTarget = null;
       let deletionContextAction = "";
       let activeImageResize = null;
+      let activeWorkspaceResize = null;
+      let sidebarWidth = defaultWorkspaceLayout.sidebarWidth;
       let autosaveTimer = 0;
       let lastAutosaveJson = "";
       let restoringAutosave = false;
+      let ratingScaleState = null;
+      let ratingScaleReady = false;
+      let ratingScaleHasPendingRestore = false;
       const pendingFeedbackHighlightName = "pending-feedback-selection";
 
       feedbackType.innerHTML = feedbackTypes.map(([id, label]) => `<option value="${id}">${escapeHtml(label)}</option>`).join("");
-      renderScoreInputs();
       renderQuickNotes();
 
       function setMode(nextMode) {
@@ -2025,6 +6100,118 @@
         const number = Number(value);
         if (!Number.isFinite(number)) return fallback;
         return Math.min(max, Math.max(min, number));
+      }
+
+      function getWorkspaceResizeBounds() {
+        if (window.matchMedia("(max-width: 980px)").matches) {
+          return {
+            min: minimumSidebarWidth,
+            max: 1600
+          };
+        }
+        const mainWidth = mainLayout.getBoundingClientRect().width || window.innerWidth;
+        const handleRect = workspaceResizeHandle.getBoundingClientRect();
+        const handleStyle = getComputedStyle(workspaceResizeHandle);
+        const handleWidth =
+          handleRect.width +
+          (Number.parseFloat(handleStyle.marginLeft) || 0) +
+          (Number.parseFloat(handleStyle.marginRight) || 0) ||
+          42;
+        const maximumSidebarWidth = Math.max(
+          minimumSidebarWidth,
+          Math.floor(mainWidth - handleWidth - minimumWorkspaceWidth)
+        );
+        return {
+          min: minimumSidebarWidth,
+          max: maximumSidebarWidth
+        };
+      }
+
+      function updateWorkspaceResizeAccessibility(width) {
+        const bounds = getWorkspaceResizeBounds();
+        const workspaceWidth = Math.max(0, Math.round(workspace.getBoundingClientRect().width));
+        workspaceResizeHandle.setAttribute("aria-valuemin", String(bounds.min));
+        workspaceResizeHandle.setAttribute("aria-valuemax", String(bounds.max));
+        workspaceResizeHandle.setAttribute("aria-valuenow", String(Math.round(width)));
+        workspaceResizeHandle.setAttribute(
+          "aria-valuetext",
+          `Assignment details ${Math.round(width)} pixels, editing workspace ${workspaceWidth} pixels`
+        );
+      }
+
+      function applyWorkspaceLayout(settings = {}, options = {}) {
+        const source = settings && typeof settings === "object" ? settings : {};
+        const bounds = getWorkspaceResizeBounds();
+        sidebarWidth = Math.round(clampNumber(
+          source.sidebarWidth,
+          bounds.min,
+          bounds.max,
+          defaultWorkspaceLayout.sidebarWidth
+        ));
+        document.documentElement.style.setProperty("--sidebar-width", `${sidebarWidth}px`);
+        updateWorkspaceResizeAccessibility(sidebarWidth);
+        if (options.save !== false) scheduleAutosave();
+        return { sidebarWidth };
+      }
+
+      function getWorkspaceLayout() {
+        return { sidebarWidth };
+      }
+
+      function beginWorkspaceResize(event) {
+        if (activeWorkspaceResize || window.matchMedia("(max-width: 980px)").matches) return;
+        if (event.button != null && event.button !== 0) return;
+        event.preventDefault();
+        hideFeedbackPopover();
+        hideDeletionContextMenu();
+        activeWorkspaceResize = {
+          pointerId: event.pointerId ?? null,
+          startX: event.clientX,
+          startWidth: sidebarWidth
+        };
+        document.body.classList.add("workspace-resizing");
+        workspaceResizeHandle.classList.add("active");
+        workspaceResizeHandle.setPointerCapture?.(event.pointerId);
+      }
+
+      function updateWorkspaceResize(event) {
+        if (!activeWorkspaceResize) return;
+        if (
+          activeWorkspaceResize.pointerId !== null &&
+          event.pointerId != null &&
+          event.pointerId !== activeWorkspaceResize.pointerId
+        ) return;
+        event.preventDefault();
+        applyWorkspaceLayout({
+          sidebarWidth: activeWorkspaceResize.startWidth + event.clientX - activeWorkspaceResize.startX
+        }, { save: false });
+      }
+
+      function finishWorkspaceResize(event) {
+        if (!activeWorkspaceResize) return;
+        if (
+          activeWorkspaceResize.pointerId !== null &&
+          event.pointerId != null &&
+          event.pointerId !== activeWorkspaceResize.pointerId
+        ) return;
+        event.preventDefault();
+        activeWorkspaceResize = null;
+        document.body.classList.remove("workspace-resizing");
+        workspaceResizeHandle.classList.remove("active");
+        updateWorkspaceResizeAccessibility(sidebarWidth);
+        autosaveNow();
+      }
+
+      function handleWorkspaceResizeKeyboard(event) {
+        const bounds = getWorkspaceResizeBounds();
+        let nextWidth = sidebarWidth;
+        if (event.key === "ArrowLeft") nextWidth -= event.shiftKey ? 64 : 24;
+        else if (event.key === "ArrowRight") nextWidth += event.shiftKey ? 64 : 24;
+        else if (event.key === "Home") nextWidth = bounds.min;
+        else if (event.key === "End") nextWidth = bounds.max;
+        else return;
+        event.preventDefault();
+        applyWorkspaceLayout({ sidebarWidth: nextWidth });
       }
 
       function normalizeReadabilityTheme(theme) {
@@ -2178,42 +6365,76 @@
         return feedbackTypeAliases[value] || "grammar";
       }
 
-      function bandOptionsHtml() {
-        const values = ['<option value="">-</option>'];
-        for (let score = 0; score <= 9; score += 1) {
-          values.push(`<option value="${score}">${score}</option>`);
-        }
-        return values.join("");
+      function emptyWritingScores() {
+        return {
+          "Writing Task 1": {
+            "Task achievement": null,
+            "Coherence and cohesion": null,
+            "Lexical resource": null,
+            "Grammatical range and accuracy": null
+          },
+          "Writing Task 2": {
+            "Task response": null,
+            "Coherence and cohesion": null,
+            "Lexical resource": null,
+            "Grammatical range and accuracy": null
+          }
+        };
       }
 
-      function renderScoreInputs() {
-        const options = bandOptionsHtml();
-        scoreGrid.innerHTML = scoreCriteria.map(([id, label]) => `
-          <label class="score-field">
-            <span>${escapeHtml(label)}</span>
-            <select id="score-${id}" data-score-criterion="${id}">${options}</select>
-          </label>
-        `).join("");
-        updateBandScore();
+      function legacyScoresToRatingState(scores = {}) {
+        const writingScores = emptyWritingScores();
+        writingScores["Writing Task 2"]["Task response"] = criterionBandNumber(scores.task);
+        writingScores["Writing Task 2"]["Coherence and cohesion"] = criterionBandNumber(scores.coherence);
+        writingScores["Writing Task 2"]["Lexical resource"] = criterionBandNumber(scores.lexical);
+        writingScores["Writing Task 2"]["Grammatical range and accuracy"] = criterionBandNumber(scores.grammar);
+        return {
+          section: "Writing Task 2",
+          lastWritingSection: "Writing Task 2",
+          criterion: "__all",
+          view: "explorer",
+          compare: true,
+          fontSize: 13,
+          scores: writingScores,
+          annotations: {}
+        };
+      }
+
+      function criterionBandNumber(value) {
+        if (value === "" || value == null || Number.isNaN(Number(value))) return null;
+        return Math.min(9, Math.max(0, Math.round(Number(value))));
+      }
+
+      function activeWritingSection(state = ratingScaleState) {
+        const candidate = state?.lastWritingSection || state?.section;
+        return candidate === "Writing Task 1" ? "Writing Task 1" : "Writing Task 2";
+      }
+
+      function selectedWritingScores(state = ratingScaleState) {
+        const section = activeWritingSection(state);
+        const selected = state?.scores?.[section] || {};
+        const taskCriterion = section === "Writing Task 1" ? "Task achievement" : "Task response";
+        return {
+          task: normalizeCriterionBand(selected[taskCriterion]),
+          coherence: normalizeCriterionBand(selected["Coherence and cohesion"]),
+          lexical: normalizeCriterionBand(selected["Lexical resource"]),
+          grammar: normalizeCriterionBand(selected["Grammatical range and accuracy"])
+        };
+      }
+
+      function normalizeCriterionBand(value) {
+        const number = criterionBandNumber(value);
+        return number == null ? "" : String(number);
+      }
+
+      function getBandScores() {
+        return selectedWritingScores();
       }
 
       function formatBand(value) {
         if (value === "" || value == null || Number.isNaN(Number(value))) return "-";
         const number = Number(value);
         return Number.isInteger(number) ? String(number) : number.toFixed(1);
-      }
-
-      function getBandScores() {
-        return Object.fromEntries(scoreCriteria.map(([id]) => {
-          const value = document.getElementById(`score-${id}`)?.value || "";
-          return [id, normalizeCriterionBand(value)];
-        }));
-      }
-
-      function normalizeCriterionBand(value) {
-        if (value === "" || value == null || Number.isNaN(Number(value))) return "";
-        const rounded = Math.round(Number(value));
-        return String(Math.min(9, Math.max(0, rounded)));
       }
 
       function roundedIeltsBand(scores) {
@@ -2224,25 +6445,55 @@
         return Math.round(average * 2) / 2;
       }
 
-      function updateBandScore() {
-        const rounded = roundedIeltsBand(getBandScores());
-        overallBand.textContent = `Overall: ${rounded == null ? "-" : formatBand(rounded)}`;
+      function ratingScaleStatusText(state = ratingScaleState) {
+        if (!state) return "No Writing score selected";
+        const section = activeWritingSection(state);
+        const scores = selectedWritingScores(state);
+        const completed = Object.values(scores).filter(value => value !== "").length;
+        const overall = roundedIeltsBand(scores);
+        if (!completed) return `${section.replace("Writing ", "")}: no scores selected`;
+        if (overall == null) return `${section.replace("Writing ", "")}: ${completed} of 4 criteria selected`;
+        return `${section.replace("Writing ", "")}: overall ${formatBand(overall)}`;
       }
 
-      function applyBandScores(scores = {}) {
-        scoreCriteria.forEach(([id]) => {
-          const input = document.getElementById(`score-${id}`);
-          if (input) input.value = normalizeCriterionBand(scores[id]);
-        });
-        updateBandScore();
+      function updateRatingScaleSummary() {
+        ratingScaleSummary.textContent = ratingScaleStatusText();
       }
 
-      function buildScoreSummaryHtml(scores = {}) {
+      function postRatingScaleMessage(type, state = ratingScaleState) {
+        ieltsRatingFrame.contentWindow?.postMessage({ type, state }, "*");
+      }
+
+      function applyRatingScaleState(state, legacyScores = {}) {
+        ratingScaleState = state && typeof state === "object"
+          ? state
+          : legacyScoresToRatingState(legacyScores);
+        ratingScaleHasPendingRestore = true;
+        updateRatingScaleSummary();
+        if (ratingScaleReady) {
+          postRatingScaleMessage("ielts-rating-scale-load");
+          ratingScaleHasPendingRestore = false;
+        }
+      }
+
+      function resetRatingScale() {
+        ratingScaleState = legacyScoresToRatingState({});
+        ratingScaleHasPendingRestore = false;
+        updateRatingScaleSummary();
+        if (ratingScaleReady) postRatingScaleMessage("ielts-rating-scale-reset");
+      }
+
+      function initializeRatingScaleFrame() {
+        ieltsRatingFrame.srcdoc = ieltsRatingTemplate.innerHTML.trim();
+      }
+
+      function buildScoreSummaryHtml(scores = {}, state = ratingScaleState) {
         const rounded = roundedIeltsBand(scores);
         const normalizedScores = Object.fromEntries(scoreCriteria.map(([id]) => [id, normalizeCriterionBand(scores[id])]));
         const hasAnyScore = scoreCriteria.some(([id]) => normalizedScores[id] !== "");
         if (!hasAnyScore) return "";
         const overall = rounded == null ? "Incomplete" : formatBand(rounded);
+        const section = activeWritingSection(state);
         const rows = scoreCriteria.map(([id, label]) => `
           <div class="score-chip">
             <span>${escapeHtml(label)}</span>
@@ -2251,7 +6502,7 @@
         `).join("");
         return `<section class="score-summary">
           <div class="score-overall">
-            <span>IELTS Writing</span>
+            <span>IELTS ${escapeHtml(section)}</span>
             <strong>${escapeHtml(overall)}</strong>
             <em>Overall band</em>
           </div>
@@ -3930,14 +8181,16 @@
       function getSession() {
         ensureFeedbackIds();
         return {
-          version: 4,
+          version: 8,
           title: document.getElementById("docTitle").value,
           studentName: document.getElementById("studentName").value,
           taskPrompt: document.getElementById("taskPrompt").value,
           taskImage,
           includeWatermark: watermarkToggle.checked,
           scores: getBandScores(),
+          ratingScaleState,
           layout: layoutSelect.value,
+          workspaceLayout: getWorkspaceLayout(),
           mode,
           readability: getReadabilitySettings(),
           editorHtml: sanitizeEditorHtml(editor.innerHTML)
@@ -3951,9 +8204,10 @@
           document.getElementById("studentName").value = session.studentName || "";
           document.getElementById("taskPrompt").value = session.taskPrompt || "";
           watermarkToggle.checked = session.includeWatermark === true;
-          applyBandScores(session.scores || {});
+          applyRatingScaleState(session.ratingScaleState, session.scores || {});
           taskImage = session.taskImage || "";
           layoutSelect.value = session.layout || "image-left";
+          applyWorkspaceLayout(session.workspaceLayout || defaultWorkspaceLayout, { save: false });
           editor.innerHTML = sanitizeEditorHtml(session.editorHtml || "");
           normalizeSuggestions();
           enhanceEditorImages(editor);
@@ -3990,10 +8244,11 @@
         document.getElementById("studentName").value = "";
         document.getElementById("taskPrompt").value = "";
         watermarkToggle.checked = false;
-        applyBandScores({});
+        resetRatingScale();
         taskImage = "";
         imageInput.value = "";
         layoutSelect.value = "image-left";
+        applyWorkspaceLayout(defaultWorkspaceLayout, { save: false });
         applyReadabilitySettings(defaultReadability);
         editor.innerHTML = "";
         undoStack = [];
@@ -4450,7 +8705,7 @@
       <div class="meta">${session.studentName ? `Student: ${escapeHtml(session.studentName)}` : ""}</div>
     </section>
     ${session.taskPrompt ? `<section class="prompt">${escapeHtml(session.taskPrompt)}</section>` : ""}
-    ${buildScoreSummaryHtml(session.scores || {})}
+    ${buildScoreSummaryHtml(session.scores || {}, session.ratingScaleState)}
     <section class="${layoutClass}">
       ${hasImage ? `<div class="task-image"><img src="${escapeAttr(session.taskImage)}" alt="Writing task visual prompt"></div>` : ""}
       <div class="writing-stack">
@@ -4548,6 +8803,20 @@
 
       editingMode.addEventListener("click", () => setMode("editing"));
       suggestingMode.addEventListener("click", () => setMode("suggesting"));
+      workspaceResizeHandle.addEventListener("dblclick", () => {
+        applyWorkspaceLayout(defaultWorkspaceLayout);
+      });
+      workspaceResizeHandle.addEventListener("keydown", handleWorkspaceResizeKeyboard);
+      if (window.PointerEvent) {
+        workspaceResizeHandle.addEventListener("pointerdown", beginWorkspaceResize);
+        document.addEventListener("pointermove", updateWorkspaceResize);
+        document.addEventListener("pointerup", finishWorkspaceResize);
+        document.addEventListener("pointercancel", finishWorkspaceResize);
+      } else {
+        workspaceResizeHandle.addEventListener("mousedown", beginWorkspaceResize);
+        document.addEventListener("mousemove", updateWorkspaceResize);
+        document.addEventListener("mouseup", finishWorkspaceResize);
+      }
       clearEverythingBtn.addEventListener("click", clearEverythingForNewPaper);
       readabilityTheme.addEventListener("change", () => applyReadabilitySettings(getReadabilitySettings()));
       studentTextSize.addEventListener("input", () => applyReadabilitySettings(getReadabilitySettings()));
@@ -4556,7 +8825,6 @@
         textSize: defaultReadability.textSize
       }));
       feedbackType.addEventListener("change", renderQuickNotes);
-      scoreGrid.addEventListener("change", updateBandScore);
       quickNotes.addEventListener("click", event => {
         const button = event.target.closest("[data-note]");
         if (!button) return;
@@ -4864,18 +9132,35 @@
 
       window.addEventListener("scroll", hideDeletionContextMenu, true);
       window.addEventListener("resize", hideDeletionContextMenu);
+      window.addEventListener("resize", () => {
+        applyWorkspaceLayout({ sidebarWidth }, { save: false });
+      });
       document.addEventListener("input", scheduleAutosave, true);
       document.addEventListener("change", scheduleAutosave, true);
-      new MutationObserver(scheduleAutosave).observe(editor, {
-        childList: true,
-        subtree: true,
-        characterData: true,
-        attributes: true
-      });
       window.addEventListener("beforeunload", () => autosaveNow());
+      window.addEventListener("message", event => {
+        const message = event.data;
+        if (!message || typeof message !== "object") return;
+        if (message.type === "ielts-rating-scale-ready") {
+          ratingScaleReady = true;
+          if (ratingScaleHasPendingRestore && ratingScaleState) {
+            postRatingScaleMessage("ielts-rating-scale-load");
+            ratingScaleHasPendingRestore = false;
+          }
+          return;
+        }
+        if (message.type !== "ielts-rating-scale-update") return;
+        if (ratingScaleHasPendingRestore) return;
+        ratingScaleState = message.state;
+        updateRatingScaleSummary();
+        scheduleAutosave();
+      });
+      initializeRatingScaleFrame();
 
       if (!restoreAutosavedSession()) {
+        applyWorkspaceLayout(defaultWorkspaceLayout, { save: false });
         applyReadabilitySettings(defaultReadability);
+        updateRatingScaleSummary();
         setMode("editing");
         normalizeSuggestions();
         enhanceEditorImages(editor);
