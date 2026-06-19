@@ -822,13 +822,24 @@
       background: linear-gradient(180deg, #fff 0%, #fff7f7 100%);
     }
 
+    .rating-scale-heading > div:first-child {
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+      min-width: 0;
+    }
+
     .rating-scale-heading h2 {
       margin: 0;
       font-size: 18px;
+      white-space: nowrap;
     }
 
     .rating-scale-heading p {
-      display: none;
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
     }
 
     .rating-scale-summary {
@@ -876,6 +887,12 @@
         align-items: flex-start;
         flex-direction: column;
       }
+      .rating-scale-heading > div:first-child {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .rating-scale-heading h2 { white-space: normal; }
       .rating-scale-summary { margin-left: 0; white-space: normal; }
       .rating-scale-frame { height: 920px; }
     }
@@ -2078,15 +2095,15 @@
       <section class="rating-scale-section" aria-labelledby="ratingScaleHeading">
         <header class="rating-scale-heading">
           <div>
-            <h2 id="ratingScaleHeading">3. IELTS Writing Rating Scales</h2>
-            <p>Explore official descriptors, select criterion bands, compare language, and review the resulting score profile.</p>
+            <h2 id="ratingScaleHeading">3. Choose a score (optional)</h2>
+            <p>Select a band score for each criterion by simply clicking on it.</p>
           </div>
           <div id="ratingScaleSummary" class="rating-scale-summary">No Writing score selected</div>
         </header>
         <iframe
           id="ieltsRatingFrame"
           class="rating-scale-frame"
-          title="IELTS Rating Scales descriptor explorer and score calculator"
+          title="IELTS Writing score descriptor explorer and calculator"
           loading="lazy"
         ></iframe>
       </section>
@@ -2438,6 +2455,42 @@
     .search-control:focus-within {
       border-color: #8b94a3;
       box-shadow: 0 0 0 3px rgba(227, 24, 55, .08);
+    }
+
+    .select-control.task-select-control {
+      width: 190px;
+      flex-basis: 190px;
+      height: 42px;
+      border: 2px solid var(--red);
+      border-radius: 10px;
+      background: var(--red-soft);
+      box-shadow: 0 5px 14px rgba(227, 24, 55, .14);
+    }
+
+    .select-control.task-select-control .control-icon {
+      width: 40px;
+      color: var(--red-dark);
+    }
+
+    .select-control.task-select-control select {
+      color: var(--red-dark);
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .select-control.task-select-control::after {
+      right: 14px;
+      width: 9px;
+      height: 9px;
+      border-color: var(--red-dark);
+      border-width: 2px;
+    }
+
+    .select-control.task-select-control:hover,
+    .select-control.task-select-control:focus-within {
+      border-color: var(--red-dark);
+      background: #ffe7eb;
+      box-shadow: 0 0 0 4px rgba(227, 24, 55, .11), 0 7px 18px rgba(227, 24, 55, .16);
     }
 
     .tool-button {
@@ -3282,6 +3335,7 @@
       .primary-tab { padding-inline: 8px; font-size: 13px; }
       .toolbar-group:first-child { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
       .select-control, .select-control.wide { min-width: 0; width: 100%; }
+      .select-control.task-select-control { width: 100%; flex-basis: auto; }
       .toolbar-group.center { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 2px; }
       .tool-button { min-width: max-content; }
       .legend { font-size: 11px; }
@@ -3329,9 +3383,9 @@
 
     <section class="toolbar" id="toolbar" aria-label="Rating scale controls">
       <div class="toolbar-group">
-        <label class="select-control">
+        <label class="select-control task-select-control" title="Choose Writing Task 1 or Writing Task 2">
           <span class="control-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24"><path d="M7 18.2 3.8 20v-4A7 7 0 1 1 7 18.2Z"></path><path d="M8 10h.01M12 10h.01M16 10h.01"></path></svg>
+            <svg viewBox="0 0 24 24"><path d="M6 3h9l3 3v15H6Z"></path><path d="M15 3v4h4M9 11h6M9 15h6M9 19h4"></path></svg>
           </span>
           <select id="sectionSelect" aria-label="Assessment"></select>
         </label>
@@ -5349,8 +5403,25 @@ window.IELTS_DATA = {
           compare: state.compare,
           fontSize: state.fontSize,
           scores: state.scores,
+          selectedDescriptors: selectedDescriptorSnapshot(),
           annotations: state.annotations
         };
+      }
+
+      function selectedDescriptorSnapshot() {
+        const sectionName = state.section;
+        const section = data.sections[sectionName];
+        const criteria = {};
+        section.criteria.forEach(criterion => {
+          const band = state.scores[sectionName][criterion];
+          if (band == null) return;
+          const descriptors = section.bands?.[String(band)]?.[criterion] || [];
+          criteria[criterion] = {
+            band,
+            descriptors: descriptors.map(descriptorText)
+          };
+        });
+        return { section: sectionName, criteria };
       }
 
       function applySavedState(saved) {
@@ -6422,6 +6493,28 @@ window.IELTS_DATA = {
         };
       }
 
+      function selectedWritingDescriptorDetails(state = ratingScaleState) {
+        const section = activeWritingSection(state);
+        const snapshot = state?.selectedDescriptors;
+        if (!snapshot || snapshot.section !== section || !snapshot.criteria) return [];
+        const taskCriterion = section === "Writing Task 1" ? "Task achievement" : "Task response";
+        const criteria = [
+          [taskCriterion, taskCriterion],
+          ["Coherence and cohesion", "Coherence and cohesion"],
+          ["Lexical resource", "Lexical resource"],
+          ["Grammatical range and accuracy", "Grammatical range and accuracy"]
+        ];
+        return criteria.flatMap(([key, label]) => {
+          const detail = snapshot.criteria[key];
+          if (!detail || detail.band == null || !Array.isArray(detail.descriptors)) return [];
+          return [{
+            criterion: label,
+            band: criterionBandNumber(detail.band),
+            descriptors: detail.descriptors.map(value => String(value || "").trim()).filter(Boolean)
+          }];
+        });
+      }
+
       function normalizeCriterionBand(value) {
         const number = criterionBandNumber(value);
         return number == null ? "" : String(number);
@@ -6500,6 +6593,27 @@ window.IELTS_DATA = {
             <strong>${formatBand(normalizedScores[id])}</strong>
           </div>
         `).join("");
+        const descriptorDetails = selectedWritingDescriptorDetails(state);
+        const descriptors = descriptorDetails.length ? `
+          <div class="score-descriptors">
+            <div class="score-descriptors-head">
+              <h2>Why these bands were selected</h2>
+              <p>Official descriptors for the selected criterion bands</p>
+            </div>
+            <div class="score-descriptor-grid">
+              ${descriptorDetails.map(detail => `
+                <article class="score-descriptor-card">
+                  <div class="score-descriptor-title">
+                    <strong>${escapeHtml(detail.criterion)}</strong>
+                    <span>Band ${escapeHtml(formatBand(detail.band))}</span>
+                  </div>
+                  ${detail.descriptors.length
+                    ? `<ul>${detail.descriptors.map(text => `<li>${escapeHtml(text)}</li>`).join("")}</ul>`
+                    : `<p class="score-descriptor-empty">No descriptor text is available for this band.</p>`}
+                </article>
+              `).join("")}
+            </div>
+          </div>` : "";
         return `<section class="score-summary">
           <div class="score-overall">
             <span>IELTS ${escapeHtml(section)}</span>
@@ -6507,6 +6621,7 @@ window.IELTS_DATA = {
             <em>Overall band</em>
           </div>
           <div class="score-breakdown">${rows}</div>
+          ${descriptors}
         </section>`;
       }
 
@@ -8181,7 +8296,7 @@ window.IELTS_DATA = {
       function getSession() {
         ensureFeedbackIds();
         return {
-          version: 8,
+          version: 9,
           title: document.getElementById("docTitle").value,
           studentName: document.getElementById("studentName").value,
           taskPrompt: document.getElementById("taskPrompt").value,
@@ -8631,7 +8746,8 @@ window.IELTS_DATA = {
         return `<style>
     :root{--line:#d9dee7;--ink:#1f2937;--muted:#667085;--grammar-bg:#dbeafe;--grammar-border:#60a5fa;--grammar-text:#1d4ed8;--vocabulary-bg:#fef3c7;--vocabulary-border:#f59e0b;--vocabulary-text:#92400e;--spelling-bg:#ffedd5;--spelling-border:#fb923c;--spelling-text:#9a3412;--coherence-bg:#ede9fe;--coherence-border:#a78bfa;--coherence-text:#6d28d9;--task-bg:#cffafe;--task-border:#0891b2;--task-text:#0e7490;--style-bg:#f1f5f9;--style-border:#64748b;--style-text:#334155;--punctuation-bg:#cffafe;--punctuation-border:#06b6d4;--punctuation-text:#0e7490;--idea-bg:#fae8ff;--idea-border:#d946ef;--idea-text:#86198f}
     *{box-sizing:border-box}body{margin:0;background:#f6f7f9;color:var(--ink);font-family:Arial,Helvetica,sans-serif;line-height:1.65}.page{max-width:1180px;margin:0 auto;padding:28px 18px}.header{margin-bottom:18px}.header h1{margin:0 0 8px;font-size:30px;line-height:1.2}.meta{color:var(--muted);font-size:15px}.prompt{white-space:pre-wrap;background:#fff;border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin:16px 0;font-weight:700;font-size:16px;line-height:1.6}.score-summary{display:grid;grid-template-columns:170px minmax(0,1fr);gap:12px;align-items:stretch;background:#fff;border:1px solid #fecaca;border-left:6px solid #b91c1c;border-radius:14px;padding:12px 14px;margin:0 0 16px;box-shadow:0 8px 24px rgba(15,23,42,.06)}.score-overall{display:grid;align-content:center;justify-items:start;gap:2px;background:#111827;color:#fff;border-radius:12px;padding:12px}.score-overall span{text-transform:uppercase;letter-spacing:.06em;font-size:11px;font-weight:800;color:#fecaca}.score-overall strong{font-size:34px;line-height:1;font-weight:900}.score-overall em{font-style:normal;font-size:12px;color:#e5e7eb}.score-breakdown{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.score-chip{display:flex;align-items:center;justify-content:space-between;gap:8px;background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:13px;font-weight:700;line-height:1.25}.score-chip span{color:#475569}.score-chip strong{display:grid;place-items:center;min-width:34px;height:30px;border-radius:999px;background:#b91c1c;color:#fff;font-size:16px}.content{display:grid;grid-template-columns:minmax(0,1fr);gap:26px;align-items:start}.content.with-image.image-left{grid-template-columns:minmax(260px,40%) minmax(0,1fr)}.writing-stack{display:grid;gap:18px;min-width:0}.writing-stack .legend{margin:0}.task-image{display:flex;justify-content:center;align-items:flex-start}.task-image img{width:min(100%,780px);height:auto;max-height:none;display:block;object-fit:contain;border:1px solid var(--line);border-radius:10px}.content.with-image.image-left .task-image img{width:100%;max-width:100%;max-height:560px}.content.with-image.image-top .task-image{padding:0 34px}.content.with-image.image-top .task-image img{width:100%;max-width:780px;max-height:none}.writing{position:relative;isolation:isolate;background:#fff;border:1px solid var(--line);border-radius:10px;padding:36px 34px;font-size:18px;line-height:1.72;overflow-wrap:anywhere;min-height:380px;overflow:hidden}.writing.static-comments{--comment-gutter-inset:10px;padding-left:154px;padding-right:154px;overflow:visible}.writing p{margin:0 0 16px}.writing p:last-child{margin-bottom:0}.editor-image-wrap{display:block;max-width:100%;margin:16px auto;text-align:center}.editor-image-wrap img{display:block;width:auto;max-width:min(100%,780px);max-height:560px;height:auto;margin:0 auto;border:1px solid var(--line);border-radius:10px;background:#fff}.watermark-layer{position:absolute;inset:0;z-index:0;display:flex;align-items:center;justify-content:center;pointer-events:none}.watermark-layer img{display:block;width:240px;height:240px;object-fit:contain;opacity:.1}.writing-content{position:relative;z-index:1}.suggest-add{color:#16a34a;font-weight:700}.suggest-delete{color:#dc2626;text-decoration:line-through;text-decoration-thickness:2px;background:#fef2f2}.feedback-node{border:1px solid currentColor;border-bottom-width:2px;border-radius:5px;padding:1px 3px;cursor:pointer;-webkit-box-decoration-break:clone;box-decoration-break:clone}.comment-marker{display:inline-block;margin-left:2px;color:currentColor;font-size:.64em;font-weight:800;line-height:1;vertical-align:super}.comment-row{position:relative}.comment-bubble{display:inline-block;max-width:250px;margin:0 8px 6px;padding:7px 9px;border:1px solid currentColor;border-radius:8px;font-size:12.5px;line-height:1.35;vertical-align:middle;box-shadow:0 4px 12px rgba(15,23,42,.08)}.writing.static-comments .comment-bubble{position:absolute;display:block;width:126px;max-width:126px;margin:0;z-index:3}.writing.static-comments .comment-bubble::before,.writing.static-comments .comment-bubble::after{display:none}.comment-connector-layer,.comment-connector{display:none!important}.writing.static-comments .comment-left{left:10px}.writing.static-comments .comment-right{right:10px}.writing.static-comments .feedback-node{position:relative}.comment-bubble strong{display:block;margin-bottom:3px}.comment-bubble span{display:block}.fb-grammar{background:var(--grammar-bg);color:#1d4ed8;border-color:var(--grammar-border)}.fb-vocabulary{background:var(--vocabulary-bg);color:#92400e;border-color:var(--vocabulary-border)}.fb-spelling{background:var(--spelling-bg);color:#9a3412;border-color:var(--spelling-border)}.fb-coherence{background:var(--coherence-bg);color:#6d28d9;border-color:var(--coherence-border)}.fb-task{background:var(--task-bg);color:#0e7490;border-color:var(--task-border)}.fb-style{background:var(--style-bg);color:#334155;border-color:var(--style-border)}.fb-punctuation{background:var(--grammar-bg);color:#1d4ed8;border-color:var(--grammar-border)}.fb-idea{background:var(--idea-bg);color:#86198f;border-color:var(--idea-border)}.legend{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0 18px}.legend span{border:1px solid currentColor;border-radius:7px;padding:5px 9px;font-size:13px;font-weight:700}.side-note{position:fixed;z-index:10;width:min(360px,calc(100vw - 24px));max-height:min(420px,calc(100vh - 24px));overflow:auto;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 16px 40px rgba(17,24,39,.18);padding:14px;display:none}.side-note.open{display:block}.side-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}.side-head strong{margin-right:auto}.side-note button{border:1px solid var(--line);background:#fff;border-radius:6px;width:32px;height:32px;cursor:pointer}@media(max-width:900px){.content.with-image.image-left{grid-template-columns:1fr}.score-summary{grid-template-columns:1fr}.content.with-image.image-top .task-image{padding:0}.watermark-layer img{width:200px;height:200px}.writing{font-size:17px;padding:28px 22px}.comment-bubble{max-width:220px}.writing.static-comments{padding-left:28px;padding-right:22px}.writing.static-comments .comment-bubble{position:static;width:auto;max-width:100%;margin:8px 0 10px}.comment-connector-layer,.comment-connector,.writing.static-comments .comment-bubble::before,.writing.static-comments .comment-bubble::after{display:none!important}}@media print{@page{size:portrait;margin:0}html,body{width:768px;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}.page{width:760px;max-width:760px;margin:0 auto;padding:12px 4px}.header{margin-bottom:6px}.header h1{font-size:28px}.meta{font-size:12px}.prompt{font-size:12px;line-height:1.34;padding:7px 9px;margin:6px 0}.score-summary{grid-template-columns:104px minmax(0,1fr);gap:6px;padding:6px 7px;margin:0 0 6px;border-left-width:4px;border-radius:9px;box-shadow:none}.score-overall{border-radius:8px;padding:6px}.score-overall span{font-size:7.5px}.score-overall strong{font-size:22px}.score-overall em{font-size:8px}.score-breakdown{gap:4px}.score-chip{font-size:8.4px;gap:4px;padding:4px 5px;border-radius:7px}.score-chip strong{min-width:22px;height:20px;font-size:11px}.legend{gap:4px;margin:0}.legend span{font-size:10px;padding:3px 5px}.writing-stack{gap:8px}.content.with-image.image-top .task-image{padding:0 34px}.content.with-image.image-top .task-image img{width:100%;max-width:692px;max-height:none}.content.with-image.image-left .task-image img{width:100%;max-width:100%;max-height:300px}.writing{box-shadow:none}.writing.static-comments{--comment-gutter-inset:8px;padding:24px 146px 28px;font-size:18.45px;line-height:1.52;min-height:760px}.writing.static-comments .comment-bubble{position:absolute;display:block;width:132px;max-width:132px;margin:0;font-size:9.15px;line-height:1.13;padding:4px 5px;overflow-wrap:anywhere}.writing.static-comments .comment-bubble strong{margin-bottom:2px}.comment-connector-layer,.comment-connector{display:none!important}.side-note{display:none!important}.comment-bubble{box-shadow:none;break-inside:avoid}}
-    .writing.static-comments{padding:36px 34px;overflow:hidden;min-height:380px}.writing.static-comments .comment-bubble{display:none!important}.writing.static-comments .comment-marker{display:inline-grid;place-items:center;min-width:1.55em;height:1.55em;margin-left:4px;border-radius:999px;background:#111827;color:#fff!important;font-size:.68em;font-weight:900;line-height:1;vertical-align:super;box-shadow:0 0 0 2px #fff,0 1px 4px rgba(15,23,42,.25)}.comment-summary{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px;box-shadow:0 8px 24px rgba(15,23,42,.06);break-inside:auto}.comment-summary-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.comment-summary-head h2{margin:0;font-size:20px;line-height:1.2}.comment-summary-head span{color:var(--muted);font-size:13px;font-weight:800}.comment-summary-list{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.comment-card{border:1px solid currentColor;border-left-width:5px;border-radius:10px;padding:10px 12px;break-inside:avoid;page-break-inside:avoid}.comment-card strong{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:13px;line-height:1.25}.comment-card strong span{display:grid;place-items:center;min-width:26px;height:26px;border-radius:999px;background:#111827;color:#fff!important;border:2px solid #fff;box-shadow:0 1px 4px rgba(15,23,42,.22);font-size:12px;font-weight:900}.comment-card p{margin:0;color:#1f2937;font-size:13px;line-height:1.45}@media(max-width:900px){.comment-summary-list{grid-template-columns:1fr}}@media print{.writing.static-comments{padding:24px 34px 28px;font-size:18.45px;line-height:1.52;min-height:0}.writing.static-comments .comment-marker{min-width:1.6em;height:1.6em;margin-left:3px;font-size:.7em;box-shadow:0 0 0 1px #fff}.comment-summary{padding:10px 12px;border-radius:9px;box-shadow:none}.comment-summary-head{margin-bottom:8px}.comment-summary-head h2{font-size:15px}.comment-summary-head span{font-size:10px}.comment-summary-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.comment-card{border-left-width:4px;border-radius:7px;padding:6px 7px}.comment-card strong{font-size:10px;gap:5px;margin-bottom:3px}.comment-card strong span{min-width:20px;height:20px;font-size:10px;border-width:1px}.comment-card p{font-size:9.5px;line-height:1.25}}
+    .score-descriptors{grid-column:1/-1;border-top:1px solid #fecaca;padding-top:14px}.score-descriptors-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:10px}.score-descriptors-head h2{margin:0;font-size:18px;line-height:1.25}.score-descriptors-head p{margin:0;color:var(--muted);font-size:12px;font-weight:700}.score-descriptor-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.score-descriptor-card{border:1px solid var(--line);border-radius:11px;background:#fff;padding:12px;break-inside:avoid;page-break-inside:avoid}.score-descriptor-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}.score-descriptor-title strong{font-size:14px;line-height:1.3}.score-descriptor-title span{flex:0 0 auto;border-radius:999px;background:#b91c1c;color:#fff;padding:4px 8px;font-size:12px;font-weight:900}.score-descriptor-card ul{margin:0;padding-left:18px}.score-descriptor-card li{color:#374151;font-size:12.5px;line-height:1.45}.score-descriptor-card li+li{margin-top:5px}.score-descriptor-empty{margin:0;color:var(--muted);font-size:12px}@media(max-width:900px){.score-descriptor-grid{grid-template-columns:1fr}.score-descriptors-head{align-items:flex-start;flex-direction:column;gap:3px}}
+    .writing.static-comments{padding:36px 34px;overflow:hidden;min-height:380px}.writing.static-comments .comment-bubble{display:none!important}.writing.static-comments .comment-marker{display:inline-grid;place-items:center;min-width:1.55em;height:1.55em;margin-left:4px;border-radius:999px;background:#111827;color:#fff!important;font-size:.68em;font-weight:900;line-height:1;vertical-align:super;box-shadow:0 0 0 2px #fff,0 1px 4px rgba(15,23,42,.25)}.comment-summary{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px;box-shadow:0 8px 24px rgba(15,23,42,.06);break-inside:auto}.comment-summary-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.comment-summary-head h2{margin:0;font-size:20px;line-height:1.2}.comment-summary-head span{color:var(--muted);font-size:13px;font-weight:800}.comment-summary-list{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.comment-card{border:1px solid currentColor;border-left-width:5px;border-radius:10px;padding:10px 12px;break-inside:avoid;page-break-inside:avoid}.comment-card strong{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:13px;line-height:1.25}.comment-card strong span{display:grid;place-items:center;min-width:26px;height:26px;border-radius:999px;background:#111827;color:#fff!important;border:2px solid #fff;box-shadow:0 1px 4px rgba(15,23,42,.22);font-size:12px;font-weight:900}.comment-card p{margin:0;color:#1f2937;font-size:13px;line-height:1.45}@media(max-width:900px){.comment-summary-list{grid-template-columns:1fr}}@media print{.score-descriptors{padding-top:8px}.score-descriptors-head{margin-bottom:6px}.score-descriptors-head h2{font-size:13px}.score-descriptors-head p{font-size:8px}.score-descriptor-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}.score-descriptor-card{padding:6px 7px;border-radius:7px}.score-descriptor-title{margin-bottom:4px}.score-descriptor-title strong{font-size:9px}.score-descriptor-title span{padding:2px 5px;font-size:8px}.score-descriptor-card ul{padding-left:13px}.score-descriptor-card li{font-size:7.8px;line-height:1.28}.score-descriptor-card li+li{margin-top:2px}.writing.static-comments{padding:24px 34px 28px;font-size:18.45px;line-height:1.52;min-height:0}.writing.static-comments .comment-marker{min-width:1.6em;height:1.6em;margin-left:3px;font-size:.7em;box-shadow:0 0 0 1px #fff}.comment-summary{padding:10px 12px;border-radius:9px;box-shadow:none}.comment-summary-head{margin-bottom:8px}.comment-summary-head h2{font-size:15px}.comment-summary-head span{font-size:10px}.comment-summary-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.comment-card{border-left-width:4px;border-radius:7px;padding:6px 7px}.comment-card strong{font-size:10px;gap:5px;margin-bottom:3px}.comment-card strong span{min-width:20px;height:20px;font-size:10px;border-width:1px}.comment-card p{font-size:9.5px;line-height:1.25}}
     .student-export{background:#f4f6f8;color:#182230}.student-export .page{max-width:1060px;padding:34px 30px 42px}.student-export .header{margin-bottom:12px}.student-export .header h1{font-size:32px;line-height:1.12;margin-bottom:6px}.student-export .meta{font-size:14px}.student-export .prompt,.student-export .score-summary,.student-export .writing,.student-export .comment-summary{box-shadow:0 1px 2px rgba(15,23,42,.04)}.student-export .prompt{margin:14px 0 14px;padding:14px 16px;border-radius:12px}.student-export .score-summary{margin-bottom:18px;border-radius:14px}.student-export .content{gap:20px}.student-export .writing-stack{gap:14px}.student-export .content.with-image.image-top .task-image{padding:0 34px 2px}.student-export .content.with-image.image-top .task-image img{width:100%;max-width:100%;border-radius:12px;background:#fff}.student-export .legend{gap:7px;margin:0 0 3px}.student-export .legend span{border-radius:8px;padding:5px 8px}.student-export .writing.static-comments{border-radius:13px;padding:34px 34px 36px;font-size:18px;line-height:1.66}.student-export .writing p{margin-bottom:17px}.student-export .comment-summary{border-radius:13px;padding:18px}.student-export .comment-summary-list{gap:10px}.student-export .comment-card{border-radius:11px;padding:11px 12px}.student-export .watermark-layer img{width:260px;height:260px;opacity:.08}@media print{@page{size:portrait;margin:8mm}html,body{width:auto;background:#fff}.student-export{background:#fff}.student-export .page{width:auto;max-width:none;margin:0;padding:0 6px 8px}.student-export .header{margin-bottom:7px}.student-export .header h1{font-size:27px;line-height:1.08;margin-bottom:3px}.student-export .meta{font-size:11px}.student-export .prompt{font-size:11.5px;line-height:1.35;margin:6px 0 7px;padding:7px 9px;border-radius:8px}.student-export .score-summary{grid-template-columns:112px minmax(0,1fr);gap:6px;margin:0 0 8px;padding:7px 8px;border-radius:9px;box-shadow:none}.student-export .score-overall{padding:7px;border-radius:8px}.student-export .score-overall strong{font-size:24px}.student-export .score-chip{font-size:8.8px;padding:4px 5px}.student-export .score-chip strong{min-width:22px;height:20px}.student-export .content{gap:9px}.student-export .writing-stack{gap:8px}.student-export .content.with-image.image-top .task-image{padding:0 28px 2px}.student-export .content.with-image.image-top .task-image img{width:100%;max-width:100%;border-radius:8px}.student-export .legend{gap:4px;margin:0}.student-export .legend span{font-size:9.5px;padding:3px 5px;border-radius:5px}.student-export .writing.static-comments{padding:22px 28px 24px;font-size:17px;line-height:1.5;border-radius:9px;box-shadow:none}.student-export .writing p{margin-bottom:12px}.student-export .writing.static-comments .comment-marker{min-width:1.55em;height:1.55em}.student-export .watermark-layer img{width:230px;height:230px;opacity:.075}.student-export .comment-summary{margin-top:0;padding:10px;border-radius:9px;box-shadow:none}.student-export .comment-summary-head{margin-bottom:8px}.student-export .comment-summary-list{gap:7px}.student-export .comment-card{border-radius:8px;padding:7px 8px}.student-export .comment-card p{font-size:9.5px;line-height:1.28}}
     .feedback-node.fb-grammar,.comment-card.fb-grammar,.legend .fb-grammar{border-style:dotted;background-image:none}
     .feedback-node.fb-vocabulary,.comment-card.fb-vocabulary,.legend .fb-vocabulary{border-style:solid;background-image:none}
@@ -8664,8 +8780,8 @@ window.IELTS_DATA = {
     @media print{.writing.static-comments,.student-export .writing.static-comments{font-size:var(--student-text-size)!important}}
     .student-theme-dark{--grammar-bg:#172554;--grammar-border:#60a5fa;--grammar-text:#bfdbfe;--vocabulary-bg:#451a03;--vocabulary-border:#f59e0b;--vocabulary-text:#fde68a;--spelling-bg:#431407;--spelling-border:#fb923c;--spelling-text:#fed7aa;--coherence-bg:#2e1065;--coherence-border:#a78bfa;--coherence-text:#ddd6fe;--task-bg:#083344;--task-border:#22d3ee;--task-text:#a5f3fc;--style-bg:#1e293b;--style-border:#94a3b8;--style-text:#e2e8f0;--punctuation-bg:#083344;--punctuation-border:#22d3ee;--punctuation-text:#a5f3fc;--idea-bg:#4a044e;--idea-border:#e879f9;--idea-text:#f5d0fe}
     .student-theme-contrast{--grammar-bg:#e0f2fe;--grammar-border:#004b93;--grammar-text:#000;--vocabulary-bg:#fff7cc;--vocabulary-border:#7a3e00;--vocabulary-text:#000;--spelling-bg:#ffe8d1;--spelling-border:#8a2500;--spelling-text:#000;--coherence-bg:#ede3ff;--coherence-border:#4c1d95;--coherence-text:#000;--task-bg:#d8fbff;--task-border:#005766;--task-text:#000;--style-bg:#f3f4f6;--style-border:#111827;--style-text:#000;--punctuation-bg:#d8fbff;--punctuation-border:#005766;--punctuation-text:#000;--idea-bg:#fde2ff;--idea-border:#86198f;--idea-text:#000}
-    .student-theme-dark{background:#0b1120;color:#e5e7eb}.student-theme-dark .prompt,.student-theme-dark .score-summary,.student-theme-dark .writing,.student-theme-dark .comment-summary{background:#111827;color:#e5e7eb;border-color:#334155;box-shadow:none}.student-theme-dark .score-chip,.student-theme-dark .comment-image-thumb,.student-theme-dark .editor-image-wrap img{background:#172033;border-color:#334155}.student-theme-dark .score-chip span,.student-theme-dark .meta,.student-theme-dark .comment-summary-head span,.student-theme-dark .comment-card p{color:#cbd5e1}.student-theme-dark .suggest-delete{background:#4a1010;color:#fecaca}
-    .student-theme-contrast{background:#000;color:#000}.student-theme-contrast .prompt,.student-theme-contrast .score-summary,.student-theme-contrast .writing,.student-theme-contrast .comment-summary,.student-theme-contrast .comment-image-thumb{background:#fff;color:#000;border:2px solid #000;box-shadow:none}.student-theme-contrast .score-overall,.student-theme-contrast .score-chip strong,.student-theme-contrast .comment-card strong span,.student-theme-contrast .writing.static-comments .comment-marker{background:#000;color:#fff!important;border-color:#000}.student-theme-contrast .feedback-node,.student-theme-contrast .legend span,.student-theme-contrast .comment-card{border-width:2px!important;box-shadow:none}.student-theme-contrast .suggest-add{color:#006b2e!important;font-weight:900}.student-theme-contrast .suggest-delete{color:#b00020!important;background:#fff!important;text-decoration-thickness:3px}
+    .student-theme-dark{background:#0b1120;color:#e5e7eb}.student-theme-dark .prompt,.student-theme-dark .score-summary,.student-theme-dark .writing,.student-theme-dark .comment-summary,.student-theme-dark .score-descriptor-card{background:#111827;color:#e5e7eb;border-color:#334155;box-shadow:none}.student-theme-dark .score-chip,.student-theme-dark .comment-image-thumb,.student-theme-dark .editor-image-wrap img{background:#172033;border-color:#334155}.student-theme-dark .score-chip span,.student-theme-dark .meta,.student-theme-dark .comment-summary-head span,.student-theme-dark .comment-card p,.student-theme-dark .score-descriptors-head p,.student-theme-dark .score-descriptor-card li{color:#cbd5e1}.student-theme-dark .score-descriptors{border-color:#7f1d1d}.student-theme-dark .suggest-delete{background:#4a1010;color:#fecaca}
+    .student-theme-contrast{background:#000;color:#000}.student-theme-contrast .prompt,.student-theme-contrast .score-summary,.student-theme-contrast .writing,.student-theme-contrast .comment-summary,.student-theme-contrast .comment-image-thumb,.student-theme-contrast .score-descriptor-card{background:#fff;color:#000;border:2px solid #000;box-shadow:none}.student-theme-contrast .score-overall,.student-theme-contrast .score-chip strong,.student-theme-contrast .comment-card strong span,.student-theme-contrast .writing.static-comments .comment-marker,.student-theme-contrast .score-descriptor-title span{background:#000;color:#fff!important;border-color:#000}.student-theme-contrast .feedback-node,.student-theme-contrast .legend span,.student-theme-contrast .comment-card{border-width:2px!important;box-shadow:none}.student-theme-contrast .score-descriptors{border-color:#000}.student-theme-contrast .score-descriptor-card li,.student-theme-contrast .score-descriptors-head p{color:#000}.student-theme-contrast .suggest-add{color:#006b2e!important;font-weight:900}.student-theme-contrast .suggest-delete{color:#b00020!important;background:#fff!important;text-decoration-thickness:3px}
   </style>`;
       }
 
