@@ -2096,7 +2096,7 @@
         <header class="rating-scale-heading">
           <div>
             <h2 id="ratingScaleHeading">3. Choose a score (optional)</h2>
-            <p>Select a band score for each criterion by simply clicking on it.</p>
+            <p>Click one band per criterion, optionally add a second, then mark the descriptors that fit.</p>
           </div>
           <div id="ratingScaleSummary" class="rating-scale-summary">No Writing score selected</div>
         </header>
@@ -2162,7 +2162,7 @@
         </article>
         <article class="instruction-step">
           <h3>4. Use IELTS scores</h3>
-          <p>Enter whole-band scores for the four IELTS Writing criteria. The app calculates the overall score by averaging and rounding to the nearest half band.</p>
+          <p>Click a band cell for each Writing criterion. If performance falls between bands, click a second band for that criterion, then mark the descriptor lines that fit. The app uses the midpoint for calculations and includes the selected evidence in student exports.</p>
         </article>
         <article class="instruction-step">
           <h3>5. Save or continue later</h3>
@@ -2815,7 +2815,7 @@
     }
 
     .criterion-head-score {
-      min-width: 30px;
+      min-width: 42px;
       height: 28px;
       display: grid;
       place-items: center;
@@ -2881,6 +2881,40 @@
       box-shadow: inset 0 0 0 2px var(--red);
     }
 
+    .descriptor-cell.selected-secondary {
+      background: linear-gradient(180deg, #fff 0%, #eef5ff 100%);
+      box-shadow: inset 0 0 0 2px #3377e8;
+    }
+
+    .cell-selection-note {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin: -4px -5px 10px;
+      border-radius: 7px;
+      background: rgba(227, 24, 55, .09);
+      padding: 6px 8px;
+      color: var(--red-dark);
+      font-size: 10px;
+      line-height: 1.25;
+    }
+
+    .selected-secondary .cell-selection-note {
+      background: #e6f0ff;
+      color: #1d5fc4;
+    }
+
+    .cell-selection-note strong {
+      flex: 0 0 auto;
+      font-size: 11px;
+    }
+
+    .cell-selection-note span {
+      color: #626c7a;
+      text-align: right;
+    }
+
     .descriptor-cell.search-match { background: #fffbe8; }
 
     .descriptor-cell ul {
@@ -2918,8 +2952,58 @@
     .descriptor-cell li[data-category="control"] { --bullet-color: var(--control); }
     .descriptor-cell li[data-category="organize"] { --bullet-color: var(--organize); }
 
+    .descriptor-cell li.has-fit-control {
+      min-height: 26px;
+      padding-right: 30px;
+      border-radius: 6px;
+      transition: background .14s, box-shadow .14s;
+    }
+
+    .descriptor-cell li.has-fit-control:hover {
+      background: rgba(44, 163, 58, .08);
+      box-shadow: 0 0 0 4px rgba(44, 163, 58, .08);
+    }
+
+    .descriptor-cell li.descriptor-fit {
+      background: #eaf8ec;
+      box-shadow: 0 0 0 4px #eaf8ec, inset 3px 0 0 #2ca33a;
+    }
+
+    .descriptor-fit-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 24px;
+      height: 24px;
+      display: grid;
+      place-items: center;
+      border: 1px solid #b8c0cb;
+      border-radius: 6px;
+      background: #fff;
+      color: transparent;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 900;
+      line-height: 1;
+      transition: background .14s, border-color .14s, color .14s, transform .14s;
+    }
+
+    .descriptor-fit-toggle:hover {
+      border-color: #2ca33a;
+      transform: scale(1.06);
+    }
+
+    .descriptor-fit-toggle.active {
+      border-color: #228531;
+      background: #2ca33a;
+      color: #fff;
+    }
+
     .matrix.annotating .descriptor-cell,
     .matrix.annotating .descriptor-cell li { cursor: text; }
+
+    .matrix.annotating .descriptor-fit-toggle { display: none; }
+    .matrix.annotating .descriptor-cell li.has-fit-control { padding-right: 16px; }
 
     .manual-mark {
       border-radius: 3px;
@@ -3044,7 +3128,7 @@
       border-radius: 7px;
       background: var(--surface-alt);
       color: #7a8290;
-      font-size: 22px;
+      font-size: 18px;
       font-weight: 800;
       font-variant-numeric: tabular-nums;
     }
@@ -5350,7 +5434,12 @@ window.IELTS_DATA = {
           name,
           Object.fromEntries(data.sections[name].criteria.map(criterion => [criterion, null]))
         ])),
-        annotations: {}
+        secondaryScores: Object.fromEntries(sectionNames.map(name => [
+          name,
+          Object.fromEntries(data.sections[name].criteria.map(criterion => [criterion, null]))
+        ])),
+        annotations: {},
+        descriptorFits: {}
       };
 
       const $ = selector => document.querySelector(selector);
@@ -5394,6 +5483,14 @@ window.IELTS_DATA = {
         return normalized;
       }
 
+      function normalizeDescriptorFits(savedFits) {
+        const normalized = {};
+        Object.entries(savedFits || {}).forEach(([key, value]) => {
+          if (value === true && descriptorForKey(key)) normalized[key] = true;
+        });
+        return normalized;
+      }
+
       function ratingScaleSnapshot() {
         return {
           section: state.section,
@@ -5403,8 +5500,10 @@ window.IELTS_DATA = {
           compare: state.compare,
           fontSize: state.fontSize,
           scores: state.scores,
+          secondaryScores: state.secondaryScores,
           selectedDescriptors: selectedDescriptorSnapshot(),
-          annotations: state.annotations
+          annotations: state.annotations,
+          descriptorFits: state.descriptorFits
         };
       }
 
@@ -5413,12 +5512,20 @@ window.IELTS_DATA = {
         const section = data.sections[sectionName];
         const criteria = {};
         section.criteria.forEach(criterion => {
-          const band = state.scores[sectionName][criterion];
-          if (band == null) return;
-          const descriptors = section.bands?.[String(band)]?.[criterion] || [];
+          const selectedBands = selectedBandsForCriterion(sectionName, criterion).sort((a, b) => b - a);
+          if (!selectedBands.length) return;
           criteria[criterion] = {
-            band,
-            descriptors: descriptors.map(descriptorText)
+            bands: selectedBands,
+            bandDetails: selectedBands.map(band => {
+              const descriptors = section.bands?.[String(band)]?.[criterion] || [];
+              return {
+                band,
+                descriptors: descriptors.map((descriptor, index) => ({
+                  text: descriptorText(descriptor),
+                  matched: state.descriptorFits[annotationKey(sectionName, criterion, band, index)] === true
+                }))
+              };
+            })
           };
         });
         return { section: sectionName, criteria };
@@ -5438,14 +5545,27 @@ window.IELTS_DATA = {
         sectionNames.forEach(section => {
           data.sections[section].criteria.forEach(criterion => {
             state.scores[section][criterion] = null;
+            state.secondaryScores[section][criterion] = null;
             const value = saved.scores?.[section]?.[criterion];
             if (Number.isInteger(value) && value >= 0 && value <= 9) {
               state.scores[section][criterion] = value;
+            }
+            const secondaryValue = saved.secondaryScores?.[section]?.[criterion];
+            if (
+              Number.isInteger(secondaryValue) &&
+              secondaryValue >= 0 &&
+              secondaryValue <= 9 &&
+              secondaryValue !== state.scores[section][criterion]
+            ) {
+              state.secondaryScores[section][criterion] = secondaryValue;
             }
           });
         });
         state.annotations = saved.annotations && typeof saved.annotations === "object"
           ? normalizeAnnotations(saved.annotations)
+          : {};
+        state.descriptorFits = saved.descriptorFits && typeof saved.descriptorFits === "object"
+          ? normalizeDescriptorFits(saved.descriptorFits)
           : {};
         if (saved.view === "profile" || saved.view === "explorer") state.view = saved.view;
         state.criterion = "__all";
@@ -5502,9 +5622,29 @@ window.IELTS_DATA = {
         showToast.timer = setTimeout(() => toast.classList.remove("show"), 1800);
       }
 
+      function selectedBandsForCriterion(sectionName, criterion) {
+        const primary = state.scores[sectionName]?.[criterion];
+        const secondary = state.secondaryScores[sectionName]?.[criterion];
+        return [primary, secondary].filter((value, index, values) =>
+          value != null && values.indexOf(value) === index
+        );
+      }
+
+      function effectiveCriterionScore(sectionName, criterion) {
+        const values = selectedBandsForCriterion(sectionName, criterion);
+        if (!values.length) return null;
+        return values.reduce((sum, value) => sum + value, 0) / values.length;
+      }
+
+      function formatBandSelection(sectionName, criterion) {
+        const values = selectedBandsForCriterion(sectionName, criterion).sort((a, b) => a - b);
+        if (!values.length) return "—";
+        return values.length === 1 ? String(values[0]) : `${values[0]}–${values[1]}`;
+      }
+
       function selectedValues(sectionName) {
         return data.sections[sectionName].criteria
-          .map(criterion => state.scores[sectionName][criterion])
+          .map(criterion => effectiveCriterionScore(sectionName, criterion))
           .filter(value => value != null);
       }
 
@@ -5620,6 +5760,29 @@ window.IELTS_DATA = {
         return [section, criterion, band, index].join("|");
       }
 
+      function clearDescriptorFitsForBand(section, criterion, band) {
+        if (band == null) return;
+        const prefix = `${section}|${criterion}|${band}|`;
+        Object.keys(state.descriptorFits).forEach(key => {
+          if (key.startsWith(prefix)) delete state.descriptorFits[key];
+        });
+      }
+
+      function clearDescriptorFitsForSection(section) {
+        const prefix = `${section}|`;
+        Object.keys(state.descriptorFits).forEach(key => {
+          if (key.startsWith(prefix)) delete state.descriptorFits[key];
+        });
+      }
+
+      function toggleDescriptorFit(line) {
+        const key = line?.dataset?.annotationKey;
+        if (!key || !descriptorForKey(key)) return;
+        if (state.descriptorFits[key]) delete state.descriptorFits[key];
+        else state.descriptorFits[key] = true;
+        renderAll();
+      }
+
       function initializeControls() {
         $("#sectionSelect").innerHTML = sectionNames
           .map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`)
@@ -5686,14 +5849,14 @@ window.IELTS_DATA = {
           '<div class="matrix-head corner">Band</div>',
           ...criteria.map(criterion => {
             const criterionIndex = section.criteria.indexOf(criterion);
-            const selectedScore = state.scores[state.section][criterion];
+            const selectedScore = effectiveCriterionScore(state.section, criterion);
             return `
               <div class="matrix-head criterion-head" style="--category-color:${categoryColors[criterionIndex] || categoryColors[3]}">
                 <span class="criterion-head-main">
                   <span class="criterion-category" aria-hidden="true"></span>
                   <strong>${escapeHtml(criterion)}</strong>
                 </span>
-                <span class="criterion-head-score ${selectedScore != null ? "has-score" : ""}">${selectedScore ?? "—"}</span>
+                <span class="criterion-head-score ${selectedScore != null ? "has-score" : ""}">${formatBandSelection(state.section, criterion)}</span>
               </div>`;
           })
         ].join("");
@@ -5706,20 +5869,44 @@ window.IELTS_DATA = {
             );
             const cellMatches = Boolean(query && matchingDescriptors.length);
             if (cellMatches) matchCount += matchingDescriptors.length;
-            const selected = state.scores[state.section][criterion] === band;
+            const selectedBands = selectedBandsForCriterion(state.section, criterion);
+            const primarySelected = state.scores[state.section][criterion] === band;
+            const secondarySelected = state.secondaryScores[state.section][criterion] === band;
+            const selected = primarySelected || secondarySelected;
+            const selectedPosition = primarySelected ? 1 : 2;
             const bullets = descriptors.map((descriptor, index) => {
               const text = descriptorText(descriptor);
               const key = annotationKey(state.section, criterion, band, index);
-              return `<li data-annotation-key="${escapeHtml(key)}" data-category="${categoryForText(text)}">${renderedDescriptor(descriptor, key)}</li>`;
+              const fits = state.descriptorFits[key] === true;
+              return `<li class="${selected ? "has-fit-control" : ""} ${fits ? "descriptor-fit" : ""}"
+                          data-annotation-key="${escapeHtml(key)}"
+                          data-category="${categoryForText(text)}">
+                <span class="descriptor-line-text">${renderedDescriptor(descriptor, key)}</span>
+                ${selected ? `<button type="button"
+                    class="descriptor-fit-toggle ${fits ? "active" : ""}"
+                    data-fit-key="${escapeHtml(key)}"
+                    aria-pressed="${fits}"
+                    aria-label="${fits ? "Remove" : "Mark"} this descriptor as fitting the student"
+                    title="${fits ? "Fits this student — click to remove" : "Click if this descriptor fits the student"}">✓</button>` : ""}
+              </li>`;
             }).join("");
+            const cellLabel = selected
+              ? `Remove Band ${band} from ${criterion}`
+              : selectedBands.length
+                ? `Add Band ${band} as another score for ${criterion}`
+                : `Set ${criterion} to Band ${band}`;
             return `
-              <div class="descriptor-cell ${selected ? "selected" : ""} ${cellMatches ? "search-match" : ""}"
+              <div class="descriptor-cell ${selected ? "selected" : ""} ${primarySelected ? "selected-primary" : ""} ${secondarySelected ? "selected-secondary" : ""} ${cellMatches ? "search-match" : ""}"
                    data-criterion="${escapeHtml(criterion)}"
                    data-band="${band}"
                    role="button"
                    tabindex="0"
                    aria-pressed="${selected}"
-                   aria-label="Set ${escapeHtml(criterion)} to Band ${band}">
+                   aria-label="${escapeHtml(cellLabel)}">
+                ${selected ? `<div class="cell-selection-note">
+                  <strong>✓ Selected${selectedBands.length === 2 ? ` ${selectedPosition} of 2` : ""}</strong>
+                  <span>Mark the descriptors that fit</span>
+                </div>` : ""}
                 <ul>${bullets}</ul>
               </div>`;
           }).join("");
@@ -5753,17 +5940,17 @@ window.IELTS_DATA = {
         $("#clearScores").disabled = values.length === 0;
 
         $("#scoreRows").innerHTML = section.criteria.map((criterion, index) => {
-          const value = state.scores[state.section][criterion];
+          const value = effectiveCriterionScore(state.section, criterion);
           return `
             <div class="score-row" style="--category-color:${categoryColors[index] || categoryColors[3]}">
               <span class="score-row-dot" aria-hidden="true"></span>
               <span class="score-row-label">${escapeHtml(criterion)}</span>
-              <span class="score-row-value ${value != null ? "has-score" : ""}">${value ?? "—"}</span>
+              <span class="score-row-value ${value != null ? "has-score" : ""}">${formatBandSelection(state.section, criterion)}</span>
             </div>`;
         }).join("");
 
         $("#helpNote").querySelector("span:last-child").textContent =
-          `${section.note} Click a descriptor cell to select its band. In annotation mode, drag across a phrase to highlight it; right-click a highlight to remove it.`;
+          `${section.note} Click one band cell to select it, then optionally click a second band for the same criterion. In selected cells, click descriptor lines or checkmarks that fit this student.`;
       }
 
       function renderProfile() {
@@ -5773,11 +5960,11 @@ window.IELTS_DATA = {
           const result = sectionResult(sectionName);
           const chosen = selectedValues(sectionName).length;
           const criteriaRows = section.criteria.map(criterion => {
-            const value = state.scores[sectionName][criterion];
+            const value = effectiveCriterionScore(sectionName, criterion);
             return `
               <div class="profile-criterion-row">
                 <span class="profile-criterion-name">${escapeHtml(criterion)}</span>
-                <span class="profile-criterion-score">${value ?? "—"}</span>
+                <span class="profile-criterion-score">${formatBandSelection(sectionName, criterion)}</span>
                 <span class="profile-track" aria-hidden="true"><span style="width:${value == null ? 0 : (value / 9) * 100}%"></span></span>
               </div>`;
           }).join("");
@@ -5803,8 +5990,25 @@ window.IELTS_DATA = {
       function selectScore(cell) {
         const criterion = cell.dataset.criterion;
         const band = Number(cell.dataset.band);
-        state.scores[state.section][criterion] =
-          state.scores[state.section][criterion] === band ? null : band;
+        const primary = state.scores[state.section][criterion];
+        const secondary = state.secondaryScores[state.section][criterion];
+        if (primary === band) {
+          clearDescriptorFitsForBand(state.section, criterion, band);
+          state.scores[state.section][criterion] = secondary;
+          state.secondaryScores[state.section][criterion] = null;
+        } else if (secondary === band) {
+          clearDescriptorFitsForBand(state.section, criterion, band);
+          state.secondaryScores[state.section][criterion] = null;
+        } else if (primary == null) {
+          state.scores[state.section][criterion] = band;
+        } else if (secondary == null) {
+          state.secondaryScores[state.section][criterion] = band;
+          showToast(`${criterion}: ${formatBandSelection(state.section, criterion)} selected`);
+        } else {
+          clearDescriptorFitsForBand(state.section, criterion, secondary);
+          state.secondaryScores[state.section][criterion] = band;
+          showToast(`${criterion}: second band changed to ${band}`);
+        }
         renderAll();
       }
 
@@ -5971,11 +6175,17 @@ window.IELTS_DATA = {
           return;
         }
         const cell = event.target.closest(".descriptor-cell");
+        if (line && cell?.classList.contains("selected")) {
+          event.stopPropagation();
+          toggleDescriptorFit(line);
+          return;
+        }
         if (cell) selectScore(cell);
       });
 
       $("#matrix").addEventListener("keydown", event => {
         if (state.annotate || !["Enter", " "].includes(event.key)) return;
+        if (event.target.closest(".descriptor-fit-toggle")) return;
         const cell = event.target.closest(".descriptor-cell");
         if (!cell) return;
         event.preventDefault();
@@ -6019,7 +6229,9 @@ window.IELTS_DATA = {
       $("#clearScores").addEventListener("click", () => {
         data.sections[state.section].criteria.forEach(criterion => {
           state.scores[state.section][criterion] = null;
+          state.secondaryScores[state.section][criterion] = null;
         });
+        clearDescriptorFitsForSection(state.section);
         renderAll();
         showToast(`${data.sections[state.section].shortLabel} scores cleared`);
       });
@@ -6467,7 +6679,9 @@ window.IELTS_DATA = {
           compare: true,
           fontSize: 13,
           scores: writingScores,
-          annotations: {}
+          secondaryScores: emptyWritingScores(),
+          annotations: {},
+          descriptorFits: {}
         };
       }
 
@@ -6481,15 +6695,45 @@ window.IELTS_DATA = {
         return candidate === "Writing Task 1" ? "Writing Task 1" : "Writing Task 2";
       }
 
+      function selectedCriterionBands(state, section, criterion) {
+        const primary = criterionBandNumber(state?.scores?.[section]?.[criterion]);
+        const secondary = criterionBandNumber(state?.secondaryScores?.[section]?.[criterion]);
+        return [primary, secondary].filter((value, index, values) =>
+          value != null && values.indexOf(value) === index
+        );
+      }
+
+      function criterionMidpoint(state, section, criterion) {
+        const bands = selectedCriterionBands(state, section, criterion);
+        if (!bands.length) return "";
+        return String(bands.reduce((sum, band) => sum + band, 0) / bands.length);
+      }
+
+      function criterionBandLabel(state, section, criterion) {
+        const bands = selectedCriterionBands(state, section, criterion).sort((a, b) => a - b);
+        if (!bands.length) return "-";
+        return bands.length === 1 ? String(bands[0]) : `${bands[0]}–${bands[1]}`;
+      }
+
       function selectedWritingScores(state = ratingScaleState) {
         const section = activeWritingSection(state);
-        const selected = state?.scores?.[section] || {};
         const taskCriterion = section === "Writing Task 1" ? "Task achievement" : "Task response";
         return {
-          task: normalizeCriterionBand(selected[taskCriterion]),
-          coherence: normalizeCriterionBand(selected["Coherence and cohesion"]),
-          lexical: normalizeCriterionBand(selected["Lexical resource"]),
-          grammar: normalizeCriterionBand(selected["Grammatical range and accuracy"])
+          task: normalizeCriterionBand(criterionMidpoint(state, section, taskCriterion)),
+          coherence: normalizeCriterionBand(criterionMidpoint(state, section, "Coherence and cohesion")),
+          lexical: normalizeCriterionBand(criterionMidpoint(state, section, "Lexical resource")),
+          grammar: normalizeCriterionBand(criterionMidpoint(state, section, "Grammatical range and accuracy"))
+        };
+      }
+
+      function selectedWritingBandLabels(state = ratingScaleState) {
+        const section = activeWritingSection(state);
+        const taskCriterion = section === "Writing Task 1" ? "Task achievement" : "Task response";
+        return {
+          task: criterionBandLabel(state, section, taskCriterion),
+          coherence: criterionBandLabel(state, section, "Coherence and cohesion"),
+          lexical: criterionBandLabel(state, section, "Lexical resource"),
+          grammar: criterionBandLabel(state, section, "Grammatical range and accuracy")
         };
       }
 
@@ -6506,18 +6750,36 @@ window.IELTS_DATA = {
         ];
         return criteria.flatMap(([key, label]) => {
           const detail = snapshot.criteria[key];
-          if (!detail || detail.band == null || !Array.isArray(detail.descriptors)) return [];
-          return [{
-            criterion: label,
-            band: criterionBandNumber(detail.band),
-            descriptors: detail.descriptors.map(value => String(value || "").trim()).filter(Boolean)
-          }];
+          if (!detail) return [];
+          const bandDetails = Array.isArray(detail.bandDetails)
+            ? detail.bandDetails
+            : detail.band != null && Array.isArray(detail.descriptors)
+              ? [{ band: detail.band, descriptors: detail.descriptors }]
+              : [];
+          const groupedDescriptors = bandDetails.flatMap(bandDetail => {
+            const band = criterionBandNumber(bandDetail.band);
+            if (band == null || !Array.isArray(bandDetail.descriptors)) return [];
+            const descriptors = bandDetail.descriptors.flatMap(value => {
+              if (value && typeof value === "object") {
+                const text = String(value.text || "").trim();
+                return text ? [{ text, matched: value.matched === true, band }] : [];
+              }
+              const text = String(value || "").trim();
+              return text ? [{ text, matched: false, band }] : [];
+            });
+            const chosenDescriptors = descriptors.filter(descriptor => descriptor.matched);
+            return chosenDescriptors.length ? chosenDescriptors : descriptors;
+          });
+          if (!groupedDescriptors.length) return [];
+          const bands = [...new Set(groupedDescriptors.map(descriptor => descriptor.band))].sort((a, b) => a - b);
+          return [{ criterion: label, bands, descriptors: groupedDescriptors }];
         });
       }
 
       function normalizeCriterionBand(value) {
-        const number = criterionBandNumber(value);
-        return number == null ? "" : String(number);
+        if (value === "" || value == null || Number.isNaN(Number(value))) return "";
+        const number = Math.min(9, Math.max(0, Number(value)));
+        return String(Math.round(number * 2) / 2);
       }
 
       function getBandScores() {
@@ -6587,28 +6849,32 @@ window.IELTS_DATA = {
         if (!hasAnyScore) return "";
         const overall = rounded == null ? "Incomplete" : formatBand(rounded);
         const section = activeWritingSection(state);
+        const bandLabels = selectedWritingBandLabels(state);
         const rows = scoreCriteria.map(([id, label]) => `
           <div class="score-chip">
             <span>${escapeHtml(label)}</span>
-            <strong>${formatBand(normalizedScores[id])}</strong>
+            <strong>${escapeHtml(bandLabels[id] === "-" ? formatBand(normalizedScores[id]) : bandLabels[id])}</strong>
           </div>
         `).join("");
         const descriptorDetails = selectedWritingDescriptorDetails(state);
         const descriptors = descriptorDetails.length ? `
           <div class="score-descriptors">
             <div class="score-descriptors-head">
-              <h2>Why these bands were selected</h2>
-              <p>Official descriptors for the selected criterion bands</p>
+              <h2>Band descriptors by criterion</h2>
             </div>
             <div class="score-descriptor-grid">
               ${descriptorDetails.map(detail => `
                 <article class="score-descriptor-card">
                   <div class="score-descriptor-title">
                     <strong>${escapeHtml(detail.criterion)}</strong>
-                    <span>Band ${escapeHtml(formatBand(detail.band))}</span>
                   </div>
                   ${detail.descriptors.length
-                    ? `<ul>${detail.descriptors.map(text => `<li>${escapeHtml(text)}</li>`).join("")}</ul>`
+                    ? `<ul>${detail.descriptors.map(descriptor => `
+                        <li>
+                          <span class="descriptor-evidence-bullet" aria-hidden="true"></span>
+                          <span class="descriptor-evidence-text">${escapeHtml(descriptor.text)}</span>
+                          <span class="descriptor-source">Band ${escapeHtml(formatBand(descriptor.band))}</span>
+                        </li>`).join("")}</ul>`
                     : `<p class="score-descriptor-empty">No descriptor text is available for this band.</p>`}
                 </article>
               `).join("")}
@@ -8296,7 +8562,7 @@ window.IELTS_DATA = {
       function getSession() {
         ensureFeedbackIds();
         return {
-          version: 9,
+          version: 14,
           title: document.getElementById("docTitle").value,
           studentName: document.getElementById("studentName").value,
           taskPrompt: document.getElementById("taskPrompt").value,
@@ -8746,8 +9012,10 @@ window.IELTS_DATA = {
         return `<style>
     :root{--line:#d9dee7;--ink:#1f2937;--muted:#667085;--grammar-bg:#dbeafe;--grammar-border:#60a5fa;--grammar-text:#1d4ed8;--vocabulary-bg:#fef3c7;--vocabulary-border:#f59e0b;--vocabulary-text:#92400e;--spelling-bg:#ffedd5;--spelling-border:#fb923c;--spelling-text:#9a3412;--coherence-bg:#ede9fe;--coherence-border:#a78bfa;--coherence-text:#6d28d9;--task-bg:#cffafe;--task-border:#0891b2;--task-text:#0e7490;--style-bg:#f1f5f9;--style-border:#64748b;--style-text:#334155;--punctuation-bg:#cffafe;--punctuation-border:#06b6d4;--punctuation-text:#0e7490;--idea-bg:#fae8ff;--idea-border:#d946ef;--idea-text:#86198f}
     *{box-sizing:border-box}body{margin:0;background:#f6f7f9;color:var(--ink);font-family:Arial,Helvetica,sans-serif;line-height:1.65}.page{max-width:1180px;margin:0 auto;padding:28px 18px}.header{margin-bottom:18px}.header h1{margin:0 0 8px;font-size:30px;line-height:1.2}.meta{color:var(--muted);font-size:15px}.prompt{white-space:pre-wrap;background:#fff;border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin:16px 0;font-weight:700;font-size:16px;line-height:1.6}.score-summary{display:grid;grid-template-columns:170px minmax(0,1fr);gap:12px;align-items:stretch;background:#fff;border:1px solid #fecaca;border-left:6px solid #b91c1c;border-radius:14px;padding:12px 14px;margin:0 0 16px;box-shadow:0 8px 24px rgba(15,23,42,.06)}.score-overall{display:grid;align-content:center;justify-items:start;gap:2px;background:#111827;color:#fff;border-radius:12px;padding:12px}.score-overall span{text-transform:uppercase;letter-spacing:.06em;font-size:11px;font-weight:800;color:#fecaca}.score-overall strong{font-size:34px;line-height:1;font-weight:900}.score-overall em{font-style:normal;font-size:12px;color:#e5e7eb}.score-breakdown{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.score-chip{display:flex;align-items:center;justify-content:space-between;gap:8px;background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:13px;font-weight:700;line-height:1.25}.score-chip span{color:#475569}.score-chip strong{display:grid;place-items:center;min-width:34px;height:30px;border-radius:999px;background:#b91c1c;color:#fff;font-size:16px}.content{display:grid;grid-template-columns:minmax(0,1fr);gap:26px;align-items:start}.content.with-image.image-left{grid-template-columns:minmax(260px,40%) minmax(0,1fr)}.writing-stack{display:grid;gap:18px;min-width:0}.writing-stack .legend{margin:0}.task-image{display:flex;justify-content:center;align-items:flex-start}.task-image img{width:min(100%,780px);height:auto;max-height:none;display:block;object-fit:contain;border:1px solid var(--line);border-radius:10px}.content.with-image.image-left .task-image img{width:100%;max-width:100%;max-height:560px}.content.with-image.image-top .task-image{padding:0 34px}.content.with-image.image-top .task-image img{width:100%;max-width:780px;max-height:none}.writing{position:relative;isolation:isolate;background:#fff;border:1px solid var(--line);border-radius:10px;padding:36px 34px;font-size:18px;line-height:1.72;overflow-wrap:anywhere;min-height:380px;overflow:hidden}.writing.static-comments{--comment-gutter-inset:10px;padding-left:154px;padding-right:154px;overflow:visible}.writing p{margin:0 0 16px}.writing p:last-child{margin-bottom:0}.editor-image-wrap{display:block;max-width:100%;margin:16px auto;text-align:center}.editor-image-wrap img{display:block;width:auto;max-width:min(100%,780px);max-height:560px;height:auto;margin:0 auto;border:1px solid var(--line);border-radius:10px;background:#fff}.watermark-layer{position:absolute;inset:0;z-index:0;display:flex;align-items:center;justify-content:center;pointer-events:none}.watermark-layer img{display:block;width:240px;height:240px;object-fit:contain;opacity:.1}.writing-content{position:relative;z-index:1}.suggest-add{color:#16a34a;font-weight:700}.suggest-delete{color:#dc2626;text-decoration:line-through;text-decoration-thickness:2px;background:#fef2f2}.feedback-node{border:1px solid currentColor;border-bottom-width:2px;border-radius:5px;padding:1px 3px;cursor:pointer;-webkit-box-decoration-break:clone;box-decoration-break:clone}.comment-marker{display:inline-block;margin-left:2px;color:currentColor;font-size:.64em;font-weight:800;line-height:1;vertical-align:super}.comment-row{position:relative}.comment-bubble{display:inline-block;max-width:250px;margin:0 8px 6px;padding:7px 9px;border:1px solid currentColor;border-radius:8px;font-size:12.5px;line-height:1.35;vertical-align:middle;box-shadow:0 4px 12px rgba(15,23,42,.08)}.writing.static-comments .comment-bubble{position:absolute;display:block;width:126px;max-width:126px;margin:0;z-index:3}.writing.static-comments .comment-bubble::before,.writing.static-comments .comment-bubble::after{display:none}.comment-connector-layer,.comment-connector{display:none!important}.writing.static-comments .comment-left{left:10px}.writing.static-comments .comment-right{right:10px}.writing.static-comments .feedback-node{position:relative}.comment-bubble strong{display:block;margin-bottom:3px}.comment-bubble span{display:block}.fb-grammar{background:var(--grammar-bg);color:#1d4ed8;border-color:var(--grammar-border)}.fb-vocabulary{background:var(--vocabulary-bg);color:#92400e;border-color:var(--vocabulary-border)}.fb-spelling{background:var(--spelling-bg);color:#9a3412;border-color:var(--spelling-border)}.fb-coherence{background:var(--coherence-bg);color:#6d28d9;border-color:var(--coherence-border)}.fb-task{background:var(--task-bg);color:#0e7490;border-color:var(--task-border)}.fb-style{background:var(--style-bg);color:#334155;border-color:var(--style-border)}.fb-punctuation{background:var(--grammar-bg);color:#1d4ed8;border-color:var(--grammar-border)}.fb-idea{background:var(--idea-bg);color:#86198f;border-color:var(--idea-border)}.legend{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0 18px}.legend span{border:1px solid currentColor;border-radius:7px;padding:5px 9px;font-size:13px;font-weight:700}.side-note{position:fixed;z-index:10;width:min(360px,calc(100vw - 24px));max-height:min(420px,calc(100vh - 24px));overflow:auto;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 16px 40px rgba(17,24,39,.18);padding:14px;display:none}.side-note.open{display:block}.side-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}.side-head strong{margin-right:auto}.side-note button{border:1px solid var(--line);background:#fff;border-radius:6px;width:32px;height:32px;cursor:pointer}@media(max-width:900px){.content.with-image.image-left{grid-template-columns:1fr}.score-summary{grid-template-columns:1fr}.content.with-image.image-top .task-image{padding:0}.watermark-layer img{width:200px;height:200px}.writing{font-size:17px;padding:28px 22px}.comment-bubble{max-width:220px}.writing.static-comments{padding-left:28px;padding-right:22px}.writing.static-comments .comment-bubble{position:static;width:auto;max-width:100%;margin:8px 0 10px}.comment-connector-layer,.comment-connector,.writing.static-comments .comment-bubble::before,.writing.static-comments .comment-bubble::after{display:none!important}}@media print{@page{size:portrait;margin:0}html,body{width:768px;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}.page{width:760px;max-width:760px;margin:0 auto;padding:12px 4px}.header{margin-bottom:6px}.header h1{font-size:28px}.meta{font-size:12px}.prompt{font-size:12px;line-height:1.34;padding:7px 9px;margin:6px 0}.score-summary{grid-template-columns:104px minmax(0,1fr);gap:6px;padding:6px 7px;margin:0 0 6px;border-left-width:4px;border-radius:9px;box-shadow:none}.score-overall{border-radius:8px;padding:6px}.score-overall span{font-size:7.5px}.score-overall strong{font-size:22px}.score-overall em{font-size:8px}.score-breakdown{gap:4px}.score-chip{font-size:8.4px;gap:4px;padding:4px 5px;border-radius:7px}.score-chip strong{min-width:22px;height:20px;font-size:11px}.legend{gap:4px;margin:0}.legend span{font-size:10px;padding:3px 5px}.writing-stack{gap:8px}.content.with-image.image-top .task-image{padding:0 34px}.content.with-image.image-top .task-image img{width:100%;max-width:692px;max-height:none}.content.with-image.image-left .task-image img{width:100%;max-width:100%;max-height:300px}.writing{box-shadow:none}.writing.static-comments{--comment-gutter-inset:8px;padding:24px 146px 28px;font-size:18.45px;line-height:1.52;min-height:760px}.writing.static-comments .comment-bubble{position:absolute;display:block;width:132px;max-width:132px;margin:0;font-size:9.15px;line-height:1.13;padding:4px 5px;overflow-wrap:anywhere}.writing.static-comments .comment-bubble strong{margin-bottom:2px}.comment-connector-layer,.comment-connector{display:none!important}.side-note{display:none!important}.comment-bubble{box-shadow:none;break-inside:avoid}}
-    .score-descriptors{grid-column:1/-1;border-top:1px solid #fecaca;padding-top:14px}.score-descriptors-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:10px}.score-descriptors-head h2{margin:0;font-size:18px;line-height:1.25}.score-descriptors-head p{margin:0;color:var(--muted);font-size:12px;font-weight:700}.score-descriptor-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.score-descriptor-card{border:1px solid var(--line);border-radius:11px;background:#fff;padding:12px;break-inside:avoid;page-break-inside:avoid}.score-descriptor-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}.score-descriptor-title strong{font-size:14px;line-height:1.3}.score-descriptor-title span{flex:0 0 auto;border-radius:999px;background:#b91c1c;color:#fff;padding:4px 8px;font-size:12px;font-weight:900}.score-descriptor-card ul{margin:0;padding-left:18px}.score-descriptor-card li{color:#374151;font-size:12.5px;line-height:1.45}.score-descriptor-card li+li{margin-top:5px}.score-descriptor-empty{margin:0;color:var(--muted);font-size:12px}@media(max-width:900px){.score-descriptor-grid{grid-template-columns:1fr}.score-descriptors-head{align-items:flex-start;flex-direction:column;gap:3px}}
-    .writing.static-comments{padding:36px 34px;overflow:hidden;min-height:380px}.writing.static-comments .comment-bubble{display:none!important}.writing.static-comments .comment-marker{display:inline-grid;place-items:center;min-width:1.55em;height:1.55em;margin-left:4px;border-radius:999px;background:#111827;color:#fff!important;font-size:.68em;font-weight:900;line-height:1;vertical-align:super;box-shadow:0 0 0 2px #fff,0 1px 4px rgba(15,23,42,.25)}.comment-summary{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px;box-shadow:0 8px 24px rgba(15,23,42,.06);break-inside:auto}.comment-summary-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.comment-summary-head h2{margin:0;font-size:20px;line-height:1.2}.comment-summary-head span{color:var(--muted);font-size:13px;font-weight:800}.comment-summary-list{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.comment-card{border:1px solid currentColor;border-left-width:5px;border-radius:10px;padding:10px 12px;break-inside:avoid;page-break-inside:avoid}.comment-card strong{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:13px;line-height:1.25}.comment-card strong span{display:grid;place-items:center;min-width:26px;height:26px;border-radius:999px;background:#111827;color:#fff!important;border:2px solid #fff;box-shadow:0 1px 4px rgba(15,23,42,.22);font-size:12px;font-weight:900}.comment-card p{margin:0;color:#1f2937;font-size:13px;line-height:1.45}@media(max-width:900px){.comment-summary-list{grid-template-columns:1fr}}@media print{.score-descriptors{padding-top:8px}.score-descriptors-head{margin-bottom:6px}.score-descriptors-head h2{font-size:13px}.score-descriptors-head p{font-size:8px}.score-descriptor-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}.score-descriptor-card{padding:6px 7px;border-radius:7px}.score-descriptor-title{margin-bottom:4px}.score-descriptor-title strong{font-size:9px}.score-descriptor-title span{padding:2px 5px;font-size:8px}.score-descriptor-card ul{padding-left:13px}.score-descriptor-card li{font-size:7.8px;line-height:1.28}.score-descriptor-card li+li{margin-top:2px}.writing.static-comments{padding:24px 34px 28px;font-size:18.45px;line-height:1.52;min-height:0}.writing.static-comments .comment-marker{min-width:1.6em;height:1.6em;margin-left:3px;font-size:.7em;box-shadow:0 0 0 1px #fff}.comment-summary{padding:10px 12px;border-radius:9px;box-shadow:none}.comment-summary-head{margin-bottom:8px}.comment-summary-head h2{font-size:15px}.comment-summary-head span{font-size:10px}.comment-summary-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.comment-card{border-left-width:4px;border-radius:7px;padding:6px 7px}.comment-card strong{font-size:10px;gap:5px;margin-bottom:3px}.comment-card strong span{min-width:20px;height:20px;font-size:10px;border-width:1px}.comment-card p{font-size:9.5px;line-height:1.25}}
+    .score-chip strong{min-width:44px;padding:0 6px}.score-descriptors{grid-column:1/-1;border-top:1px solid #fecaca;padding-top:14px}.score-descriptors-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:10px}.score-descriptors-head h2{margin:0;font-size:18px;line-height:1.25}.score-descriptors-head p{margin:0;color:var(--muted);font-size:12px;font-weight:700}.score-descriptor-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.score-descriptor-card{border:1px solid var(--line);border-radius:11px;background:#fff;padding:12px;break-inside:avoid;page-break-inside:avoid}.score-descriptor-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}.score-descriptor-title strong{font-size:14px;line-height:1.3}.score-descriptor-title span{flex:0 0 auto;border-radius:999px;background:#b91c1c;color:#fff;padding:4px 8px;font-size:12px;font-weight:900}.score-descriptor-card ul{margin:0;padding-left:18px}.score-descriptor-card li{color:#374151;font-size:12.5px;line-height:1.45}.score-descriptor-card li+li{margin-top:5px}.score-descriptor-empty{margin:0;color:var(--muted);font-size:12px}@media(max-width:900px){.score-descriptor-grid{grid-template-columns:1fr}.score-descriptors-head{align-items:flex-start;flex-direction:column;gap:3px}}
+    .score-descriptor-card ul{padding:0;list-style:none}.score-descriptor-card li{display:grid;grid-template-columns:20px minmax(0,1fr) auto;align-items:start;gap:7px}.descriptor-evidence-bullet{width:6px;height:6px;margin:7px auto 0;border-radius:999px;background:#64748b}.descriptor-source{align-self:start;border:1px solid #d7dce4;border-radius:999px;background:#f8fafc;color:#5b6472;padding:2px 6px;font-size:10px;font-weight:800;line-height:1.25;white-space:nowrap}.descriptor-evidence-text{min-width:0}
+    .writing.static-comments{padding:36px 34px;overflow:hidden;min-height:380px}.writing.static-comments .comment-bubble{display:none!important}.writing.static-comments .comment-marker{display:inline-grid;place-items:center;min-width:1.55em;height:1.55em;margin-left:4px;border-radius:999px;background:#111827;color:#fff!important;font-size:.68em;font-weight:900;line-height:1;vertical-align:super;box-shadow:0 0 0 2px #fff,0 1px 4px rgba(15,23,42,.25)}.comment-summary{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px;box-shadow:0 8px 24px rgba(15,23,42,.06);break-inside:auto}.comment-summary-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.comment-summary-head h2{margin:0;font-size:20px;line-height:1.2}.comment-summary-head span{color:var(--muted);font-size:13px;font-weight:800}.comment-summary-list{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.comment-card{border:1px solid currentColor;border-left-width:5px;border-radius:10px;padding:10px 12px;break-inside:avoid;page-break-inside:avoid}.comment-card strong{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:13px;line-height:1.25}.comment-card strong span{display:grid;place-items:center;min-width:26px;height:26px;border-radius:999px;background:#111827;color:#fff!important;border:2px solid #fff;box-shadow:0 1px 4px rgba(15,23,42,.22);font-size:12px;font-weight:900}.comment-card p{margin:0;color:#1f2937;font-size:13px;line-height:1.45}@media(max-width:900px){.comment-summary-list{grid-template-columns:1fr}}@media print{.score-descriptors{padding-top:8px}.score-descriptors-head{margin-bottom:6px}.score-descriptors-head h2{font-size:13px}.score-descriptors-head p{font-size:8px}.score-descriptor-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}.score-descriptor-card{padding:6px 7px;border-radius:7px}.score-descriptor-title{margin-bottom:4px}.score-descriptor-title strong{font-size:9px}.score-descriptor-title span{padding:2px 5px;font-size:8px}.score-descriptor-card ul{padding-left:13px}.score-descriptor-card li{font-size:7.8px;line-height:1.28}.score-descriptor-card li+li{margin-top:2px}.score-descriptor-card li.descriptor-match{gap:4px;margin-left:-4px;border-left-width:3px;padding:4px 5px}.descriptor-fit-check{width:14px;height:14px;font-size:8px}.writing.static-comments{padding:24px 34px 28px;font-size:18.45px;line-height:1.52;min-height:0}.writing.static-comments .comment-marker{min-width:1.6em;height:1.6em;margin-left:3px;font-size:.7em;box-shadow:0 0 0 1px #fff}.comment-summary{padding:10px 12px;border-radius:9px;box-shadow:none}.comment-summary-head{margin-bottom:8px}.comment-summary-head h2{font-size:15px}.comment-summary-head span{font-size:10px}.comment-summary-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.comment-card{border-left-width:4px;border-radius:7px;padding:6px 7px}.comment-card strong{font-size:10px;gap:5px;margin-bottom:3px}.comment-card strong span{min-width:20px;height:20px;font-size:10px;border-width:1px}.comment-card p{font-size:9.5px;line-height:1.25}}
+    @media print{.score-descriptor-card ul{padding:0}.score-descriptor-card li{grid-template-columns:14px minmax(0,1fr) auto;gap:4px}.descriptor-source{padding:1px 4px;font-size:6.8px}.descriptor-evidence-bullet{width:4px;height:4px;margin-top:5px}}
     .student-export{background:#f4f6f8;color:#182230}.student-export .page{max-width:1060px;padding:34px 30px 42px}.student-export .header{margin-bottom:12px}.student-export .header h1{font-size:32px;line-height:1.12;margin-bottom:6px}.student-export .meta{font-size:14px}.student-export .prompt,.student-export .score-summary,.student-export .writing,.student-export .comment-summary{box-shadow:0 1px 2px rgba(15,23,42,.04)}.student-export .prompt{margin:14px 0 14px;padding:14px 16px;border-radius:12px}.student-export .score-summary{margin-bottom:18px;border-radius:14px}.student-export .content{gap:20px}.student-export .writing-stack{gap:14px}.student-export .content.with-image.image-top .task-image{padding:0 34px 2px}.student-export .content.with-image.image-top .task-image img{width:100%;max-width:100%;border-radius:12px;background:#fff}.student-export .legend{gap:7px;margin:0 0 3px}.student-export .legend span{border-radius:8px;padding:5px 8px}.student-export .writing.static-comments{border-radius:13px;padding:34px 34px 36px;font-size:18px;line-height:1.66}.student-export .writing p{margin-bottom:17px}.student-export .comment-summary{border-radius:13px;padding:18px}.student-export .comment-summary-list{gap:10px}.student-export .comment-card{border-radius:11px;padding:11px 12px}.student-export .watermark-layer img{width:260px;height:260px;opacity:.08}@media print{@page{size:portrait;margin:8mm}html,body{width:auto;background:#fff}.student-export{background:#fff}.student-export .page{width:auto;max-width:none;margin:0;padding:0 6px 8px}.student-export .header{margin-bottom:7px}.student-export .header h1{font-size:27px;line-height:1.08;margin-bottom:3px}.student-export .meta{font-size:11px}.student-export .prompt{font-size:11.5px;line-height:1.35;margin:6px 0 7px;padding:7px 9px;border-radius:8px}.student-export .score-summary{grid-template-columns:112px minmax(0,1fr);gap:6px;margin:0 0 8px;padding:7px 8px;border-radius:9px;box-shadow:none}.student-export .score-overall{padding:7px;border-radius:8px}.student-export .score-overall strong{font-size:24px}.student-export .score-chip{font-size:8.8px;padding:4px 5px}.student-export .score-chip strong{min-width:22px;height:20px}.student-export .content{gap:9px}.student-export .writing-stack{gap:8px}.student-export .content.with-image.image-top .task-image{padding:0 28px 2px}.student-export .content.with-image.image-top .task-image img{width:100%;max-width:100%;border-radius:8px}.student-export .legend{gap:4px;margin:0}.student-export .legend span{font-size:9.5px;padding:3px 5px;border-radius:5px}.student-export .writing.static-comments{padding:22px 28px 24px;font-size:17px;line-height:1.5;border-radius:9px;box-shadow:none}.student-export .writing p{margin-bottom:12px}.student-export .writing.static-comments .comment-marker{min-width:1.55em;height:1.55em}.student-export .watermark-layer img{width:230px;height:230px;opacity:.075}.student-export .comment-summary{margin-top:0;padding:10px;border-radius:9px;box-shadow:none}.student-export .comment-summary-head{margin-bottom:8px}.student-export .comment-summary-list{gap:7px}.student-export .comment-card{border-radius:8px;padding:7px 8px}.student-export .comment-card p{font-size:9.5px;line-height:1.28}}
     .feedback-node.fb-grammar,.comment-card.fb-grammar,.legend .fb-grammar{border-style:dotted;background-image:none}
     .feedback-node.fb-vocabulary,.comment-card.fb-vocabulary,.legend .fb-vocabulary{border-style:solid;background-image:none}
@@ -8780,8 +9048,9 @@ window.IELTS_DATA = {
     @media print{.writing.static-comments,.student-export .writing.static-comments{font-size:var(--student-text-size)!important}}
     .student-theme-dark{--grammar-bg:#172554;--grammar-border:#60a5fa;--grammar-text:#bfdbfe;--vocabulary-bg:#451a03;--vocabulary-border:#f59e0b;--vocabulary-text:#fde68a;--spelling-bg:#431407;--spelling-border:#fb923c;--spelling-text:#fed7aa;--coherence-bg:#2e1065;--coherence-border:#a78bfa;--coherence-text:#ddd6fe;--task-bg:#083344;--task-border:#22d3ee;--task-text:#a5f3fc;--style-bg:#1e293b;--style-border:#94a3b8;--style-text:#e2e8f0;--punctuation-bg:#083344;--punctuation-border:#22d3ee;--punctuation-text:#a5f3fc;--idea-bg:#4a044e;--idea-border:#e879f9;--idea-text:#f5d0fe}
     .student-theme-contrast{--grammar-bg:#e0f2fe;--grammar-border:#004b93;--grammar-text:#000;--vocabulary-bg:#fff7cc;--vocabulary-border:#7a3e00;--vocabulary-text:#000;--spelling-bg:#ffe8d1;--spelling-border:#8a2500;--spelling-text:#000;--coherence-bg:#ede3ff;--coherence-border:#4c1d95;--coherence-text:#000;--task-bg:#d8fbff;--task-border:#005766;--task-text:#000;--style-bg:#f3f4f6;--style-border:#111827;--style-text:#000;--punctuation-bg:#d8fbff;--punctuation-border:#005766;--punctuation-text:#000;--idea-bg:#fde2ff;--idea-border:#86198f;--idea-text:#000}
-    .student-theme-dark{background:#0b1120;color:#e5e7eb}.student-theme-dark .prompt,.student-theme-dark .score-summary,.student-theme-dark .writing,.student-theme-dark .comment-summary,.student-theme-dark .score-descriptor-card{background:#111827;color:#e5e7eb;border-color:#334155;box-shadow:none}.student-theme-dark .score-chip,.student-theme-dark .comment-image-thumb,.student-theme-dark .editor-image-wrap img{background:#172033;border-color:#334155}.student-theme-dark .score-chip span,.student-theme-dark .meta,.student-theme-dark .comment-summary-head span,.student-theme-dark .comment-card p,.student-theme-dark .score-descriptors-head p,.student-theme-dark .score-descriptor-card li{color:#cbd5e1}.student-theme-dark .score-descriptors{border-color:#7f1d1d}.student-theme-dark .suggest-delete{background:#4a1010;color:#fecaca}
-    .student-theme-contrast{background:#000;color:#000}.student-theme-contrast .prompt,.student-theme-contrast .score-summary,.student-theme-contrast .writing,.student-theme-contrast .comment-summary,.student-theme-contrast .comment-image-thumb,.student-theme-contrast .score-descriptor-card{background:#fff;color:#000;border:2px solid #000;box-shadow:none}.student-theme-contrast .score-overall,.student-theme-contrast .score-chip strong,.student-theme-contrast .comment-card strong span,.student-theme-contrast .writing.static-comments .comment-marker,.student-theme-contrast .score-descriptor-title span{background:#000;color:#fff!important;border-color:#000}.student-theme-contrast .feedback-node,.student-theme-contrast .legend span,.student-theme-contrast .comment-card{border-width:2px!important;box-shadow:none}.student-theme-contrast .score-descriptors{border-color:#000}.student-theme-contrast .score-descriptor-card li,.student-theme-contrast .score-descriptors-head p{color:#000}.student-theme-contrast .suggest-add{color:#006b2e!important;font-weight:900}.student-theme-contrast .suggest-delete{color:#b00020!important;background:#fff!important;text-decoration-thickness:3px}
+    .student-theme-dark{background:#0b1120;color:#e5e7eb}.student-theme-dark .prompt,.student-theme-dark .score-summary,.student-theme-dark .writing,.student-theme-dark .comment-summary,.student-theme-dark .score-descriptor-card{background:#111827;color:#e5e7eb;border-color:#334155;box-shadow:none}.student-theme-dark .score-chip,.student-theme-dark .comment-image-thumb,.student-theme-dark .editor-image-wrap img{background:#172033;border-color:#334155}.student-theme-dark .score-chip span,.student-theme-dark .meta,.student-theme-dark .comment-summary-head span,.student-theme-dark .comment-card p,.student-theme-dark .score-descriptors-head p,.student-theme-dark .score-descriptor-card li{color:#cbd5e1}.student-theme-dark .score-descriptor-card li.descriptor-match{border-color:#4ade80;background:#052e16;color:#bbf7d0}.student-theme-dark .score-descriptors{border-color:#7f1d1d}.student-theme-dark .suggest-delete{background:#4a1010;color:#fecaca}
+    .student-theme-contrast{background:#000;color:#000}.student-theme-contrast .prompt,.student-theme-contrast .score-summary,.student-theme-contrast .writing,.student-theme-contrast .comment-summary,.student-theme-contrast .comment-image-thumb,.student-theme-contrast .score-descriptor-card{background:#fff;color:#000;border:2px solid #000;box-shadow:none}.student-theme-contrast .score-overall,.student-theme-contrast .score-chip strong,.student-theme-contrast .comment-card strong span,.student-theme-contrast .writing.static-comments .comment-marker,.student-theme-contrast .score-descriptor-title span,.student-theme-contrast .descriptor-fit-check{background:#000;color:#fff!important;border-color:#000}.student-theme-contrast .feedback-node,.student-theme-contrast .legend span,.student-theme-contrast .comment-card{border-width:2px!important;box-shadow:none}.student-theme-contrast .score-descriptors{border-color:#000}.student-theme-contrast .score-descriptor-card li,.student-theme-contrast .score-descriptors-head p{color:#000}.student-theme-contrast .score-descriptor-card li.descriptor-match{border:2px solid #000;border-left-width:6px;background:#fff;color:#000}.student-theme-contrast .suggest-add{color:#006b2e!important;font-weight:900}.student-theme-contrast .suggest-delete{color:#b00020!important;background:#fff!important;text-decoration-thickness:3px}
+    .student-theme-dark .descriptor-source{border-color:#475569;background:#172033;color:#cbd5e1}.student-theme-dark .descriptor-match .descriptor-source{border-color:#166534;background:#052e16;color:#bbf7d0}.student-theme-dark .descriptor-evidence-bullet{background:#94a3b8}.student-theme-contrast .descriptor-source{border:1px solid #000;background:#fff;color:#000}.student-theme-contrast .descriptor-evidence-bullet{background:#000}
   </style>`;
       }
 
