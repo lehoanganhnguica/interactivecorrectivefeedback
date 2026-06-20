@@ -2960,6 +2960,7 @@
     .cell-selection-note span {
       color: #626c7a;
       text-align: right;
+      white-space: nowrap;
     }
 
     .descriptor-cell.search-match { background: #fffbe8; }
@@ -6041,7 +6042,7 @@ window.IELTS_DATA = {
                    aria-label="${escapeHtml(cellLabel)}">
                 ${selected ? `<div class="cell-selection-note">
                   <strong>✓ Selected${selectedBands.length === 2 ? ` ${selectedPosition} of 2` : ""}</strong>
-                  <span>Mark the descriptors that fit</span>
+                  <span title="If no specific descriptors are chosen, all descriptors from the selected band will appear in the student export.">None picked → all exported</span>
                 </div>` : ""}
                 <ul>${bullets}</ul>
               </div>`;
