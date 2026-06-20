@@ -2244,7 +2244,7 @@
     .app {
       height: 100dvh;
       display: grid;
-      grid-template-rows: auto auto minmax(0, 1fr);
+      grid-template-rows: auto auto auto minmax(0, 1fr);
       background: var(--surface);
     }
 
@@ -2267,6 +2267,11 @@
       font-size: 20px;
       font-weight: 900;
       letter-spacing: -1.2px;
+    }
+
+    .brand-block.cambridge {
+      background: #19a9a4;
+      letter-spacing: -.5px;
     }
 
     .product-name {
@@ -2359,7 +2364,7 @@
 
     .toolbar {
       display: grid;
-      grid-template-columns: 330px minmax(0, 1fr) minmax(220px, 300px);
+      grid-template-columns: 200px minmax(0, 1fr) minmax(220px, 300px);
       align-items: center;
       gap: 6px;
       min-height: 54px;
@@ -2367,6 +2372,126 @@
       border-bottom: 1px solid var(--line);
       background: #fff;
       z-index: 18;
+    }
+
+    .assessment-strip {
+      display: grid;
+      grid-template-columns: minmax(250px, 1.05fr) minmax(280px, 1.35fr) minmax(220px, .8fr);
+      align-items: stretch;
+      gap: 10px;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, #fff 0%, #fbfcfd 100%);
+      z-index: 19;
+    }
+
+    .assessment-choice {
+      position: relative;
+      min-width: 0;
+      display: grid;
+      grid-template-columns: 42px minmax(0, 1fr) 28px;
+      grid-template-rows: auto auto;
+      align-items: center;
+      column-gap: 10px;
+      min-height: 66px;
+      padding: 9px 10px;
+      border: 2px solid var(--assessment-accent, var(--red));
+      border-radius: 12px;
+      background: #fff;
+      box-shadow: 0 5px 16px rgba(17, 24, 39, .06);
+      transition: box-shadow .15s, transform .15s, border-color .15s;
+    }
+
+    .assessment-choice:hover,
+    .assessment-choice:focus-within {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 20px rgba(17, 24, 39, .1);
+    }
+
+    .assessment-choice-icon {
+      grid-row: 1 / 3;
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 10px;
+      background: var(--assessment-soft, var(--red-soft));
+      color: var(--assessment-accent, var(--red));
+    }
+
+    .assessment-choice-icon svg {
+      width: 22px;
+      height: 22px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .assessment-choice-label {
+      align-self: end;
+      color: var(--subtle);
+      font-size: 10px;
+      font-weight: 850;
+      letter-spacing: .55px;
+      line-height: 1;
+      text-transform: uppercase;
+    }
+
+    .assessment-choice select {
+      grid-column: 2;
+      min-width: 0;
+      width: 100%;
+      border: 0;
+      outline: 0;
+      appearance: none;
+      background: transparent;
+      color: var(--ink);
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 820;
+      line-height: 1.2;
+    }
+
+    .assessment-choice-chevron {
+      grid-column: 3;
+      grid-row: 1 / 3;
+      color: var(--assessment-accent, var(--red));
+      pointer-events: none;
+    }
+
+    .assessment-choice-chevron svg {
+      width: 20px;
+      height: 20px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .assessment-context {
+      min-width: 0;
+      display: grid;
+      align-content: center;
+      gap: 4px;
+      padding: 9px 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--surface-alt);
+    }
+
+    .assessment-context strong {
+      color: #303744;
+      font-size: 12px;
+      line-height: 1.25;
+    }
+
+    .assessment-context span {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.35;
     }
 
     .toolbar-group {
@@ -3110,6 +3235,7 @@
       line-height: 1;
       letter-spacing: -2px;
       font-variant-numeric: tabular-nums;
+      white-space: nowrap;
     }
 
     .score-caption {
@@ -3366,6 +3492,7 @@
       font-size: 32px;
       font-weight: 820;
       font-variant-numeric: tabular-nums;
+      white-space: nowrap;
     }
 
     .empty-profile {
@@ -3397,7 +3524,7 @@
 
     @media (max-width: 1180px) {
       .toolbar {
-        grid-template-columns: 330px minmax(430px, 1fr) minmax(210px, 260px);
+        grid-template-columns: 190px minmax(430px, 1fr) minmax(210px, 260px);
         gap: 12px;
         padding-inline: 16px;
       }
@@ -3406,6 +3533,7 @@
       .tool-button { padding-inline: 12px; }
       .legend { gap: 12px; }
       .workspace { grid-template-columns: minmax(0, 1fr) 240px; padding-left: 16px; }
+      .assessment-strip { grid-template-columns: minmax(230px, 1fr) minmax(250px, 1.2fr) minmax(190px, .8fr); }
     }
 
     @media (max-width: 940px) {
@@ -3413,7 +3541,7 @@
       .app {
         min-height: 100dvh;
         height: auto;
-        grid-template-rows: auto auto minmax(520px, 1fr);
+        grid-template-rows: auto auto auto minmax(520px, 1fr);
       }
       .topbar { flex-wrap: wrap; }
       .brand-block { width: 76px; flex-basis: 76px; }
@@ -3425,6 +3553,11 @@
         gap: 8px;
         padding: 8px;
       }
+      .assessment-strip {
+        grid-template-columns: 1fr 1fr;
+        padding: 8px;
+      }
+      .assessment-context { grid-column: 1 / -1; }
       .toolbar-group,
       .toolbar-group.center,
       .toolbar-group.end { justify-content: flex-start; flex-wrap: wrap; }
@@ -3488,6 +3621,9 @@
       .profile-result { min-height: 70px; border-top: 1px solid var(--line); }
       .profile-criterion-row { grid-template-columns: minmax(150px, 1fr) 42px; }
       .profile-track { grid-column: 1 / -1; margin-bottom: 8px; }
+      .assessment-strip { grid-template-columns: 1fr; }
+      .assessment-context { grid-column: auto; }
+      .assessment-choice { min-height: 62px; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -3501,8 +3637,8 @@
 <body>
   <div class="app">
     <header class="topbar">
-      <div class="brand-block" aria-label="IELTS">IELTS</div>
-      <div class="product-name">IELTS Writing Rating Scales</div>
+      <div class="brand-block" id="brandBlock" aria-label="IELTS">IELTS</div>
+      <div class="product-name" id="productName">Writing Rating Scales</div>
       <nav class="primary-tabs" aria-label="App views">
         <button class="primary-tab active" type="button" data-view="explorer">Explore descriptors</button>
         <button class="primary-tab" type="button" data-view="profile">Score profile</button>
@@ -3515,15 +3651,30 @@
       </div>
     </header>
 
+    <section class="assessment-strip" id="assessmentStrip" aria-label="Choose exam and writing part">
+      <label class="assessment-choice" id="examChoice">
+        <span class="assessment-choice-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M4 5h16v14H4Z"></path><path d="M8 9h8M8 13h5"></path></svg>
+        </span>
+        <span class="assessment-choice-label">Exam</span>
+        <select id="examSelect" aria-label="Exam"></select>
+        <span class="assessment-choice-chevron" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m7 9 5 5 5-5"></path></svg></span>
+      </label>
+
+      <label class="assessment-choice" id="taskChoice">
+        <span class="assessment-choice-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M6 3h9l3 3v15H6Z"></path><path d="M15 3v4h4M9 11h6M9 15h6M9 19h4"></path></svg>
+        </span>
+        <span class="assessment-choice-label">Writing part</span>
+        <select id="sectionSelect" aria-label="Writing part"></select>
+        <span class="assessment-choice-chevron" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m7 9 5 5 5-5"></path></svg></span>
+      </label>
+
+      <div class="assessment-context" id="assessmentContext" aria-live="polite"></div>
+    </section>
+
     <section class="toolbar" id="toolbar" aria-label="Rating scale controls">
       <div class="toolbar-group">
-        <label class="select-control task-select-control" title="Choose Writing Task 1 or Writing Task 2">
-          <span class="control-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24"><path d="M6 3h9l3 3v15H6Z"></path><path d="M15 3v4h4M9 11h6M9 15h6M9 19h4"></path></svg>
-          </span>
-          <select id="sectionSelect" aria-label="Assessment"></select>
-        </label>
-
         <label class="select-control wide">
           <span class="control-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24"><path d="M6 7h12M6 12h12M6 17h8"></path></svg>
@@ -3583,7 +3734,7 @@
       </div>
 
       <div class="workspace">
-        <section class="matrix-frame" aria-label="IELTS band descriptor matrix">
+        <section class="matrix-frame" id="matrixFrame" aria-label="Writing rating descriptor matrix">
           <div class="matrix-scroll" id="matrixScroll">
             <div class="matrix" id="matrix"></div>
           </div>
@@ -3598,7 +3749,7 @@
             <div class="score-divider"></div>
             <div class="score-section-title">Criterion scores</div>
             <div id="scoreRows"></div>
-            <div class="average-line"><span>Average of selected criteria</span><strong id="rawAverage">—</strong></div>
+            <div class="average-line"><span id="averageLabel">Average of selected criteria</span><strong id="rawAverage">—</strong></div>
           </div>
 
           <div class="help-note" id="helpNote">
@@ -3620,7 +3771,7 @@
             <p>Provisional analytic scores selected in the descriptor explorer.</p>
           </div>
           <div class="writing-overall">
-            <span>Weighted Writing band</span>
+            <span id="writingOverallLabel">Weighted Writing band</span>
             <strong id="writingOverall">—</strong>
           </div>
         </header>
@@ -5416,6 +5567,257 @@ window.IELTS_DATA = {
   }
 };
 
+const CAMBRIDGE_CRITERIA = ["Content", "Communicative Achievement", "Organisation", "Language"];
+
+function cambridgeBand(descriptors) {
+  return Object.fromEntries(CAMBRIDGE_CRITERIA.map(criterion => [
+    criterion,
+    (descriptors[criterion] || []).map(text => ({ text, bold: [] }))
+  ]));
+}
+
+function cambridgeBands({ band5, band3, band1 }) {
+  return {
+    "5": cambridgeBand(band5),
+    "4": cambridgeBand(Object.fromEntries(CAMBRIDGE_CRITERIA.map(criterion => [
+      criterion,
+      ["Performance shares features of Bands 3 and 5."]
+    ]))),
+    "3": cambridgeBand(band3),
+    "2": cambridgeBand(Object.fromEntries(CAMBRIDGE_CRITERIA.map(criterion => [
+      criterion,
+      ["Performance shares features of Bands 1 and 3."]
+    ]))),
+    "1": cambridgeBand(band1),
+    "0": cambridgeBand({
+      "Content": [
+        "Content is totally irrelevant.",
+        "Target reader is not informed."
+      ],
+      "Communicative Achievement": ["Performance below Band 1."],
+      "Organisation": ["Performance below Band 1."],
+      "Language": ["Performance below Band 1."]
+    })
+  };
+}
+
+const CAMBRIDGE_SCALES = {
+  "cambridge-b2": {
+    assessmentLabel: "B2 First for Schools",
+    brand: "B2",
+    duration: "1 hour 20 minutes",
+    sourceNote: "Cambridge English B2 First for Schools Writing assessment subscales, transcribed from the supplied reference.",
+    tasks: [
+      { id: "part-1", label: "Part 1", detail: "Essay · 140–190 words · compulsory task" },
+      { id: "part-2", label: "Part 2", detail: "Article, email, review or story · 140–190 words · choose one task" }
+    ],
+    bands: cambridgeBands({
+      band5: {
+        "Content": [
+          "All content is relevant to the task.",
+          "Target reader is fully informed."
+        ],
+        "Communicative Achievement": [
+          "Uses the conventions of the communicative task effectively to hold the target reader’s attention and communicate straightforward and complex ideas, as appropriate."
+        ],
+        "Organisation": [
+          "Text is well organised and coherent, using a variety of cohesive devices and organisational patterns to generally good effect."
+        ],
+        "Language": [
+          "Uses a range of vocabulary, including less common lexis, appropriately.",
+          "Uses a range of simple and complex grammatical forms with control and flexibility.",
+          "Occasional errors may be present but do not impede communication."
+        ]
+      },
+      band3: {
+        "Content": [
+          "Minor irrelevances and/or omissions may be present.",
+          "Target reader is on the whole informed."
+        ],
+        "Communicative Achievement": [
+          "Uses the conventions of the communicative task to hold the target reader’s attention and communicate straightforward ideas."
+        ],
+        "Organisation": [
+          "Text is generally well organised and coherent, using a variety of linking words and cohesive devices."
+        ],
+        "Language": [
+          "Uses a range of everyday vocabulary appropriately, with occasional inappropriate use of less common lexis.",
+          "Uses a range of simple and some complex grammatical forms with a good degree of control.",
+          "Errors do not impede communication."
+        ]
+      },
+      band1: {
+        "Content": [
+          "Irrelevances and misinterpretation of task may be present.",
+          "Target reader is minimally informed."
+        ],
+        "Communicative Achievement": [
+          "Uses the conventions of the communicative task in generally appropriate ways to communicate straightforward ideas."
+        ],
+        "Organisation": [
+          "Text is connected and coherent, using basic linking words and a limited number of cohesive devices."
+        ],
+        "Language": [
+          "Uses everyday vocabulary generally appropriately, while occasionally overusing certain lexis.",
+          "Uses simple grammatical forms with a good degree of control.",
+          "While errors are noticeable, meaning can still be determined."
+        ]
+      }
+    })
+  },
+  "cambridge-c1": {
+    assessmentLabel: "C1 Advanced",
+    brand: "C1",
+    duration: "1 hour 30 minutes",
+    sourceNote: "Cambridge English C1 Advanced Writing assessment subscales, transcribed from the supplied reference.",
+    tasks: [
+      { id: "part-1", label: "Part 1", detail: "Essay · 220–260 words · compulsory task" },
+      { id: "part-2", label: "Part 2", detail: "Letter/email, proposal, report or review · 220–260 words · choose one task" }
+    ],
+    bands: cambridgeBands({
+      band5: {
+        "Content": [
+          "All content is relevant to the task.",
+          "Target reader is fully informed."
+        ],
+        "Communicative Achievement": [
+          "Uses the conventions of the communicative task with sufficient flexibility to communicate complex ideas in an effective way, holding the target reader’s attention with ease, fulfilling all communicative purposes."
+        ],
+        "Organisation": [
+          "Text is a well-organised, coherent whole, using a variety of cohesive devices and organisational patterns with flexibility."
+        ],
+        "Language": [
+          "Uses a range of vocabulary, including less common lexis, effectively and precisely.",
+          "Uses a wide range of simple and complex grammatical forms with full control, flexibility and sophistication.",
+          "Errors, if present, are related to less common words and structures, or occur as slips."
+        ]
+      },
+      band3: {
+        "Content": [
+          "Minor irrelevances and/or omissions may be present.",
+          "Target reader is on the whole informed."
+        ],
+        "Communicative Achievement": [
+          "Uses the conventions of the communicative task effectively to hold the target reader’s attention and communicate straightforward and complex ideas, as appropriate."
+        ],
+        "Organisation": [
+          "Text is well organised and coherent, using a variety of cohesive devices and organisational patterns to generally good effect."
+        ],
+        "Language": [
+          "Uses a range of vocabulary, including less common lexis, appropriately.",
+          "Uses a range of simple and complex grammatical forms with control and flexibility.",
+          "Occasional errors may be present, but do not impede communication."
+        ]
+      },
+      band1: {
+        "Content": [
+          "Irrelevances and misinterpretation of task may be present.",
+          "Target reader is minimally informed."
+        ],
+        "Communicative Achievement": [
+          "Uses the conventions of the communicative task to hold the target reader’s attention and communicate straightforward ideas."
+        ],
+        "Organisation": [
+          "Text is generally well organised and coherent, using a variety of linking words and cohesive devices."
+        ],
+        "Language": [
+          "Uses a range of everyday vocabulary appropriately, with occasional inappropriate use of less common lexis.",
+          "Uses a range of simple and some complex grammatical forms with a good degree of control.",
+          "Errors do not impede communication."
+        ]
+      }
+    })
+  },
+  "cambridge-c2": {
+    assessmentLabel: "C2 Proficiency",
+    brand: "C2",
+    duration: "1 hour 30 minutes",
+    sourceNote: "Cambridge English C2 Proficiency Writing assessment subscales, transcribed from the supplied reference.",
+    tasks: [
+      { id: "part-1", label: "Part 1", detail: "Discursive essay · 240–280 words · compulsory task" },
+      { id: "part-2", label: "Part 2", detail: "Article, letter, report or review · 280–320 words · choose one task" }
+    ],
+    bands: cambridgeBands({
+      band5: {
+        "Content": [
+          "All content is relevant to the task.",
+          "Target reader is fully informed."
+        ],
+        "Communicative Achievement": [
+          "Demonstrates complete command of the conventions of the communicative task.",
+          "Communicates complex ideas in an effective and convincing way, holding the target reader’s attention with ease, fulfilling all communicative purposes."
+        ],
+        "Organisation": [
+          "Text is organised impressively and coherently using a wide range of cohesive devices and organisational patterns with complete flexibility."
+        ],
+        "Language": [
+          "Uses a wide range of vocabulary, including less common lexis, with fluency, precision, sophistication and style.",
+          "Use of grammar is sophisticated, fully controlled and completely natural.",
+          "Any inaccuracies occur only as slips."
+        ]
+      },
+      band3: {
+        "Content": [
+          "Minor irrelevances and/or omissions may be present.",
+          "Target reader is on the whole informed."
+        ],
+        "Communicative Achievement": [
+          "Uses the conventions of the communicative task with sufficient flexibility to communicate complex ideas in an effective way, holding the target reader’s attention with ease, fulfilling all communicative purposes."
+        ],
+        "Organisation": [
+          "Text is a well-organised, coherent whole, using a variety of cohesive devices and organisational patterns with flexibility."
+        ],
+        "Language": [
+          "Uses a range of vocabulary, including less common lexis, effectively and precisely.",
+          "Uses a wide range of simple and complex grammatical forms with full control, flexibility and sophistication.",
+          "Errors, if present, are related to less common words and structures, or occur as slips."
+        ]
+      },
+      band1: {
+        "Content": [
+          "Irrelevances and misinterpretation of task may be present.",
+          "Target reader is minimally informed."
+        ],
+        "Communicative Achievement": [
+          "Uses the conventions of the communicative task effectively to hold the target reader’s attention and communicate straightforward and complex ideas, as appropriate."
+        ],
+        "Organisation": [
+          "Text is well organised and coherent, using a variety of cohesive devices and organisational patterns to generally good effect."
+        ],
+        "Language": [
+          "Uses a range of vocabulary, including less common lexis, appropriately.",
+          "Uses a range of simple and complex grammatical forms with control and flexibility.",
+          "Occasional errors may be present but do not impede communication."
+        ]
+      }
+    })
+  }
+};
+
+Object.entries(CAMBRIDGE_SCALES).forEach(([assessmentId, exam]) => {
+  exam.tasks.forEach(task => {
+    const sectionName = `${exam.assessmentLabel} · ${task.label}`;
+    window.IELTS_DATA.sections[sectionName] = {
+      assessmentId,
+      assessmentLabel: exam.assessmentLabel,
+      brand: exam.brand,
+      taskId: task.id,
+      taskLabel: task.label,
+      taskDetail: task.detail,
+      duration: exam.duration,
+      shortLabel: exam.brand,
+      maxBand: 5,
+      scoreMode: "sum",
+      totalMax: 20,
+      bandsOrder: [5, 4, 3, 2, 1, 0],
+      criteria: [...CAMBRIDGE_CRITERIA],
+      note: `${exam.assessmentLabel} Writing is assessed using Content, Communicative Achievement, Organisation and Language. Each criterion receives 0–5 marks.`,
+      sourceNote: exam.sourceNote,
+      bands: JSON.parse(JSON.stringify(exam.bands))
+    };
+  });
+});
+
   </script>
   <script>
     (() => {
@@ -5423,15 +5825,51 @@ window.IELTS_DATA = {
 
       const data = window.IELTS_DATA;
       delete data.sections.Speaking;
+      data.sections["Writing Task 1"] = {
+        ...data.sections["Writing Task 1"],
+        assessmentId: "ielts",
+        assessmentLabel: "IELTS Writing",
+        brand: "IELTS",
+        taskId: "writing-task-1",
+        taskLabel: "Writing Task 1",
+        taskDetail: "Academic or General Training · 0–9 band scale",
+        duration: "60 minutes total for both tasks",
+        maxBand: 9,
+        scoreMode: "average",
+        bandsOrder: [9, 8, 7, 6, 5, 4, 3, 2, 1, 0],
+        sourceNote: data.meta.sourceNote
+      };
+      data.sections["Writing Task 2"] = {
+        ...data.sections["Writing Task 2"],
+        assessmentId: "ielts",
+        assessmentLabel: "IELTS Writing",
+        brand: "IELTS",
+        taskId: "writing-task-2",
+        taskLabel: "Writing Task 2",
+        taskDetail: "Academic or General Training · 0–9 band scale",
+        duration: "60 minutes total for both tasks",
+        maxBand: 9,
+        scoreMode: "average",
+        bandsOrder: [9, 8, 7, 6, 5, 4, 3, 2, 1, 0],
+        sourceNote: data.meta.sourceNote
+      };
       const sectionNames = Object.keys(data.sections);
-      const bands = [9, 8, 7, 6, 5, 4, 3, 2, 1, 0];
+      const assessmentDefinitions = [...new Map(sectionNames.map(name => {
+        const section = data.sections[name];
+        return [section.assessmentId, {
+          id: section.assessmentId,
+          label: section.assessmentLabel,
+          brand: section.brand
+        }];
+      })).values()];
       const storageKey = "writing-feedback-rating-scales-state-v1";
-      const criterionPalettes = [
-        { color: "#0891b2", soft: "#cffafe", text: "#0e7490" },
-        { color: "#a78bfa", soft: "#ede9fe", text: "#6d28d9" },
-        { color: "#f59e0b", soft: "#fef3c7", text: "#92400e" },
-        { color: "#60a5fa", soft: "#dbeafe", text: "#1d4ed8" }
-      ];
+      const criterionPalettes = {
+        task: { color: "#0891b2", soft: "#cffafe", text: "#0e7490" },
+        style: { color: "#64748b", soft: "#f1f5f9", text: "#334155" },
+        coherence: { color: "#a78bfa", soft: "#ede9fe", text: "#6d28d9" },
+        vocabulary: { color: "#f59e0b", soft: "#fef3c7", text: "#92400e" },
+        grammar: { color: "#60a5fa", soft: "#dbeafe", text: "#1d4ed8" }
+      };
       const selectionHistoryLimit = 100;
 
       const compareGroups = [
@@ -5476,6 +5914,7 @@ window.IELTS_DATA = {
       ];
 
       const state = {
+        assessmentId: "ielts",
         section: "Writing Task 2",
         lastWritingSection: "Writing Task 2",
         criterion: "__all",
@@ -5510,11 +5949,21 @@ window.IELTS_DATA = {
       const escapeRegExp = value => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       const roundHalf = value => Math.round(value * 2) / 2;
       const formatBand = value => value == null || Number.isNaN(value) ? "—" : value.toFixed(1);
+      const formatMark = value => value == null || Number.isNaN(value)
+        ? "—"
+        : Number.isInteger(value) ? String(value) : value.toFixed(1);
       const descriptorText = descriptor => typeof descriptor === "string" ? descriptor : descriptor.text;
       const descriptorBold = descriptor => Array.isArray(descriptor?.bold) ? descriptor.bold : [];
-      const criterionPalette = (section, criterion) => {
-        const index = section.criteria.indexOf(criterion);
-        return criterionPalettes[index] || criterionPalettes[3];
+      const sectionsForAssessment = assessmentId =>
+        sectionNames.filter(name => data.sections[name].assessmentId === assessmentId);
+      const sectionBands = section => section.bandsOrder || [9, 8, 7, 6, 5, 4, 3, 2, 1, 0];
+      const criterionPalette = (_section, criterion) => {
+        const normalized = criterion.toLowerCase();
+        if (normalized.includes("task") || normalized === "content") return criterionPalettes.task;
+        if (normalized.includes("communicative")) return criterionPalettes.style;
+        if (normalized.includes("coherence") || normalized.includes("organisation")) return criterionPalettes.coherence;
+        if (normalized.includes("lexical") || normalized.includes("vocabulary")) return criterionPalettes.vocabulary;
+        return criterionPalettes.grammar;
       };
       const criterionStyle = palette =>
         `--category-color:${palette.color};--category-soft:${palette.soft};--category-text:${palette.text}`;
@@ -5613,7 +6062,15 @@ window.IELTS_DATA = {
       }
 
       function ratingScaleSnapshot() {
+        const section = data.sections[state.section];
         return {
+          assessmentId: section.assessmentId,
+          assessmentLabel: section.assessmentLabel,
+          taskLabel: section.taskLabel,
+          maxBand: section.maxBand,
+          scoreMode: section.scoreMode,
+          totalMax: section.totalMax || null,
+          criteria: [...section.criteria],
           section: state.section,
           lastWritingSection: state.lastWritingSection,
           criterion: state.criterion,
@@ -5649,12 +6106,19 @@ window.IELTS_DATA = {
             })
           };
         });
-        return { section: sectionName, criteria };
+        return {
+          assessmentId: section.assessmentId,
+          assessmentLabel: section.assessmentLabel,
+          taskLabel: section.taskLabel,
+          section: sectionName,
+          criteria
+        };
       }
 
       function applySavedState(saved) {
         if (!saved || typeof saved !== "object") return;
         if (sectionNames.includes(saved.section)) state.section = saved.section;
+        state.assessmentId = data.sections[state.section].assessmentId;
         const savedWritingSection = saved.lastWritingSection || saved.section;
         if (["Writing Task 1", "Writing Task 2"].includes(savedWritingSection)) {
           state.lastWritingSection = savedWritingSection;
@@ -5663,22 +6127,24 @@ window.IELTS_DATA = {
         if (Number.isFinite(saved.fontSize)) {
           state.fontSize = Math.max(11, Math.min(18, saved.fontSize));
         }
-        sectionNames.forEach(section => {
-          data.sections[section].criteria.forEach(criterion => {
-            state.scores[section][criterion] = null;
-            state.secondaryScores[section][criterion] = null;
-            const value = saved.scores?.[section]?.[criterion];
-            if (Number.isInteger(value) && value >= 0 && value <= 9) {
-              state.scores[section][criterion] = value;
+        sectionNames.forEach(sectionName => {
+          const section = data.sections[sectionName];
+          const maxBand = section.maxBand || 9;
+          section.criteria.forEach(criterion => {
+            state.scores[sectionName][criterion] = null;
+            state.secondaryScores[sectionName][criterion] = null;
+            const value = saved.scores?.[sectionName]?.[criterion];
+            if (Number.isInteger(value) && value >= 0 && value <= maxBand) {
+              state.scores[sectionName][criterion] = value;
             }
-            const secondaryValue = saved.secondaryScores?.[section]?.[criterion];
+            const secondaryValue = saved.secondaryScores?.[sectionName]?.[criterion];
             if (
               Number.isInteger(secondaryValue) &&
               secondaryValue >= 0 &&
-              secondaryValue <= 9 &&
-              secondaryValue !== state.scores[section][criterion]
+              secondaryValue <= maxBand &&
+              secondaryValue !== state.scores[sectionName][criterion]
             ) {
-              state.secondaryScores[section][criterion] = secondaryValue;
+              state.secondaryScores[sectionName][criterion] = secondaryValue;
             }
           });
         });
@@ -5729,8 +6195,11 @@ window.IELTS_DATA = {
         }
         selectionUndoStack = [];
         selectionRedoStack = [];
+        renderAssessmentOptions();
+        renderTaskOptions();
         renderCriterionOptions();
         renderBandNavigator();
+        syncAssessmentIdentity();
         syncToolbar();
         switchView(state.view);
         renderAll({ preserveScroll: false });
@@ -5772,14 +6241,26 @@ window.IELTS_DATA = {
       }
 
       function sectionResult(sectionName) {
+        const section = data.sections[sectionName];
         const values = selectedValues(sectionName);
-        if (!values.length) return { raw: null, reported: null, complete: false };
-        const raw = values.reduce((sum, value) => sum + value, 0) / values.length;
+        if (!values.length) return { raw: null, total: null, reported: null, complete: false };
+        const total = values.reduce((sum, value) => sum + value, 0);
+        const raw = total / values.length;
         return {
           raw,
-          reported: roundHalf(raw),
-          complete: values.length === data.sections[sectionName].criteria.length
+          total,
+          reported: section.scoreMode === "sum" ? total : roundHalf(raw),
+          complete: values.length === section.criteria.length
         };
+      }
+
+      function formatSectionResult(section, result, { partial = false } = {}) {
+        if (result.reported == null) return "—";
+        if (section.scoreMode === "sum") {
+          if (partial || result.complete) return `${formatMark(result.reported)} / ${section.totalMax || 20}`;
+          return formatMark(result.reported);
+        }
+        return formatBand(result.reported);
       }
 
       function writingResult() {
@@ -5908,14 +6389,50 @@ window.IELTS_DATA = {
       }
 
       function initializeControls() {
-        $("#sectionSelect").innerHTML = sectionNames
-          .map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`)
-          .join("");
-        $("#sectionSelect").value = state.section;
+        renderAssessmentOptions();
+        renderTaskOptions();
         renderCriterionOptions();
         renderBandNavigator();
+        syncAssessmentIdentity();
         syncToolbar();
-        $("#sourceNote").textContent = data.meta.sourceNote;
+      }
+
+      function renderAssessmentOptions() {
+        $("#examSelect").innerHTML = assessmentDefinitions
+          .map(assessment => `<option value="${escapeHtml(assessment.id)}">${escapeHtml(assessment.label)}</option>`)
+          .join("");
+        $("#examSelect").value = state.assessmentId;
+      }
+
+      function renderTaskOptions() {
+        const availableSections = sectionsForAssessment(state.assessmentId);
+        if (!availableSections.includes(state.section)) state.section = availableSections[0];
+        $("#sectionSelect").innerHTML = availableSections
+          .map(name => {
+            const section = data.sections[name];
+            return `<option value="${escapeHtml(name)}">${escapeHtml(section.taskLabel)}</option>`;
+          })
+          .join("");
+        $("#sectionSelect").value = state.section;
+      }
+
+      function syncAssessmentIdentity() {
+        const section = data.sections[state.section];
+        const isCambridge = section.assessmentId !== "ielts";
+        const accent = isCambridge ? "#19a9a4" : "#e31837";
+        const soft = isCambridge ? "#e7f8f7" : "#fff1f3";
+        $("#assessmentStrip").style.setProperty("--assessment-accent", accent);
+        $("#assessmentStrip").style.setProperty("--assessment-soft", soft);
+        $("#brandBlock").textContent = section.brand;
+        $("#brandBlock").setAttribute("aria-label", section.assessmentLabel);
+        $("#brandBlock").classList.toggle("cambridge", isCambridge);
+        $("#productName").textContent = "Writing Rating Scales";
+        $("#assessmentContext").innerHTML = `
+          <strong>${escapeHtml(section.taskDetail)}</strong>
+          <span>${escapeHtml(section.duration)} · ${section.scoreMode === "sum" ? "4 subscales × 5 marks" : "4 criteria · 0–9 bands"}</span>`;
+        $("#sourceNote").textContent = section.sourceNote || data.meta.sourceNote;
+        $("#matrixFrame").setAttribute("aria-label", `${section.assessmentLabel} ${section.taskLabel} rating descriptor matrix`);
+        document.title = `${section.assessmentLabel} Writing Rating Scales`;
       }
 
       function renderCriterionOptions() {
@@ -5948,13 +6465,14 @@ window.IELTS_DATA = {
       }
 
       function syncToolbar() {
+        const section = data.sections[state.section];
         $("#compareButton").classList.toggle("active", state.compare);
         $("#compareButton").setAttribute("aria-pressed", String(state.compare));
         $("#annotateButton").classList.toggle("active", state.annotate);
         $("#annotateButton").setAttribute("aria-pressed", String(state.annotate));
         $("#annotationPalette").classList.toggle("hidden", !state.annotate);
         $$(".compare-legend-item").forEach(item => item.classList.toggle("hidden", !state.compare));
-        $("#boldLegend").classList.remove("hidden");
+        $("#boldLegend").classList.toggle("hidden", section.assessmentId !== "ielts");
         $("#matrix").classList.toggle("annotating", state.annotate);
         document.documentElement.style.setProperty("--descriptor-size", `${state.fontSize}px`);
         $("#fontSize").value = state.fontSize;
@@ -5969,6 +6487,7 @@ window.IELTS_DATA = {
         const previousLeft = preserveScroll ? scroll.scrollLeft : 0;
         const previousTop = preserveScroll ? scroll.scrollTop : 0;
         const section = data.sections[state.section];
+        const bands = sectionBands(section);
         const criteria = state.criterion === "__all" ? section.criteria : [state.criterion];
         const query = state.query.trim().toLowerCase();
         let matchCount = 0;
@@ -5981,7 +6500,7 @@ window.IELTS_DATA = {
         );
 
         const header = [
-          '<div class="matrix-head corner">Band</div>',
+          `<div class="matrix-head corner">${section.scoreMode === "sum" ? "Score" : "Band"}</div>`,
           ...criteria.map(criterion => {
             const palette = criterionPalette(section, criterion);
             const selectedScore = effectiveCriterionScore(state.section, criterion);
@@ -6066,14 +6585,21 @@ window.IELTS_DATA = {
         const section = data.sections[state.section];
         const result = sectionResult(state.section);
         const values = selectedValues(state.section);
-        $("#scoreTitle").textContent = `${section.shortLabel} band`;
-        $("#scoreValue").textContent = formatBand(result.reported);
+        $("#scoreTitle").textContent = section.scoreMode === "sum"
+          ? `${section.shortLabel} Writing`
+          : `${section.shortLabel} band`;
+        $("#scoreValue").textContent = formatSectionResult(section, result, { partial: true });
         $("#scoreCaption").textContent = result.complete
-          ? "Provisional reported band"
+          ? section.scoreMode === "sum" ? "Total marks across four subscales" : "Provisional reported band"
           : values.length
             ? `${values.length} of ${section.criteria.length} criteria selected`
             : "Select descriptor cells to build a profile";
-        $("#rawAverage").textContent = result.raw == null ? "—" : result.raw.toFixed(2);
+        $("#averageLabel").textContent = section.scoreMode === "sum"
+          ? "Selected marks"
+          : "Average of selected criteria";
+        $("#rawAverage").textContent = section.scoreMode === "sum"
+          ? result.total == null ? "—" : `${formatMark(result.total)} / ${section.totalMax || 20}`
+          : result.raw == null ? "—" : result.raw.toFixed(2);
         $("#clearScores").disabled = values.length === 0;
 
         $("#scoreRows").innerHTML = section.criteria.map(criterion => {
@@ -6092,8 +6618,15 @@ window.IELTS_DATA = {
       }
 
       function renderProfile() {
-        $("#writingOverall").textContent = formatBand(writingResult());
-        $("#profileSections").innerHTML = sectionNames.map(sectionName => {
+        const currentSection = data.sections[state.section];
+        const isIelts = currentSection.assessmentId === "ielts";
+        const profileSectionNames = isIelts ? sectionsForAssessment("ielts") : [state.section];
+        const currentResult = sectionResult(state.section);
+        $("#writingOverallLabel").textContent = isIelts ? "Weighted Writing band" : "Current task total";
+        $("#writingOverall").textContent = isIelts
+          ? formatBand(writingResult())
+          : formatSectionResult(currentSection, currentResult, { partial: true });
+        $("#profileSections").innerHTML = profileSectionNames.map(sectionName => {
           const section = data.sections[sectionName];
           const result = sectionResult(sectionName);
           const chosen = selectedValues(sectionName).length;
@@ -6104,7 +6637,7 @@ window.IELTS_DATA = {
               <div class="profile-criterion-row" style="${criterionStyle(palette)}">
                 <span class="profile-criterion-name">${escapeHtml(criterion)}</span>
                 <span class="profile-criterion-score">${formatBandSelection(sectionName, criterion)}</span>
-                <span class="profile-track" aria-hidden="true"><span style="width:${value == null ? 0 : (value / 9) * 100}%"></span></span>
+                <span class="profile-track" aria-hidden="true"><span style="width:${value == null ? 0 : (value / section.maxBand) * 100}%"></span></span>
               </div>`;
           }).join("");
           return `
@@ -6114,7 +6647,7 @@ window.IELTS_DATA = {
                 <p>${chosen} of ${section.criteria.length} criteria selected</p>
               </div>
               <div class="profile-criteria">${criteriaRows}</div>
-              <div class="profile-result" aria-label="${escapeHtml(sectionName)} reported band">${formatBand(result.reported)}</div>
+              <div class="profile-result" aria-label="${escapeHtml(sectionName)} result">${formatSectionResult(section, result, { partial: true })}</div>
             </section>`;
         }).join("");
       }
@@ -6256,6 +6789,7 @@ window.IELTS_DATA = {
 
       $("#sectionSelect").addEventListener("change", event => {
         state.section = event.target.value;
+        state.assessmentId = data.sections[state.section].assessmentId;
         if (state.section === "Writing Task 1" || state.section === "Writing Task 2") {
           state.lastWritingSection = state.section;
         }
@@ -6265,6 +6799,23 @@ window.IELTS_DATA = {
         state.activeBand = 9;
         renderCriterionOptions();
         renderBandNavigator();
+        syncAssessmentIdentity();
+        syncToolbar();
+        renderAll({ preserveScroll: false });
+        $("#matrixScroll").scrollTo({ left: 0, top: 0 });
+      });
+
+      $("#examSelect").addEventListener("change", event => {
+        state.assessmentId = event.target.value;
+        state.section = sectionsForAssessment(state.assessmentId)[0];
+        if (state.assessmentId === "ielts") state.lastWritingSection = state.section;
+        selectionUndoStack = [];
+        selectionRedoStack = [];
+        state.criterion = "__all";
+        renderTaskOptions();
+        renderCriterionOptions();
+        renderBandNavigator();
+        syncAssessmentIdentity();
         syncToolbar();
         renderAll({ preserveScroll: false });
         $("#matrixScroll").scrollTo({ left: 0, top: 0 });
@@ -6825,6 +7376,12 @@ window.IELTS_DATA = {
         writingScores["Writing Task 2"]["Lexical resource"] = criterionBandNumber(scores.lexical);
         writingScores["Writing Task 2"]["Grammatical range and accuracy"] = criterionBandNumber(scores.grammar);
         return {
+          assessmentId: "ielts",
+          assessmentLabel: "IELTS Writing",
+          taskLabel: "Writing Task 2",
+          maxBand: 9,
+          scoreMode: "average",
+          criteria: ["Task response", "Coherence and cohesion", "Lexical resource", "Grammatical range and accuracy"],
           section: "Writing Task 2",
           lastWritingSection: "Writing Task 2",
           criterion: "__all",
@@ -6838,19 +7395,38 @@ window.IELTS_DATA = {
         };
       }
 
-      function criterionBandNumber(value) {
+      function criterionBandNumber(value, maxBand = 9) {
         if (value === "" || value == null || Number.isNaN(Number(value))) return null;
-        return Math.min(9, Math.max(0, Math.round(Number(value))));
+        return Math.min(maxBand, Math.max(0, Math.round(Number(value))));
       }
 
       function activeWritingSection(state = ratingScaleState) {
-        const candidate = state?.lastWritingSection || state?.section;
-        return candidate === "Writing Task 1" ? "Writing Task 1" : "Writing Task 2";
+        return typeof state?.section === "string"
+          ? state.section
+          : state?.lastWritingSection === "Writing Task 1" ? "Writing Task 1" : "Writing Task 2";
+      }
+
+      function ratingCriteria(state = ratingScaleState) {
+        if (Array.isArray(state?.criteria) && state.criteria.length) return state.criteria;
+        const section = activeWritingSection(state);
+        return section === "Writing Task 1"
+          ? ["Task achievement", "Coherence and cohesion", "Lexical resource", "Grammatical range and accuracy"]
+          : ["Task response", "Coherence and cohesion", "Lexical resource", "Grammatical range and accuracy"];
+      }
+
+      function ratingCriterionEntries(state = ratingScaleState) {
+        const ids = ["task", "coherence", "lexical", "grammar"];
+        return ratingCriteria(state).slice(0, 4).map((criterion, index) => ({
+          id: ids[index],
+          criterion,
+          label: criterion
+        }));
       }
 
       function selectedCriterionBands(state, section, criterion) {
-        const primary = criterionBandNumber(state?.scores?.[section]?.[criterion]);
-        const secondary = criterionBandNumber(state?.secondaryScores?.[section]?.[criterion]);
+        const maxBand = Number(state?.maxBand) || 9;
+        const primary = criterionBandNumber(state?.scores?.[section]?.[criterion], maxBand);
+        const secondary = criterionBandNumber(state?.secondaryScores?.[section]?.[criterion], maxBand);
         return [primary, secondary].filter((value, index, values) =>
           value != null && values.indexOf(value) === index
         );
@@ -6870,38 +7446,26 @@ window.IELTS_DATA = {
 
       function selectedWritingScores(state = ratingScaleState) {
         const section = activeWritingSection(state);
-        const taskCriterion = section === "Writing Task 1" ? "Task achievement" : "Task response";
-        return {
-          task: normalizeCriterionBand(criterionMidpoint(state, section, taskCriterion)),
-          coherence: normalizeCriterionBand(criterionMidpoint(state, section, "Coherence and cohesion")),
-          lexical: normalizeCriterionBand(criterionMidpoint(state, section, "Lexical resource")),
-          grammar: normalizeCriterionBand(criterionMidpoint(state, section, "Grammatical range and accuracy"))
-        };
+        const maxBand = Number(state?.maxBand) || 9;
+        return Object.fromEntries(ratingCriterionEntries(state).map(({ id, criterion }) => [
+          id,
+          normalizeCriterionBand(criterionMidpoint(state, section, criterion), maxBand)
+        ]));
       }
 
       function selectedWritingBandLabels(state = ratingScaleState) {
         const section = activeWritingSection(state);
-        const taskCriterion = section === "Writing Task 1" ? "Task achievement" : "Task response";
-        return {
-          task: criterionBandLabel(state, section, taskCriterion),
-          coherence: criterionBandLabel(state, section, "Coherence and cohesion"),
-          lexical: criterionBandLabel(state, section, "Lexical resource"),
-          grammar: criterionBandLabel(state, section, "Grammatical range and accuracy")
-        };
+        return Object.fromEntries(ratingCriterionEntries(state).map(({ id, criterion }) => [
+          id,
+          criterionBandLabel(state, section, criterion)
+        ]));
       }
 
       function selectedWritingDescriptorDetails(state = ratingScaleState) {
         const section = activeWritingSection(state);
         const snapshot = state?.selectedDescriptors;
         if (!snapshot || snapshot.section !== section || !snapshot.criteria) return [];
-        const taskCriterion = section === "Writing Task 1" ? "Task achievement" : "Task response";
-        const criteria = [
-          [taskCriterion, taskCriterion],
-          ["Coherence and cohesion", "Coherence and cohesion"],
-          ["Lexical resource", "Lexical resource"],
-          ["Grammatical range and accuracy", "Grammatical range and accuracy"]
-        ];
-        return criteria.flatMap(([key, label]) => {
+        return ratingCriterionEntries(state).flatMap(({ criterion: key, label }) => {
           const detail = snapshot.criteria[key];
           if (!detail) return [];
           const bandDetails = Array.isArray(detail.bandDetails)
@@ -6910,7 +7474,7 @@ window.IELTS_DATA = {
               ? [{ band: detail.band, descriptors: detail.descriptors }]
               : [];
           const groupedDescriptors = bandDetails.flatMap(bandDetail => {
-            const band = criterionBandNumber(bandDetail.band);
+            const band = criterionBandNumber(bandDetail.band, Number(state?.maxBand) || 9);
             if (band == null || !Array.isArray(bandDetail.descriptors)) return [];
             const descriptors = bandDetail.descriptors.flatMap(value => {
               if (value && typeof value === "object") {
@@ -6929,9 +7493,9 @@ window.IELTS_DATA = {
         });
       }
 
-      function normalizeCriterionBand(value) {
+      function normalizeCriterionBand(value, maxBand = 9) {
         if (value === "" || value == null || Number.isNaN(Number(value))) return "";
-        const number = Math.min(9, Math.max(0, Number(value)));
+        const number = Math.min(maxBand, Math.max(0, Number(value)));
         return String(Math.round(number * 2) / 2);
       }
 
@@ -6945,10 +7509,15 @@ window.IELTS_DATA = {
         return Number.isInteger(number) ? String(number) : number.toFixed(1);
       }
 
-      function roundedIeltsBand(scores) {
-        const values = scoreCriteria.map(([id]) => normalizeCriterionBand(scores[id]));
+      function ratingOverall(scores, state = ratingScaleState) {
+        const maxBand = Number(state?.maxBand) || 9;
+        const entries = ratingCriterionEntries(state);
+        const values = entries.map(({ id }) => normalizeCriterionBand(scores[id], maxBand));
         if (values.some(value => value === "")) return null;
         const numeric = values.map(Number);
+        if (state?.scoreMode === "sum") {
+          return numeric.reduce((sum, score) => sum + score, 0);
+        }
         const average = numeric.reduce((sum, score) => sum + score, 0) / numeric.length;
         return Math.round(average * 2) / 2;
       }
@@ -6958,10 +7527,12 @@ window.IELTS_DATA = {
         const section = activeWritingSection(state);
         const scores = selectedWritingScores(state);
         const completed = Object.values(scores).filter(value => value !== "").length;
-        const overall = roundedIeltsBand(scores);
-        if (!completed) return `${section.replace("Writing ", "")}: no scores selected`;
-        if (overall == null) return `${section.replace("Writing ", "")}: ${completed} of 4 criteria selected`;
-        return `${section.replace("Writing ", "")}: overall ${formatBand(overall)}`;
+        const overall = ratingOverall(scores, state);
+        const label = state?.taskLabel || section.replace("Writing ", "");
+        if (!completed) return `${label}: no scores selected`;
+        if (overall == null) return `${label}: ${completed} of 4 criteria selected`;
+        if (state?.scoreMode === "sum") return `${label}: ${formatBand(overall)} / ${state.totalMax || 20}`;
+        return `${label}: overall ${formatBand(overall)}`;
       }
 
       function updateRatingScaleSummary() {
@@ -6996,14 +7567,20 @@ window.IELTS_DATA = {
       }
 
       function buildScoreSummaryHtml(scores = {}, state = ratingScaleState) {
-        const rounded = roundedIeltsBand(scores);
-        const normalizedScores = Object.fromEntries(scoreCriteria.map(([id]) => [id, normalizeCriterionBand(scores[id])]));
-        const hasAnyScore = scoreCriteria.some(([id]) => normalizedScores[id] !== "");
+        const maxBand = Number(state?.maxBand) || 9;
+        const entries = ratingCriterionEntries(state);
+        const rounded = ratingOverall(scores, state);
+        const normalizedScores = Object.fromEntries(entries.map(({ id }) => [id, normalizeCriterionBand(scores[id], maxBand)]));
+        const hasAnyScore = entries.some(({ id }) => normalizedScores[id] !== "");
         if (!hasAnyScore) return "";
-        const overall = rounded == null ? "Incomplete" : formatBand(rounded);
+        const overall = rounded == null
+          ? "Incomplete"
+          : state?.scoreMode === "sum"
+            ? `${formatBand(rounded)} / ${state.totalMax || 20}`
+            : formatBand(rounded);
         const section = activeWritingSection(state);
         const bandLabels = selectedWritingBandLabels(state);
-        const rows = scoreCriteria.map(([id, label]) => `
+        const rows = entries.map(({ id, label }) => `
           <div class="score-chip">
             <span>${escapeHtml(label)}</span>
             <strong>${escapeHtml(bandLabels[id] === "-" ? formatBand(normalizedScores[id]) : bandLabels[id])}</strong>
@@ -7013,7 +7590,7 @@ window.IELTS_DATA = {
         const descriptors = descriptorDetails.length ? `
           <div class="score-descriptors">
             <div class="score-descriptors-head">
-              <h2>Band descriptors by criterion</h2>
+              <h2>${state?.scoreMode === "sum" ? "Assessment descriptors by subscale" : "Band descriptors by criterion"}</h2>
             </div>
             <div class="score-descriptor-grid">
               ${descriptorDetails.map(detail => `
@@ -7026,7 +7603,7 @@ window.IELTS_DATA = {
                         <li>
                           <span class="descriptor-evidence-bullet" aria-hidden="true"></span>
                           <span class="descriptor-evidence-text">${escapeHtml(descriptor.text)}</span>
-                          <span class="descriptor-source">Band ${escapeHtml(formatBand(descriptor.band))}</span>
+                          <span class="descriptor-source">${state?.scoreMode === "sum" ? "Score" : "Band"} ${escapeHtml(formatBand(descriptor.band))}</span>
                         </li>`).join("")}</ul>`
                     : `<p class="score-descriptor-empty">No descriptor text is available for this band.</p>`}
                 </article>
@@ -7035,9 +7612,9 @@ window.IELTS_DATA = {
           </div>` : "";
         return `<section class="score-summary">
           <div class="score-overall">
-            <span>IELTS ${escapeHtml(section)}</span>
+            <span>${escapeHtml(state?.assessmentLabel || "IELTS Writing")} · ${escapeHtml(state?.taskLabel || section)}</span>
             <strong>${escapeHtml(overall)}</strong>
-            <em>Overall band</em>
+            <em>${state?.scoreMode === "sum" ? "Total marks" : "Overall band"}</em>
           </div>
           <div class="score-breakdown">${rows}</div>
           ${descriptors}
