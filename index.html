@@ -2681,18 +2681,62 @@
     .band-navigator {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
+      overflow-x: auto;
       color: var(--muted);
       white-space: nowrap;
     }
 
-    .band-label {
-      color: #303744;
-      font-size: 13px;
-      font-weight: 800;
+    .selection-control-button {
+      min-height: 32px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 0 11px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: #394150;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+      transition: border-color .15s, background .15s, color .15s, opacity .15s;
     }
 
-    .band-direction { font-size: 12px; }
+    .selection-control-button:hover:not(:disabled),
+    .selection-control-button:focus-visible {
+      border-color: var(--line-strong);
+      background: var(--surface-alt);
+      outline: 0;
+    }
+
+    .selection-control-button svg {
+      width: 16px;
+      height: 16px;
+      flex: 0 0 auto;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.9;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .selection-control-button.clear-selections {
+      border-color: #f5b6bd;
+      color: var(--red);
+    }
+
+    .selection-control-button.clear-selections:hover:not(:disabled),
+    .selection-control-button.clear-selections:focus-visible {
+      border-color: var(--red);
+      background: var(--red-soft);
+    }
+
+    .selection-control-button:disabled {
+      cursor: default;
+      opacity: .42;
+    }
 
     .legend {
       display: flex;
@@ -5377,6 +5421,7 @@ window.IELTS_DATA = {
       const bands = [9, 8, 7, 6, 5, 4, 3, 2, 1, 0];
       const storageKey = "writing-feedback-rating-scales-state-v1";
       const categoryColors = ["#2ca33a", "#7a3fe0", "#3377e8", "#3377e8"];
+      const selectionHistoryLimit = 100;
 
       const compareGroups = [
         {
@@ -5441,6 +5486,8 @@ window.IELTS_DATA = {
         annotations: {},
         descriptorFits: {}
       };
+      let selectionUndoStack = [];
+      let selectionRedoStack = [];
 
       const $ = selector => document.querySelector(selector);
       const $$ = selector => [...document.querySelectorAll(selector)];
@@ -5489,6 +5536,63 @@ window.IELTS_DATA = {
           if (value === true && descriptorForKey(key)) normalized[key] = true;
         });
         return normalized;
+      }
+
+      function selectionSnapshot() {
+        return {
+          scores: structuredClone(state.scores),
+          secondaryScores: structuredClone(state.secondaryScores),
+          descriptorFits: structuredClone(state.descriptorFits)
+        };
+      }
+
+      function selectionSnapshotsMatch(first, second) {
+        return JSON.stringify(first) === JSON.stringify(second);
+      }
+
+      function updateSelectionControls() {
+        const sectionHasSelections = selectedValues(state.section).length > 0;
+        const clearButton = $("#clearAllSelections");
+        const undoButton = $("#selectionUndo");
+        const redoButton = $("#selectionRedo");
+        if (clearButton) clearButton.disabled = !sectionHasSelections;
+        if (undoButton) undoButton.disabled = selectionUndoStack.length === 0;
+        if (redoButton) redoButton.disabled = selectionRedoStack.length === 0;
+      }
+
+      function recordSelectionChange() {
+        const snapshot = selectionSnapshot();
+        if (!selectionSnapshotsMatch(selectionUndoStack.at(-1), snapshot)) {
+          selectionUndoStack.push(snapshot);
+          if (selectionUndoStack.length > selectionHistoryLimit) selectionUndoStack.shift();
+        }
+        selectionRedoStack = [];
+        updateSelectionControls();
+      }
+
+      function restoreSelectionSnapshot(snapshot) {
+        state.scores = structuredClone(snapshot.scores);
+        state.secondaryScores = structuredClone(snapshot.secondaryScores);
+        state.descriptorFits = structuredClone(snapshot.descriptorFits);
+        renderAll();
+      }
+
+      function undoSelectionChange() {
+        const previous = selectionUndoStack.pop();
+        if (!previous) return;
+        selectionRedoStack.push(selectionSnapshot());
+        if (selectionRedoStack.length > selectionHistoryLimit) selectionRedoStack.shift();
+        restoreSelectionSnapshot(previous);
+        showToast("Undid last selection change");
+      }
+
+      function redoSelectionChange() {
+        const next = selectionRedoStack.pop();
+        if (!next) return;
+        selectionUndoStack.push(selectionSnapshot());
+        if (selectionUndoStack.length > selectionHistoryLimit) selectionUndoStack.shift();
+        restoreSelectionSnapshot(next);
+        showToast("Redid selection change");
       }
 
       function ratingScaleSnapshot() {
@@ -5606,6 +5710,8 @@ window.IELTS_DATA = {
         } else {
           return;
         }
+        selectionUndoStack = [];
+        selectionRedoStack = [];
         renderCriterionOptions();
         renderBandNavigator();
         syncToolbar();
@@ -5778,6 +5884,7 @@ window.IELTS_DATA = {
       function toggleDescriptorFit(line) {
         const key = line?.dataset?.annotationKey;
         if (!key || !descriptorForKey(key)) return;
+        recordSelectionChange();
         if (state.descriptorFits[key]) delete state.descriptorFits[key];
         else state.descriptorFits[key] = true;
         renderAll();
@@ -5808,8 +5915,19 @@ window.IELTS_DATA = {
 
       function renderBandNavigator() {
         $("#bandNavigator").innerHTML = `
-          <span class="band-label">Vertical band scale</span>
-          <span class="band-direction">Band 9 at the top · Band 0 at the bottom</span>`;
+          <button class="selection-control-button clear-selections" type="button" id="clearAllSelections" title="Clear all band and descriptor selections for this task">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"></path><path d="M9 3h6l1 4H8l1-4Z"></path><path d="m7 7 1 14h8l1-14"></path><path d="M10 11v6M14 11v6"></path></svg>
+            <span>Clear all selections</span>
+          </button>
+          <button class="selection-control-button" type="button" id="selectionUndo" title="Undo last score selection change">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 8-5 4 5 4"></path><path d="M5 12h8a6 6 0 0 1 6 6"></path></svg>
+            <span>Undo</span>
+          </button>
+          <button class="selection-control-button" type="button" id="selectionRedo" title="Redo last undone score selection change">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 8 5 4-5 4"></path><path d="M19 12h-8a6 6 0 0 0-6 6"></path></svg>
+            <span>Redo</span>
+          </button>`;
+        updateSelectionControls();
       }
 
       function syncToolbar() {
@@ -5984,6 +6102,7 @@ window.IELTS_DATA = {
         renderMatrix(options);
         renderScoreSidebar();
         renderProfile();
+        updateSelectionControls();
         saveState();
       }
 
@@ -5992,6 +6111,7 @@ window.IELTS_DATA = {
         const band = Number(cell.dataset.band);
         const primary = state.scores[state.section][criterion];
         const secondary = state.secondaryScores[state.section][criterion];
+        recordSelectionChange();
         if (primary === band) {
           clearDescriptorFitsForBand(state.section, criterion, band);
           state.scores[state.section][criterion] = secondary;
@@ -6010,6 +6130,18 @@ window.IELTS_DATA = {
           showToast(`${criterion}: second band changed to ${band}`);
         }
         renderAll();
+      }
+
+      function clearCurrentSectionSelections() {
+        if (!selectedValues(state.section).length) return;
+        recordSelectionChange();
+        data.sections[state.section].criteria.forEach(criterion => {
+          state.scores[state.section][criterion] = null;
+          state.secondaryScores[state.section][criterion] = null;
+        });
+        clearDescriptorFitsForSection(state.section);
+        renderAll();
+        showToast(`${data.sections[state.section].shortLabel} selections cleared`);
       }
 
       function setFontSize(value) {
@@ -6106,6 +6238,8 @@ window.IELTS_DATA = {
         if (state.section === "Writing Task 1" || state.section === "Writing Task 2") {
           state.lastWritingSection = state.section;
         }
+        selectionUndoStack = [];
+        selectionRedoStack = [];
         state.criterion = "__all";
         state.activeBand = 9;
         renderCriterionOptions();
@@ -6226,15 +6360,13 @@ window.IELTS_DATA = {
         renderAll();
       });
 
-      $("#clearScores").addEventListener("click", () => {
-        data.sections[state.section].criteria.forEach(criterion => {
-          state.scores[state.section][criterion] = null;
-          state.secondaryScores[state.section][criterion] = null;
-        });
-        clearDescriptorFitsForSection(state.section);
-        renderAll();
-        showToast(`${data.sections[state.section].shortLabel} scores cleared`);
+      $("#bandNavigator").addEventListener("click", event => {
+        if (event.target.closest("#clearAllSelections")) clearCurrentSectionSelections();
+        if (event.target.closest("#selectionUndo")) undoSelectionChange();
+        if (event.target.closest("#selectionRedo")) redoSelectionChange();
       });
+
+      $("#clearScores").addEventListener("click", clearCurrentSectionSelections);
 
       $(".primary-tabs").addEventListener("click", event => {
         const button = event.target.closest("[data-view]");
