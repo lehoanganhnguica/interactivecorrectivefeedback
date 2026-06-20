@@ -804,10 +804,14 @@
 
 
     .rating-scale-section {
+      --rating-accent: #e31837;
+      --rating-accent-dark: #991b1b;
+      --rating-soft: #fff7f7;
+      --rating-border: #fca5a5;
       grid-column: 1 / -1;
       min-width: 0;
       overflow: hidden;
-      border: 1px solid #fca5a5;
+      border: 1px solid var(--rating-border);
       border-radius: 18px;
       background: #fff;
       box-shadow: var(--shadow);
@@ -819,7 +823,7 @@
       gap: 12px;
       padding: 12px 16px;
       border-bottom: 1px solid var(--line);
-      background: linear-gradient(180deg, #fff 0%, #fff7f7 100%);
+      background: linear-gradient(180deg, #fff 0%, var(--rating-soft) 100%);
     }
 
     .rating-scale-heading > div:first-child {
@@ -845,10 +849,10 @@
     .rating-scale-summary {
       margin-left: auto;
       flex: 0 0 auto;
-      border: 1px solid #fecaca;
+      border: 1px solid var(--rating-border);
       border-radius: 999px;
       background: #fff;
-      color: #991b1b;
+      color: var(--rating-accent-dark);
       padding: 6px 10px;
       font-size: 13px;
       font-weight: 800;
@@ -2196,6 +2200,7 @@
       --red: #e31837;
       --red-dark: #b90f2b;
       --red-soft: #fff1f3;
+      --theme-border: #f5b6bd;
       --ink: #17191f;
       --muted: #667085;
       --subtle: #8a93a3;
@@ -2270,7 +2275,7 @@
     }
 
     .brand-block.cambridge {
-      background: #19a9a4;
+      background: var(--red);
       letter-spacing: -.5px;
     }
 
@@ -2400,6 +2405,7 @@
       background: #fff;
       box-shadow: 0 5px 16px rgba(17, 24, 39, .06);
       transition: box-shadow .15s, transform .15s, border-color .15s;
+      cursor: pointer;
     }
 
     .assessment-choice:hover,
@@ -2440,18 +2446,28 @@
     }
 
     .assessment-choice select {
-      grid-column: 2;
-      min-width: 0;
+      position: absolute;
+      inset: 0;
+      z-index: 4;
       width: 100%;
+      height: 100%;
       border: 0;
       outline: 0;
       appearance: none;
-      background: transparent;
-      color: var(--ink);
+      opacity: 0;
       cursor: pointer;
+    }
+
+    .assessment-choice-value {
+      grid-column: 2;
+      min-width: 0;
+      overflow: hidden;
+      color: var(--ink);
       font-size: 15px;
       font-weight: 820;
       line-height: 1.2;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .assessment-choice-chevron {
@@ -2579,7 +2595,7 @@
     .select-control:focus-within,
     .search-control:focus-within {
       border-color: #8b94a3;
-      box-shadow: 0 0 0 3px rgba(227, 24, 55, .08);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--red) 8%, transparent);
     }
 
     .select-control.task-select-control {
@@ -2589,7 +2605,7 @@
       border: 2px solid var(--red);
       border-radius: 10px;
       background: var(--red-soft);
-      box-shadow: 0 5px 14px rgba(227, 24, 55, .14);
+      box-shadow: 0 5px 14px color-mix(in srgb, var(--red) 14%, transparent);
     }
 
     .select-control.task-select-control .control-icon {
@@ -2614,8 +2630,9 @@
     .select-control.task-select-control:hover,
     .select-control.task-select-control:focus-within {
       border-color: var(--red-dark);
-      background: #ffe7eb;
-      box-shadow: 0 0 0 4px rgba(227, 24, 55, .11), 0 7px 18px rgba(227, 24, 55, .16);
+      background: var(--red-soft);
+      box-shadow: 0 0 0 4px color-mix(in srgb, var(--red) 11%, transparent),
+                  0 7px 18px color-mix(in srgb, var(--red) 16%, transparent);
     }
 
     .tool-button {
@@ -2848,7 +2865,7 @@
     }
 
     .selection-control-button.clear-selections {
-      border-color: #f5b6bd;
+      border-color: var(--theme-border);
       color: var(--red);
     }
 
@@ -3658,6 +3675,7 @@
         </span>
         <span class="assessment-choice-label">Exam</span>
         <select id="examSelect" aria-label="Exam"></select>
+        <span class="assessment-choice-value" id="examChoiceValue" aria-hidden="true">IELTS Writing</span>
         <span class="assessment-choice-chevron" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m7 9 5 5 5-5"></path></svg></span>
       </label>
 
@@ -3667,6 +3685,7 @@
         </span>
         <span class="assessment-choice-label">Writing part</span>
         <select id="sectionSelect" aria-label="Writing part"></select>
+        <span class="assessment-choice-value" id="taskChoiceValue" aria-hidden="true">Writing Task 1</span>
         <span class="assessment-choice-chevron" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m7 9 5 5 5-5"></path></svg></span>
       </label>
 
@@ -5863,6 +5882,32 @@ Object.entries(CAMBRIDGE_SCALES).forEach(([assessmentId, exam]) => {
         }];
       })).values()];
       const storageKey = "writing-feedback-rating-scales-state-v1";
+      const assessmentThemes = {
+        ielts: {
+          accent: "#e31837",
+          dark: "#b90f2b",
+          soft: "#fff1f3",
+          border: "#f5b6bd"
+        },
+        "cambridge-b2": {
+          accent: "#0f9f9a",
+          dark: "#0f766e",
+          soft: "#e6f8f7",
+          border: "#8ddbd7"
+        },
+        "cambridge-c1": {
+          accent: "#2563eb",
+          dark: "#1d4ed8",
+          soft: "#eaf2ff",
+          border: "#93b4f8"
+        },
+        "cambridge-c2": {
+          accent: "#7c3aed",
+          dark: "#5b21b6",
+          soft: "#f3e8ff",
+          border: "#c4a2f4"
+        }
+      };
       const criterionPalettes = {
         task: { color: "#0891b2", soft: "#cffafe", text: "#0e7490" },
         style: { color: "#64748b", soft: "#f1f5f9", text: "#334155" },
@@ -6402,6 +6447,7 @@ Object.entries(CAMBRIDGE_SCALES).forEach(([assessmentId, exam]) => {
           .map(assessment => `<option value="${escapeHtml(assessment.id)}">${escapeHtml(assessment.label)}</option>`)
           .join("");
         $("#examSelect").value = state.assessmentId;
+        $("#examChoiceValue").textContent = data.sections[state.section].assessmentLabel;
       }
 
       function renderTaskOptions() {
@@ -6414,15 +6460,21 @@ Object.entries(CAMBRIDGE_SCALES).forEach(([assessmentId, exam]) => {
           })
           .join("");
         $("#sectionSelect").value = state.section;
+        $("#taskChoiceValue").textContent = data.sections[state.section].taskLabel;
       }
 
       function syncAssessmentIdentity() {
         const section = data.sections[state.section];
         const isCambridge = section.assessmentId !== "ielts";
-        const accent = isCambridge ? "#19a9a4" : "#e31837";
-        const soft = isCambridge ? "#e7f8f7" : "#fff1f3";
-        $("#assessmentStrip").style.setProperty("--assessment-accent", accent);
-        $("#assessmentStrip").style.setProperty("--assessment-soft", soft);
+        const theme = assessmentThemes[section.assessmentId] || assessmentThemes.ielts;
+        document.documentElement.style.setProperty("--red", theme.accent);
+        document.documentElement.style.setProperty("--red-dark", theme.dark);
+        document.documentElement.style.setProperty("--red-soft", theme.soft);
+        document.documentElement.style.setProperty("--theme-border", theme.border);
+        $("#assessmentStrip").style.setProperty("--assessment-accent", theme.accent);
+        $("#assessmentStrip").style.setProperty("--assessment-soft", theme.soft);
+        $("#examChoiceValue").textContent = section.assessmentLabel;
+        $("#taskChoiceValue").textContent = section.taskLabel;
         $("#brandBlock").textContent = section.brand;
         $("#brandBlock").setAttribute("aria-label", section.assessmentLabel);
         $("#brandBlock").classList.toggle("cambridge", isCambridge);
@@ -6432,6 +6484,7 @@ Object.entries(CAMBRIDGE_SCALES).forEach(([assessmentId, exam]) => {
           <span>${escapeHtml(section.duration)} · ${section.scoreMode === "sum" ? "4 subscales × 5 marks" : "4 criteria · 0–9 bands"}</span>`;
         $("#sourceNote").textContent = section.sourceNote || data.meta.sourceNote;
         $("#matrixFrame").setAttribute("aria-label", `${section.assessmentLabel} ${section.taskLabel} rating descriptor matrix`);
+        document.querySelector('meta[name="theme-color"]')?.setAttribute("content", theme.accent);
         document.title = `${section.assessmentLabel} Writing Rating Scales`;
       }
 
@@ -7543,6 +7596,18 @@ Object.entries(CAMBRIDGE_SCALES).forEach(([assessmentId, exam]) => {
 
       function updateRatingScaleSummary() {
         ratingScaleSummary.textContent = ratingScaleStatusText();
+        const themes = {
+          ielts: { accent: "#e31837", dark: "#991b1b", soft: "#fff7f7", border: "#fca5a5" },
+          "cambridge-b2": { accent: "#0f9f9a", dark: "#0f766e", soft: "#effbf9", border: "#8ddbd7" },
+          "cambridge-c1": { accent: "#2563eb", dark: "#1d4ed8", soft: "#f0f5ff", border: "#93b4f8" },
+          "cambridge-c2": { accent: "#7c3aed", dark: "#5b21b6", soft: "#f7f1ff", border: "#c4a2f4" }
+        };
+        const theme = themes[ratingScaleState?.assessmentId] || themes.ielts;
+        const section = ratingScaleSummary.closest(".rating-scale-section");
+        section?.style.setProperty("--rating-accent", theme.accent);
+        section?.style.setProperty("--rating-accent-dark", theme.dark);
+        section?.style.setProperty("--rating-soft", theme.soft);
+        section?.style.setProperty("--rating-border", theme.border);
       }
 
       function postRatingScaleMessage(type, state = ratingScaleState) {
