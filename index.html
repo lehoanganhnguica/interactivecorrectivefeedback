@@ -2842,6 +2842,8 @@
       justify-content: space-between;
       gap: 10px;
       padding-inline: 12px;
+      background: linear-gradient(180deg, var(--category-soft, #fff) 0%, #fff 86%);
+      box-shadow: inset 0 3px 0 var(--category-color, var(--organize));
       text-align: left;
     }
 
@@ -2853,7 +2855,7 @@
     }
 
     .criterion-head-main strong {
-      color: #292f38;
+      color: var(--category-text, #292f38);
       font-size: 13px;
       line-height: 1.25;
     }
@@ -2873,9 +2875,9 @@
     }
 
     .criterion-head-score.has-score {
-      border-color: rgba(227, 24, 55, .35);
-      background: var(--red-soft);
-      color: var(--red-dark);
+      border-color: var(--category-color, var(--red));
+      background: var(--category-soft, var(--red-soft));
+      color: var(--category-text, var(--red-dark));
     }
 
     .band-axis-cell {
@@ -2915,19 +2917,19 @@
 
     .descriptor-cell:focus-visible {
       z-index: 4;
-      outline: 3px solid rgba(227, 24, 55, .22);
+      outline: 3px solid var(--category-color, var(--red));
       outline-offset: -3px;
     }
 
     .descriptor-cell.selected {
       z-index: 3;
-      background: linear-gradient(180deg, #fff 0%, var(--red-soft) 100%);
-      box-shadow: inset 0 0 0 2px var(--red);
+      background: linear-gradient(180deg, #fff 0%, var(--category-soft, var(--red-soft)) 100%);
+      box-shadow: inset 0 0 0 2px var(--category-color, var(--red));
     }
 
     .descriptor-cell.selected-secondary {
-      background: linear-gradient(180deg, #fff 0%, #eef5ff 100%);
-      box-shadow: inset 0 0 0 2px #3377e8;
+      background: linear-gradient(180deg, #fff 0%, var(--category-soft, #eef5ff) 100%);
+      box-shadow: inset 0 0 0 2px var(--category-color, #3377e8);
     }
 
     .cell-selection-note {
@@ -2936,17 +2938,18 @@
       justify-content: space-between;
       gap: 8px;
       margin: -4px -5px 10px;
+      border-left: 3px solid var(--category-color, var(--red));
       border-radius: 7px;
-      background: rgba(227, 24, 55, .09);
+      background: var(--category-soft, rgba(227, 24, 55, .09));
       padding: 6px 8px;
-      color: var(--red-dark);
+      color: var(--category-text, var(--red-dark));
       font-size: 10px;
       line-height: 1.25;
     }
 
     .selected-secondary .cell-selection-note {
-      background: #e6f0ff;
-      color: #1d5fc4;
+      background: var(--category-soft, #e6f0ff);
+      color: var(--category-text, #1d5fc4);
     }
 
     .cell-selection-note strong {
@@ -3159,8 +3162,9 @@
     }
 
     .score-row-label {
-      color: #5b6472;
+      color: var(--category-text, #5b6472);
       font-size: 11px;
+      font-weight: 700;
       line-height: 1.25;
     }
 
@@ -3178,9 +3182,9 @@
     }
 
     .score-row-value.has-score {
-      border-color: rgba(227, 24, 55, .28);
-      background: var(--red-soft);
-      color: var(--red-dark);
+      border-color: var(--category-color, var(--red));
+      background: var(--category-soft, var(--red-soft));
+      color: var(--category-text, var(--red-dark));
     }
 
     .average-line {
@@ -3328,12 +3332,13 @@
     }
 
     .profile-criterion-name {
-      color: #3e4653;
+      color: var(--category-text, #3e4653);
       font-size: 12px;
-      font-weight: 650;
+      font-weight: 700;
     }
 
     .profile-criterion-score {
+      color: var(--category-text, var(--ink));
       font-weight: 820;
       font-variant-numeric: tabular-nums;
     }
@@ -3349,7 +3354,7 @@
       display: block;
       height: 100%;
       border-radius: inherit;
-      background: var(--red);
+      background: var(--category-color, var(--red));
     }
 
     .profile-result {
@@ -5420,7 +5425,12 @@ window.IELTS_DATA = {
       const sectionNames = Object.keys(data.sections);
       const bands = [9, 8, 7, 6, 5, 4, 3, 2, 1, 0];
       const storageKey = "writing-feedback-rating-scales-state-v1";
-      const categoryColors = ["#2ca33a", "#7a3fe0", "#3377e8", "#3377e8"];
+      const criterionPalettes = [
+        { color: "#0891b2", soft: "#cffafe", text: "#0e7490" },
+        { color: "#a78bfa", soft: "#ede9fe", text: "#6d28d9" },
+        { color: "#f59e0b", soft: "#fef3c7", text: "#92400e" },
+        { color: "#60a5fa", soft: "#dbeafe", text: "#1d4ed8" }
+      ];
       const selectionHistoryLimit = 100;
 
       const compareGroups = [
@@ -5501,6 +5511,12 @@ window.IELTS_DATA = {
       const formatBand = value => value == null || Number.isNaN(value) ? "—" : value.toFixed(1);
       const descriptorText = descriptor => typeof descriptor === "string" ? descriptor : descriptor.text;
       const descriptorBold = descriptor => Array.isArray(descriptor?.bold) ? descriptor.bold : [];
+      const criterionPalette = (section, criterion) => {
+        const index = section.criteria.indexOf(criterion);
+        return criterionPalettes[index] || criterionPalettes[3];
+      };
+      const criterionStyle = palette =>
+        `--category-color:${palette.color};--category-soft:${palette.soft};--category-text:${palette.text}`;
 
       function descriptorForKey(key) {
         const [section, criterion, band, indexText] = key.split("|");
@@ -5966,10 +5982,10 @@ window.IELTS_DATA = {
         const header = [
           '<div class="matrix-head corner">Band</div>',
           ...criteria.map(criterion => {
-            const criterionIndex = section.criteria.indexOf(criterion);
+            const palette = criterionPalette(section, criterion);
             const selectedScore = effectiveCriterionScore(state.section, criterion);
             return `
-              <div class="matrix-head criterion-head" style="--category-color:${categoryColors[criterionIndex] || categoryColors[3]}">
+              <div class="matrix-head criterion-head" style="${criterionStyle(palette)}">
                 <span class="criterion-head-main">
                   <span class="criterion-category" aria-hidden="true"></span>
                   <strong>${escapeHtml(criterion)}</strong>
@@ -5981,6 +5997,7 @@ window.IELTS_DATA = {
 
         const rows = bands.map(band => {
           const cells = criteria.map(criterion => {
+            const palette = criterionPalette(section, criterion);
             const descriptors = section.bands[String(band)][criterion] || [];
             const matchingDescriptors = descriptors.filter(descriptor =>
               descriptorText(descriptor).toLowerCase().includes(query)
@@ -6015,6 +6032,7 @@ window.IELTS_DATA = {
                 : `Set ${criterion} to Band ${band}`;
             return `
               <div class="descriptor-cell ${selected ? "selected" : ""} ${primarySelected ? "selected-primary" : ""} ${secondarySelected ? "selected-secondary" : ""} ${cellMatches ? "search-match" : ""}"
+                   style="${criterionStyle(palette)}"
                    data-criterion="${escapeHtml(criterion)}"
                    data-band="${band}"
                    role="button"
@@ -6057,10 +6075,11 @@ window.IELTS_DATA = {
         $("#rawAverage").textContent = result.raw == null ? "—" : result.raw.toFixed(2);
         $("#clearScores").disabled = values.length === 0;
 
-        $("#scoreRows").innerHTML = section.criteria.map((criterion, index) => {
+        $("#scoreRows").innerHTML = section.criteria.map(criterion => {
           const value = effectiveCriterionScore(state.section, criterion);
+          const palette = criterionPalette(section, criterion);
           return `
-            <div class="score-row" style="--category-color:${categoryColors[index] || categoryColors[3]}">
+            <div class="score-row" style="${criterionStyle(palette)}">
               <span class="score-row-dot" aria-hidden="true"></span>
               <span class="score-row-label">${escapeHtml(criterion)}</span>
               <span class="score-row-value ${value != null ? "has-score" : ""}">${formatBandSelection(state.section, criterion)}</span>
@@ -6079,8 +6098,9 @@ window.IELTS_DATA = {
           const chosen = selectedValues(sectionName).length;
           const criteriaRows = section.criteria.map(criterion => {
             const value = effectiveCriterionScore(sectionName, criterion);
+            const palette = criterionPalette(section, criterion);
             return `
-              <div class="profile-criterion-row">
+              <div class="profile-criterion-row" style="${criterionStyle(palette)}">
                 <span class="profile-criterion-name">${escapeHtml(criterion)}</span>
                 <span class="profile-criterion-score">${formatBandSelection(sectionName, criterion)}</span>
                 <span class="profile-track" aria-hidden="true"><span style="width:${value == null ? 0 : (value / 9) * 100}%"></span></span>
