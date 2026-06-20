@@ -1,65 +1,28 @@
-# Writing Feedback Studio
+# Interactive Corrective Feedback — GitHub Pages package
 
-A single-file browser app for marking student writing with editing mode, suggesting mode, feedback comments, IELTS band scoring, image prompts, session save/load, and standalone student exports.
+This folder contains the current deployable version of the app.
 
-## Quick Start
+## Package contents
 
-Open `index.html` in a modern browser. No build step, backend, account, or internet connection is required.
+- `index.html` — the complete self-contained app
+- `.nojekyll` — tells GitHub Pages to serve the files directly
 
-Use the **Download for offline use** button in the app to save a self-contained HTML copy. Open that downloaded file whenever you want to use the app offline.
+No build command, package manager, server, or external assets are required.
 
-The app is a static browser app and is designed to work on both macOS and Windows in current versions of Chrome, Edge, Firefox, and Safari.
+## Deploy by uploading files on GitHub
 
-## How The App Works
+1. Open the `interactivecorrectivefeedback` repository on GitHub.
+2. Switch to the branch used by GitHub Pages, usually `main`.
+3. At the repository root, replace the existing `index.html` with the one in this folder.
+4. Upload `.nojekyll` as well.
+5. Commit the changes.
+6. Open **Settings → Pages** and confirm that the site is deployed from the correct branch and the repository root (`/`).
+7. Wait for the Pages deployment to finish, then hard-refresh the website:
+   - Windows: `Ctrl + F5`
+   - macOS: `Command + Shift + R`
 
-1. Fill in the assignment details, student name, and optional task prompt.
-2. Use **Editing** mode to paste, type, import, or format the student's writing.
-3. Add task prompt images in **Add image(s)**. For images inside the student writing, stay in **Editing** mode, click the writing area, then paste with **Cmd+V** on macOS or **Ctrl+V** on Windows.
-4. Switch to **Suggesting** mode to mark changes:
-   - teacher additions appear in bold green;
-   - deleted student text remains visible in red strikethrough;
-   - right-click a green addition to remove it;
-   - right-click a red deletion to restore the original text;
-   - undo and redo work for app edits.
-5. Select text to add feedback comments. Choose a feedback type, write an explanation, and paste screenshots into the comment if useful. Horizontal landscape images work best in student PDF exports.
-6. Enter whole-band IELTS scores for the four criteria. The app calculates the overall band by averaging and rounding to the nearest half band.
-7. Use the **Readability** controls below the formatting bar to switch between light, dark, and contrast themes, increase or decrease the student text size, and use **Default** to return the student export text to 18px. Feedback colors adapt to the selected theme for readability.
-8. Drag the bottom-right corner of a pasted writing image to resize it. Right-click a pasted writing image and choose **Remove image** to delete it.
-9. Export for the student:
-   - **Student HTML** downloads a standalone feedback page;
-   - **PDF** opens the browser print dialog so you can save as PDF.
+## Important
 
-The **How it works** button beside **Download for offline use** shows these instructions inside the app.
+Upload the files *inside* this folder to the repository root. Do not upload the containing folder as a subfolder, or GitHub Pages will continue serving the old root-level `index.html`.
 
-## Sessions
-
-The app autosaves the current draft in the same browser, so refreshing, accidentally closing the window, or reopening the app on the same device should restore the latest work.
-
-Use **Save session** to download an editable JSON file containing the current writing, suggestions, comments, comment images, scores, task image, readability choices, and settings.
-
-Use **Load session** to restore that JSON file later and continue marking.
-
-Autosave is local to the browser and device. To move work to another browser or computer, use **Save session** and **Load session**.
-
-Account sign-in and cloud session storage are possible, but they require an external backend such as Firebase or Supabase because GitHub Pages only hosts static files.
-
-## CrushIELTS Logo
-
-The CrushIELTS logo is off by default. Teachers working at CrushIELTS can enable it using the checkbox near the bottom of the teacher view. Other users can leave it off.
-
-## Files
-
-- `index.html` - the complete app
-- `README.md` - usage notes
-
-## GitHub Pages Deployment
-
-1. Create a new GitHub repository.
-2. Upload `index.html` and `README.md` to the repository root.
-3. In the repository, open **Settings** -> **Pages**.
-4. Set the source to deploy from the main branch root.
-5. Open the published GitHub Pages URL after deployment finishes.
-
-## Privacy And Offline Use
-
-The app runs locally in the browser. It does not require a server. If you use the downloaded offline copy, the app can work entirely without internet access.
+The app stores autosaved work in the browser. Replacing `index.html` does not intentionally erase saved work, but keeping a backup session is recommended before deployment.
